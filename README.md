@@ -1,2 +1,2 @@
 # interview-tests-codepad-codeshare-etc
-Tests during interviews.
+Collection of tests, exams and coding assignments from job interviews.
