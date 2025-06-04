@@ -1,10 +1,14 @@
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import Qt, QUrl, QTimer
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineSettings
+import warnings
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtCore import Qt, QUrl, QTimer
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineSettings
 from dotenv import load_dotenv
+
+# Suppress DeprecationWarnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Load credentials securely
 load_dotenv(os.path.expanduser('~/.secrets'))
@@ -26,12 +30,12 @@ class InvisibleBrowser(QMainWindow):
         
     def init_ui(self):
         self.setWindowFlags(
-            Qt.FramelessWindowHint |
-            Qt.WindowStaysOnTopHint |
-            Qt.Tool |
-            Qt.BypassWindowManagerHint
+            Qt.WindowType.FramelessWindowHint |
+            Qt.WindowType.WindowStaysOnTopHint |
+            Qt.WindowType.Tool |
+            Qt.WindowType.BypassWindowManagerHint
         )
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setWindowOpacity(0.7)
         self.resize(900, 600)
         self.hide_dock_icon()
@@ -45,15 +49,15 @@ class InvisibleBrowser(QMainWindow):
             
     def init_browser(self):
         self.profile = QWebEngineProfile("stealth_profile")
-        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.ForcePersistentCookies)
+        self.profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.ForcePersistentCookies)
         
         self.browser = QWebEngineView()
         self.page = StealthPage(self.profile)
         self.browser.setPage(self.page)
         
         settings = self.browser.settings()
-        settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
-        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
         
         self.page.loadFinished.connect(self.on_load_finished)
         self.setCentralWidget(self.browser)
@@ -85,11 +89,16 @@ class InvisibleBrowser(QMainWindow):
 
 if __name__ == "__main__":
     os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu"
-    QApplication.setAttribute(Qt.AA_PluginApplication, True)
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_PluginApplication, True)
     
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     
     browser = InvisibleBrowser()
     browser.show()
-    sys.exit(app.exec_())
+
+    try:
+        sys.exit(app.exec())
+    except KeyboardInterrupt:
+        print("Application closed manually.")
+        sys.exit(0)
