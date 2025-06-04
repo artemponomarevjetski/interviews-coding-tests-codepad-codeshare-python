@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+venv/
+.stealth_venv/
+
+# Environment files / secrets
+.env
+.secrets
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/
+
+# macOS system files
+.DS_Store
+
+# Logs and output
+*.log
+*.out
+*.pid
+nohup.out
+
+# Temporary files and folders
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# Compiled notebooks
+*.nbconvert.ipynb
+
+# PDF, Pages, Word
+*.pdf
+*.pages
+*.docx
