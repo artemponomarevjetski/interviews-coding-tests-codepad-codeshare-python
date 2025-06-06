@@ -1,0 +1,20 @@
+Deployment Instructions:
+
+# 1. Clean up any existing instances
+pkill -f "python.*stealth.py" 2>/dev/null
+
+# 2. Setup environment
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 3. First test run (debug mode)
+python stealth.py
+
+# 4. Production deployment
+nohup python stealth.py > stealth.log 2>&1 &
+disown
+
+# 5. Verification
+pgrep -fl "python.*stealth.py"  # More precise process check
+tail -f stealth.log  # View logs in real-time (Ctrl+C to exit)
