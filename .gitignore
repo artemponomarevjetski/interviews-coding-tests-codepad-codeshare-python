@@ -1,44 +1,29 @@
+# Directory ignores
 log/
-
-# Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
-*.so
-
-# Virtual environments
 venv/
 .stealth_venv/
-
-# Environment files / secrets
-.env
-.secrets
-
-# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
-
-# VSCode
 .vscode/
+temp/
 
-# macOS system files
-.DS_Store
-
-# Logs and output
+# File extensions
+*.py[cod]
+*.so
 *.log
 *.out
 *.pid
-nohup.out
-
-# Temporary files and folders
-temp/
 *.tmp
 *.bak
 *.swp
 *~
-
-# Compiled notebooks
 *.nbconvert.ipynb
-
-# PDF, Pages, Word
 *.pdf
 *.pages
 *.docx
+*.env
+*.secrets
+nohup.out
+
+# System files
+.DS_Store
