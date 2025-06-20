@@ -255,6 +255,17 @@ HTML_TEMPLATE = """
         }
         .image-container { margin-top: 20px; }
         .image-container img { max-width: 100%; border: 1px solid #ddd; }
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -262,7 +273,7 @@ HTML_TEMPLATE = """
     <div class="timestamp">Last updated: {{ timestamp }}</div>
     <div>Status: <span class="status">{{ status }}</span></div>
     {% if text %}
-    <pre>{{ text }}</pre>
+    <pre id="ocrText">{{ text }}</pre>
     {% endif %}
     {% if image_exists %}
     <div class="image-container">
@@ -270,6 +281,65 @@ HTML_TEMPLATE = """
         <img src="/latest_image?t={{ cache_buster }}" alt="Latest screenshot">
     </div>
     {% endif %}
+    <div class="copy-notification" id="copyNotification">Text copied to clipboard!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textElement = document.getElementById('ocrText');
+            const notification = document.getElementById('copyNotification');
+            
+            // Override right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                
+                if (textElement) {
+                    // Select all text
+                    const range = document.createRange();
+                    range.selectNodeContents(textElement);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    
+                    // Copy to clipboard
+                    try {
+                        document.execCommand('copy');
+                        
+                        // Show notification
+                        notification.style.display = 'block';
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                    }
+                }
+            });
+            
+            // Also allow Ctrl+A and Ctrl+C as alternatives
+            document.addEventListener('keydown', function(e) {
+                if (textElement && e.ctrlKey) {
+                    if (e.key === 'a' || e.key === 'A') {
+                        e.preventDefault();
+                        const range = document.createRange();
+                        range.selectNodeContents(textElement);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else if (e.key === 'c' || e.key === 'C') {
+                        try {
+                            document.execCommand('copy');
+                            notification.style.display = 'block';
+                            setTimeout(() => {
+                                notification.style.display = 'none';
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy text: ', err);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 """
