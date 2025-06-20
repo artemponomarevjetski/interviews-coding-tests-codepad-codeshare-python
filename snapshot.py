@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 from PIL import Image, ImageFilter, ImageEnhance
 import pytesseract
-from flask import Flask, render_template_string, send_file
+from flask import Flask, render_template_string, send_file, request
 import socket
 from threading import Thread
 import platform
@@ -237,24 +237,44 @@ HTML_TEMPLATE = """
     <title>Screen OCR Dashboard</title>
     <meta http-equiv='refresh' content='10'>
     <style>
-        body { font-family: -apple-system, sans-serif; margin: 20px; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            margin: 20px; 
+            background-color: #f8f9fa;
+        }
         pre { 
             background: #f5f5f5; 
             padding: 15px; 
             border-radius: 5px; 
             white-space: pre-wrap;
             font-size: 1.1em;
+            max-height: 60vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
         }
-        .timestamp { color: #666; font-size: 0.9em; }
+        .timestamp { 
+            color: #666; 
+            font-size: 0.9em; 
+            margin-bottom: 10px;
+        }
         .status { 
             padding: 5px 10px; 
             border-radius: 3px; 
             font-weight: bold;
             background: {% if status == 'success' %}#4CAF50{% else %}#F44336{% endif %};
             color: white;
+            display: inline-block;
         }
-        .image-container { margin-top: 20px; }
-        .image-container img { max-width: 100%; border: 1px solid #ddd; }
+        .image-container { 
+            margin-top: 20px; 
+            text-align: center;
+        }
+        .image-container img { 
+            max-width: 100%; 
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         .copy-notification {
             position: fixed;
             bottom: 20px;
@@ -265,23 +285,65 @@ HTML_TEMPLATE = """
             border-radius: 5px;
             display: none;
             z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-copy {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-copy:hover {
+            background-color: #45a049;
+        }
+        .btn-refresh {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-refresh:hover {
+            background-color: #0b7dda;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
-    <h1>Screen OCR Results</h1>
-    <div class="timestamp">Last updated: {{ timestamp }}</div>
-    <div>Status: <span class="status">{{ status }}</span></div>
-    {% if text %}
-    <pre id="ocrText">{{ text }}</pre>
-    {% endif %}
-    {% if image_exists %}
-    <div class="image-container">
-        <h3>Latest Snapshot:</h3>
-        <img src="/latest_image?t={{ cache_buster }}" alt="Latest screenshot">
+    <div class="container">
+        <h1>Screen OCR Results</h1>
+        <div class="timestamp">Last updated: {{ timestamp }}</div>
+        <div class="controls">
+            <button class="btn btn-copy" onclick="copyText()">Copy All Text</button>
+            <button class="btn btn-refresh" onclick="window.location.reload()">Refresh</button>
+        </div>
+        <div>Status: <span class="status">{{ status }}</span></div>
+        {% if text %}
+        <pre id="ocrText">{{ text }}</pre>
+        {% endif %}
+        {% if image_exists %}
+        <div class="image-container">
+            <h3>Latest Snapshot:</h3>
+            <img src="/latest_image?t={{ cache_buster }}" alt="Latest screenshot">
+        </div>
+        {% endif %}
+        <div class="copy-notification" id="copyNotification">Text copied to clipboard!</div>
     </div>
-    {% endif %}
-    <div class="copy-notification" id="copyNotification">Text copied to clipboard!</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -291,28 +353,7 @@ HTML_TEMPLATE = """
             // Override right-click context menu
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
-                
-                if (textElement) {
-                    // Select all text
-                    const range = document.createRange();
-                    range.selectNodeContents(textElement);
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    
-                    // Copy to clipboard
-                    try {
-                        document.execCommand('copy');
-                        
-                        // Show notification
-                        notification.style.display = 'block';
-                        setTimeout(() => {
-                            notification.style.display = 'none';
-                        }, 2000);
-                    } catch (err) {
-                        console.error('Failed to copy text: ', err);
-                    }
-                }
+                copyText();
             });
             
             // Also allow Ctrl+A and Ctrl+C as alternatives
@@ -320,25 +361,51 @@ HTML_TEMPLATE = """
                 if (textElement && e.ctrlKey) {
                     if (e.key === 'a' || e.key === 'A') {
                         e.preventDefault();
-                        const range = document.createRange();
-                        range.selectNodeContents(textElement);
-                        const selection = window.getSelection();
-                        selection.removeAllRanges();
-                        selection.addRange(range);
+                        selectAllText();
                     } else if (e.key === 'c' || e.key === 'C') {
-                        try {
-                            document.execCommand('copy');
-                            notification.style.display = 'block';
-                            setTimeout(() => {
-                                notification.style.display = 'none';
-                            }, 2000);
-                        } catch (err) {
-                            console.error('Failed to copy text: ', err);
-                        }
+                        e.preventDefault();
+                        copyText();
                     }
                 }
             });
         });
+
+        function selectAllText() {
+            const textElement = document.getElementById('ocrText');
+            if (textElement) {
+                const range = document.createRange();
+                range.selectNodeContents(textElement);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+
+        function copyText() {
+            const textElement = document.getElementById('ocrText');
+            const notification = document.getElementById('copyNotification');
+            
+            if (textElement) {
+                selectAllText();
+                
+                try {
+                    document.execCommand('copy');
+                    showNotification();
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            }
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('copyNotification');
+            if (notification) {
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            }
+        }
     </script>
 </body>
 </html>
