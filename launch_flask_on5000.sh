@@ -4,27 +4,39 @@
 # ULTIMATE FLASK LAUNCHER WITH PERMISSION CHECKS
 # ==============================================
 
-# --- Cleanup ---
-echo "🛑 Killing existing processes..."
-pkill -f "python.*snapshot\.py" 2>/dev/null
-lsof -ti :5000 | xargs -r kill -9 2>/dev/null
+# --- Initialization ---
+set -euo pipefail  # Enable strict error handling
 
-# --- Directories ---
+# Activate virtual environment if exists
+if [ -f "venv/bin/activate" ]; then
+    source venv/bin/activate
+fi
+
+# --- Cleanup ---
+echo -e "\n\033[1;34m🛑 Killing existing processes...\033[0m"
+pkill -f "python.*snapshot\.py" 2>/dev/null || true
+lsof -ti :5000 | xargs -r kill -9 2>/dev/null || true
+
+# --- Directories Setup ---
 BASE_DIR=~/interviews-coding-tests-codepad-codeshare-python
-mkdir -p $BASE_DIR/{temp,log}
+LOG_DIR="$BASE_DIR/log"
+TEMP_DIR="$BASE_DIR/temp"
+
+mkdir -p "$LOG_DIR" "$TEMP_DIR"
+touch "$LOG_DIR/flask.log"
 
 # --- Permission Check with Fallbacks ---
-TEST_FILE="/tmp/screencapture_test_$(date +%s).png"
+echo -e "\n\033[1;34m🔍 Checking screen capture permissions...\033[0m"
+TEST_FILE="$TEMP_DIR/screencapture_test_$(date +%s).png"
 PERMISSION_FIXED=0
 
-# Try multiple capture methods
+# Try multiple capture methods with timeout
 for method in "-l" "" "-m"; do
-    screencapture -x $method -o "$TEST_FILE" 2>/dev/null
-    if [ -s "$TEST_FILE" ]; then
-        PERMISSION_FIXED=1
-        rm "$TEST_FILE"
-        break
-    fi
+    timeout 5 screencapture -x $method -o "$TEST_FILE" 2>/dev/null && \
+    [ -s "$TEST_FILE" ] && \
+    PERMISSION_FIXED=1 && \
+    rm "$TEST_FILE" && \
+    break
 done
 
 if [ "$PERMISSION_FIXED" -eq 0 ]; then
@@ -39,7 +51,8 @@ if [ "$PERMISSION_FIXED" -eq 0 ]; then
     exit 1
 fi
 
-# --- Python Setup ---
+# --- Python Environment Setup ---
+echo -e "\n\033[1;34m🐍 Setting up Python environment...\033[0m"
 if [ ! -d "venv" ]; then
     python3 -m venv venv
     source venv/bin/activate
@@ -47,24 +60,47 @@ if [ ! -d "venv" ]; then
     pip install pillow pytesseract flask pyobjc-framework-Quartz
 else
     source venv/bin/activate
+    pip install -r requirements.txt 2>/dev/null || true
 fi
 
-# --- Launch with Quartz Fallback ---
+# --- Network Configuration ---
 IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1 || echo "127.0.0.1")
-echo "🚀 Starting Flask app on http://$IP:5000"
+echo -e "\n\033[1;34m🌐 Network configuration:\033[0m"
+echo "Local IP: $IP"
+echo "Port: 5000"
 
-# Run with enhanced error handling
-nohup python3 -u snapshot.py --fallback > $BASE_DIR/log/flask.log 2>&1 &
-disown
+# --- Application Launch ---
+echo -e "\n\033[1;34m🚀 Launching Flask application...\033[0m"
+nohup python3 -u snapshot.py --fallback > "$LOG_DIR/flask.log" 2>&1 &
+FLASK_PID=$!
+disown $FLASK_PID
 
-# Verify startup
-sleep 2
+# --- Startup Verification ---
+echo -e "\n\033[1;34m🔍 Verifying startup...\033[0m"
+for i in {1..5}; do
+    if curl -s "http://localhost:5000" >/dev/null; then
+        break
+    fi
+    sleep 1
+done
+
 if ! curl -s "http://localhost:5000" >/dev/null; then
-    echo -e "\n\033[1;31m❌ Startup failed! Check logs:\033[0m"
-    tail -n 20 $BASE_DIR/log/flask.log
-    exit 1
+    echo -e "\n\033[1;31m❌ Startup failed! Last 20 log lines:\033[0m"
+    tail -n 20 "$LOG_DIR/flask.log"
+    echo -e "\n\033[1;33m🔄 Attempting to restart...\033[0m"
+    kill $FLASK_PID 2>/dev/null || true
+    nohup python3 -u snapshot.py --fallback > "$LOG_DIR/flask.log" 2>&1 &
+    disown
+    sleep 2
+    if ! curl -s "http://localhost:5000" >/dev/null; then
+        exit 1
+    fi
 fi
 
+# --- Final Status ---
 echo -e "\n\033[1;32m✅ System is operational!\033[0m"
-echo "🔍 Monitor with: tail -f $BASE_DIR/log/flask.log"
-echo "🌐 Dashboard: http://$IP:5000"
+echo -e "\033[1;36m🔍 Monitor with:\033[0m tail -f \"$LOG_DIR/flask.log\""
+echo -e "\033[1;36m🌐 Dashboard:\033[0m http://$IP:5000"
+echo -e "\033[1;36m🛑 To stop:\033[0m pkill -f \"python.*snapshot\.py\""
+
+exit 0
