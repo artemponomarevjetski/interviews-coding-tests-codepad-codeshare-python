@@ -9,7 +9,7 @@ click==8.2.1
 itsdangerous==2.2.0
 
 # Image Processing
-pillow==10.3.0  # More stable version than 11.2.1
+# pillow==10.3.0  # More stable version than 11.2.1
 pytesseract==0.3.13
 
 # OCR Support
@@ -39,7 +39,7 @@ regex==2024.11.6
 # PyQt6==6.9.1                # Heavy GUI dependency
 # PyQt6-Qt6==6.9.1            # Only needed if using PyQt
 # PyQt6_sip==13.10.2          # Qt support
-# sounddevice==0.5.2          # Audio - often problematic
-# soundfile==0.13.1           # Requires libsndfile
+sounddevice==0.5.2          # Audio - often problematic
+soundfile==0.13.1           # Requires libsndfile
 # torch==2.2.2                # Huge - install separately
-# openai-whisper==20230314    # Older stable version
+openai-whisper==20230314    # Older stable version
