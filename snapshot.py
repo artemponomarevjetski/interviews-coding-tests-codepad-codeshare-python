@@ -1,460 +1,255 @@
+#!/usr/bin/env python3
+"""
+Periodic screen capture ➜ OCR with Tesseract ➜ live Flask dashboard
+------------------------------------------------------------------
+• macOS‑first (uses `screencapture`, falls back to Quartz)  
+• Keeps only the most‑recent N screenshots (configurable)  
+• Dashboard auto‑refreshes every 10 s, shows latest image, lets the user
+  copy all extracted text with one click / right‑click / Cmd‑C / Ctrl‑C
+"""
+
+from __future__ import annotations
+
 import os
-import time
-import subprocess
-import sys
-from datetime import datetime
-from PIL import Image, ImageFilter, ImageEnhance
-import pytesseract
-from flask import Flask, render_template_string, send_file, request
-import socket
-from threading import Thread
 import platform
 import shutil
+import socket
+import subprocess
+import time
+from datetime import datetime
+from threading import Thread
+from typing import Optional
 
-# Configuration
+from flask import Flask, render_template_string, send_file
+from PIL import Image, ImageEnhance, ImageFilter
+import pytesseract
+
+# ─────────────────────────── Configuration ────────────────────────────
+BASE = os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python")
 CONFIG = {
-    'save_dir': os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python/temp"),
-    'log_dir': os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python/log"),
-    'log_file': "snapshot.log",
-    'latest_path': "snap_latest.png",
-    'ocr_output': "snapshot.txt",
-    'port': 5000,
-    'capture_interval': 15,
-    'max_snapshots': 20,
-    'tesseract_path': None  # Will be auto-detected
+    "save_dir":  f"{BASE}/temp",
+    "log_dir":   f"{BASE}/log",
+    "log_file":  "snapshot.log",
+    "latest":    "snap_latest.png",
+    "ocr_txt":   "snapshot.txt",
+    "port":      5000,
+    "interval":  15,          # seconds between captures
+    "retain":    20,          # keep N most‑recent screenshots
+    "tesseract": None,        # auto‑detected once
 }
+os.makedirs(CONFIG["save_dir"], exist_ok=True)
+os.makedirs(CONFIG["log_dir"],  exist_ok=True)
 
-# Ensure directories exist
-os.makedirs(CONFIG['save_dir'], exist_ok=True)
-os.makedirs(CONFIG['log_dir'], exist_ok=True)
+# ─────────────────────────── Helper utilities ─────────────────────────
+def log(msg: str) -> None:
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    path = os.path.join(CONFIG["log_dir"], CONFIG["log_file"])
+    with open(path, "a") as fh:
+        fh.write(f"[{ts}] {msg}\n")
+    print(f"[{ts}] {msg}")
 
-def detect_tesseract():
-    """Find Tesseract executable path"""
-    try:
-        # Check common locations
-        possible_paths = [
-            '/usr/local/bin/tesseract',
-            '/opt/homebrew/bin/tesseract',
-            '/usr/bin/tesseract',
-            shutil.which('tesseract')
-        ]
-        
-        for path in possible_paths:
-            if path and os.path.exists(path):
-                CONFIG['tesseract_path'] = path
-                pytesseract.pytesseract.tesseract_cmd = path
-                return True
-        return False
-    except Exception as e:
-        log(f"Tesseract detection error: {str(e)}")
-        return False
-
-def log(msg):
-    """Log messages to file and console"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_path = os.path.join(CONFIG['log_dir'], CONFIG['log_file'])
-    with open(log_path, "a") as f:
-        f.write(f"[{timestamp}] {msg}\n")
-    print(f"[{timestamp}] {msg}")
-
-def cleanup_old_snapshots():
-    """Keep only the newest N snapshots"""
-    try:
-        files = [f for f in os.listdir(CONFIG['save_dir']) 
-                if f.startswith('snap_') and f.endswith('.png')]
-        files.sort(key=lambda x: os.path.getmtime(os.path.join(CONFIG['save_dir'], x)))
-        
-        while len(files) > CONFIG['max_snapshots']:
-            oldest = files.pop(0)
-            os.remove(os.path.join(CONFIG['save_dir'], oldest))
-            log(f"Removed old snapshot: {oldest}")
-    except Exception as e:
-        log(f"Cleanup error: {str(e)}")
-
-def update_latest(img_path):
-    """Update the latest snapshot symlink"""
-    latest_path = os.path.join(CONFIG['save_dir'], CONFIG['latest_path'])
-    if os.path.exists(latest_path):
-        os.remove(latest_path)
-    try:
-        os.symlink(img_path, latest_path)
-        log(f"Updated latest snapshot symlink to {img_path}")
-    except OSError as e:
-        # Fallback to copy if symlink fails
-        try:
-            shutil.copy2(img_path, latest_path)
-            log(f"Copied latest snapshot (symlink failed): {img_path}")
-        except Exception as copy_error:
-            log(f"Failed to update latest: {str(copy_error)}")
-
-def capture_snapshot():
-    """Capture screenshot using available methods"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    img_path = os.path.join(CONFIG['save_dir'], f"snap_{timestamp}.png")
-    
-    # Try multiple capture methods with priority
-    methods = [
-        ['screencapture', '-x', '-l', '-o', img_path],  # Active window
-        ['screencapture', '-x', '-m', '-o', img_path],  # Main display
-        ['screencapture', '-x', '-o', img_path]         # Full screen
-    ]
-    
-    for method in methods:
-        try:
-            result = subprocess.run(method, check=True, timeout=10,
-                                  stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            if os.path.exists(img_path) and os.path.getsize(img_path) > 0:
-                update_latest(img_path)
-                cleanup_old_snapshots()
-                return img_path
-            if os.path.exists(img_path):
-                os.remove(img_path)
-        except subprocess.CalledProcessError as e:
-            log(f"Capture failed ({method}): {e.stderr.decode().strip()}")
-        except Exception as e:
-            log(f"Capture error ({method}): {str(e)}")
-    
-    # Fallback to Quartz if all methods fail
-    if platform.system() == 'Darwin':
-        return quartz_capture()
-    return None
-
-def quartz_capture():
-    """Alternative capture method using Quartz (macOS only)"""
-    try:
-        from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionAll, kCGNullWindowID
-        from Quartz.CoreGraphics import CGWindowListCreateImage, CGRectInfinite, kCGWindowListOptionIncludingWindow, kCGWindowImageBoundsIgnoreFraming
-        
-        windows = CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID)
-        active_windows = [w for w in windows if w.get('kCGWindowIsOnscreen', False)]
-        
-        if not active_windows:
-            log("No active windows found via Quartz")
-            return None
-            
-        window_id = active_windows[0]['kCGWindowNumber']
-        image = CGWindowListCreateImage(
-            CGRectInfinite,
-            kCGWindowListOptionIncludingWindow,
-            window_id,
-            kCGWindowImageBoundsIgnoreFraming
-        )
-        
-        if image:
-            img_path = os.path.join(CONFIG['save_dir'], f"snap_quartz_{int(time.time())}.png")
-            width = image.getWidth()
-            height = image.getHeight()
-            pil_image = Image.frombytes(
-                'RGBA',
-                (width, height),
-                image.getDataProvider().getData()
-            )
-            pil_image.save(img_path)
-            update_latest(img_path)
-            cleanup_old_snapshots()
-            return img_path
-    except Exception as e:
-        log(f"Quartz capture failed: {str(e)}")
-    return None
-
-def enhance_image_for_ocr(img):
-    """Apply multiple enhancements to improve OCR accuracy"""
-    try:
-        # Convert to grayscale
-        img = img.convert('L')
-        
-        # Increase contrast
-        enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(2.0)
-        
-        # Sharpen image
-        img = img.filter(ImageFilter.SHARPEN)
-        
-        # Apply threshold to remove noise
-        img = img.point(lambda x: 0 if x < 140 else 255)
-        
-        return img
-    except Exception as e:
-        log(f"Image enhancement error: {str(e)}")
-        return img
-
-def extract_text(image_path):
-    """Extract text from image using OCR"""
-    try:
-        if not CONFIG['tesseract_path'] and not detect_tesseract():
-            log("Tesseract OCR not found - please install it")
-            return False
-            
-        img = Image.open(image_path)
-        img = enhance_image_for_ocr(img)
-        
-        # Try multiple OCR configurations
-        configs = [
-            r'--oem 3 --psm 6',  # Assume uniform block of text
-            r'--oem 3 --psm 11',  # Sparse text
-            r'--oem 3 --psm 4'    # Single column of text
-        ]
-        
-        best_text = ""
-        for config in configs:
-            try:
-                text = pytesseract.image_to_string(img, config=config)
-                if len(text.strip()) > len(best_text.strip()):
-                    best_text = text
-            except Exception as e:
-                log(f"OCR attempt failed (config {config}): {str(e)}")
-        
-        if best_text.strip():
-            with open(os.path.join(CONFIG['save_dir'], CONFIG['ocr_output']), "w") as f:
-                f.write(best_text)
+def detect_tesseract() -> bool:
+    """Locate the Tesseract binary once per process."""
+    if CONFIG["tesseract"]:
+        return True
+    for p in ("/opt/homebrew/bin/tesseract",
+              "/usr/local/bin/tesseract",
+              "/usr/bin/tesseract",
+              shutil.which("tesseract")):
+        if p and os.path.exists(p):
+            CONFIG["tesseract"] = p
+            pytesseract.pytesseract.tesseract_cmd = p
             return True
-        
-        log("OCR returned empty text")
-        return False
-    except Exception as e:
-        log(f"OCR Error: {str(e)}")
-        return False
+    return False
 
-def periodic_snapshot():
-    """Periodically capture screenshots and extract text"""
+def maintain_latest_symlink(new_img: str) -> None:
+    link = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
+    try:
+        if os.path.islink(link) or os.path.exists(link):
+            os.unlink(link)
+        os.symlink(new_img, link)
+    except OSError:  # e.g. on non‑Unix FS; fall back to copy
+        shutil.copy2(new_img, link)
+    # prune old shots
+    shots = sorted(f for f in os.listdir(CONFIG["save_dir"])
+                   if f.startswith("snap_") and f.endswith(".png"))
+    while len(shots) > CONFIG["retain"]:
+        os.remove(os.path.join(CONFIG["save_dir"], shots.pop(0)))
+
+# ────────────────────────── Screenshot routines ───────────────────────
+def _quartz_capture() -> Optional[str]:
+    """macOS Quartz fallback when `screencapture` fails."""
+    try:
+        from Quartz import (
+            CGWindowListCopyWindowInfo, kCGWindowListOptionAll, kCGNullWindowID,
+            CGWindowListCreateImage, CGRectInfinite,
+            kCGWindowListOptionIncludingWindow, kCGWindowImageBoundsIgnoreFraming,
+        )
+        onscreen = [w for w in
+                    CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID)
+                    if w.get("kCGWindowIsOnscreen")]
+        if not onscreen:
+            return None
+        win_id = onscreen[0]["kCGWindowNumber"]
+        img_ref = CGWindowListCreateImage(
+            CGRectInfinite, kCGWindowListOptionIncludingWindow,
+            win_id, kCGWindowImageBoundsIgnoreFraming)
+        if not img_ref:
+            return None
+        path = os.path.join(CONFIG["save_dir"],
+                            f"snap_quartz_{int(time.time())}.png")
+        Image.frombytes("RGBA",
+                        (img_ref.getWidth(), img_ref.getHeight()),
+                        img_ref.getDataProvider().getData()
+                        ).save(path)
+        return path
+    except Exception as e:
+        log(f"Quartz capture failed: {e}")
+        return None
+
+def capture_snapshot() -> Optional[str]:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    img = os.path.join(CONFIG["save_dir"], f"snap_{ts}.png")
+    cmds = [
+        ["screencapture", "-x", "-l", "-o", img],  # active window
+        ["screencapture", "-x", "-m", "-o", img],  # main display
+        ["screencapture", "-x", "-o", img],        # full screen
+    ]
+    for cmd in cmds:
+        try:
+            subprocess.run(cmd, check=True, timeout=10, capture_output=True)
+            if os.path.getsize(img) > 0:
+                return img
+        except Exception:
+            pass
+    if os.path.exists(img):
+        os.remove(img)
+    return _quartz_capture() if platform.system() == "Darwin" else None
+
+# ───────────────────────── OCR utilities ───────────────────────────────
+def _prep_for_ocr(img: Image.Image) -> Image.Image:
+    img = img.convert("L")                               # greyscale
+    img = ImageEnhance.Contrast(img).enhance(2.0)
+    img = img.filter(ImageFilter.SHARPEN)
+    return img.point(lambda x: 0 if x < 140 else 255)     # threshold
+
+def extract_text(path: str) -> str:
+    if not detect_tesseract():
+        log("Tesseract not found – OCR skipped")
+        return ""
+    text = ""
+    try:
+        prepped = _prep_for_ocr(Image.open(path))
+        for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11", "--oem 3 --psm 4"):
+            t = pytesseract.image_to_string(prepped, config=cfg)
+            if len(t) > len(text):
+                text = t
+    except Exception as e:
+        log(f"OCR error on {path}: {e}")
+    return text.strip()
+
+# ───────────────────────── Worker thread ───────────────────────────────
+def worker() -> None:
     while True:
-        img_path = capture_snapshot()
-        if img_path:
-            if extract_text(img_path):
-                log("Snapshot and OCR completed successfully")
-            else:
-                log("Snapshot captured but OCR failed")
+        shot = capture_snapshot()
+        if not shot:
+            log("Screenshot failed")
+            time.sleep(CONFIG["interval"])
+            continue
+
+        txt = extract_text(shot)
+        if txt:
+            with open(os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"]), "w") as f:
+                f.write(txt)
+            log("Snapshot + OCR succeeded")
         else:
-            log("Failed to capture snapshot")
-        time.sleep(CONFIG['capture_interval'])
+            log("Snapshot captured – no text recognised")
+
+        maintain_latest_symlink(shot)
+        time.sleep(CONFIG["interval"])
+
+# ──────────────────────────── Flask UI  ────────────────────────────────
+TPL = """
+<!doctype html>
+<title>Screen OCR Dashboard</title>
+<meta http-equiv="refresh" content="10">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<style>
+body{font-family:Inter,Arial,sans-serif;background:#f8f9fa;margin:20px}
+.container{max-width:1200px;background:#fff;border-radius:8px;padding:20px;margin:auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1{margin-top:0}
+.meta{color:#666;font-size:.9em;margin-bottom:15px}
+.status{display:inline-block;padding:4px 10px;border-radius:4px;font-weight:600;color:#fff;background:#4caf50}
+.controls{margin:15px 0;display:flex;gap:10px}
+.btn{padding:8px 15px;border:0;border-radius:4px;cursor:pointer;font-weight:600;transition:background .3s}
+.btn-copy{background:#4caf50;color:#fff}.btn-copy:hover{background:#43a047}
+.btn-refresh{background:#2196f3;color:#fff}.btn-refresh:hover{background:#1976d2}
+pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid #ddd}
+.imgwrap{text-align:center;margin-top:20px}
+.imgwrap img{max-width:100%;border:1px solid #ddd;border-radius:4px}
+.alert{position:fixed;bottom:20px;right:20px;background:#4caf50;color:#fff;padding:10px 15px;border-radius:5px;display:none;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+</style>
+
+<div class="container">
+  <h1>Screen OCR Results</h1>
+  <div class="meta">Last updated: {{ts}}  |  Status: <span class="status">{{status}}</span></div>
+
+  <div class="controls">
+    <button class="btn btn-copy" onclick="copyText()">Copy All Text</button>
+    <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
+  </div>
+
+  {% if text %}<pre id="ocrText">{{text}}</pre>{% endif %}
+
+  {% if image %}<div class="imgwrap"><h3>Latest Snapshot:</h3>
+    <img src="/latest_image?{{rand}}" alt="Latest screenshot">
+  </div>{% endif %}
+
+  <div id="copied" class="alert">Text copied ✓</div>
+</div>
+
+<script>
+function selectAll(){
+  const el=document.getElementById('ocrText'); if(!el) return;
+  const r=document.createRange(); r.selectNodeContents(el);
+  const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function copyText(){ selectAll(); try{document.execCommand('copy');flash();}catch(e){} }
+function flash(){ const a=document.getElementById('copied'); a.style.display='block';
+  setTimeout(()=>a.style.display='none',2000);}
+document.addEventListener('keydown',e=>{
+  if(!(e.metaKey||e.ctrlKey)) return;
+  if(['a','A'].includes(e.key)) {e.preventDefault();selectAll();}
+  if(['c','C'].includes(e.key)) {e.preventDefault();copyText();}
+});
+document.addEventListener('contextmenu',e=>{e.preventDefault();copyText();});
+</script>
+"""
 
 app = Flask(__name__)
 
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Screen OCR Dashboard</title>
-    <meta http-equiv='refresh' content='10'>
-    <style>
-        body { 
-            font-family: -apple-system, sans-serif; 
-            margin: 20px; 
-            background-color: #f8f9fa;
-        }
-        pre { 
-            background: #f5f5f5; 
-            padding: 15px; 
-            border-radius: 5px; 
-            white-space: pre-wrap;
-            font-size: 1.1em;
-            max-height: 60vh;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-        }
-        .timestamp { 
-            color: #666; 
-            font-size: 0.9em; 
-            margin-bottom: 10px;
-        }
-        .status { 
-            padding: 5px 10px; 
-            border-radius: 3px; 
-            font-weight: bold;
-            background: {% if status == 'success' %}#4CAF50{% else %}#F44336{% endif %};
-            color: white;
-            display: inline-block;
-        }
-        .image-container { 
-            margin-top: 20px; 
-            text-align: center;
-        }
-        .image-container img { 
-            max-width: 100%; 
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .copy-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .controls {
-            margin: 15px 0;
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .btn-copy {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-copy:hover {
-            background-color: #45a049;
-        }
-        .btn-refresh {
-            background-color: #2196F3;
-            color: white;
-        }
-        .btn-refresh:hover {
-            background-color: #0b7dda;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Screen OCR Results</h1>
-        <div class="timestamp">Last updated: {{ timestamp }}</div>
-        <div class="controls">
-            <button class="btn btn-copy" onclick="copyText()">Copy All Text</button>
-            <button class="btn btn-refresh" onclick="window.location.reload()">Refresh</button>
-        </div>
-        <div>Status: <span class="status">{{ status }}</span></div>
-        {% if text %}
-        <pre id="ocrText">{{ text }}</pre>
-        {% endif %}
-        {% if image_exists %}
-        <div class="image-container">
-            <h3>Latest Snapshot:</h3>
-            <img src="/latest_image?t={{ cache_buster }}" alt="Latest screenshot">
-        </div>
-        {% endif %}
-        <div class="copy-notification" id="copyNotification">Text copied to clipboard!</div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const textElement = document.getElementById('ocrText');
-            const notification = document.getElementById('copyNotification');
-            
-            // Override right-click context menu
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                copyText();
-            });
-            
-            // Also allow Ctrl+A and Ctrl+C as alternatives
-            document.addEventListener('keydown', function(e) {
-                if (textElement && e.ctrlKey) {
-                    if (e.key === 'a' || e.key === 'A') {
-                        e.preventDefault();
-                        selectAllText();
-                    } else if (e.key === 'c' || e.key === 'C') {
-                        e.preventDefault();
-                        copyText();
-                    }
-                }
-            });
-        });
-
-        function selectAllText() {
-            const textElement = document.getElementById('ocrText');
-            if (textElement) {
-                const range = document.createRange();
-                range.selectNodeContents(textElement);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
-        }
-
-        function copyText() {
-            const textElement = document.getElementById('ocrText');
-            const notification = document.getElementById('copyNotification');
-            
-            if (textElement) {
-                selectAllText();
-                
-                try {
-                    document.execCommand('copy');
-                    showNotification();
-                } catch (err) {
-                    console.error('Failed to copy text: ', err);
-                }
-            }
-        }
-
-        function showNotification() {
-            const notification = document.getElementById('copyNotification');
-            if (notification) {
-                notification.style.display = 'block';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 2000);
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-@app.route('/')
+@app.route("/")
 def dashboard():
-    """Main dashboard route"""
-    txt_path = os.path.join(CONFIG['save_dir'], CONFIG['ocr_output'])
-    image_exists = os.path.exists(os.path.join(CONFIG['save_dir'], CONFIG['latest_path']))
-    
-    status = "success" if os.path.exists(txt_path) else "waiting"
-    text = ""
-    
-    if os.path.exists(txt_path):
-        with open(txt_path, "r") as f:
-            text = f.read()
-        if not text.strip():
-            status = "no text"
-    
-    return render_template_string(HTML_TEMPLATE,
-                                timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                status=status,
-                                text=text,
-                                image_exists=image_exists,
-                                cache_buster=int(time.time()))
+    txt_path = os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"])
+    text = open(txt_path).read() if os.path.exists(txt_path) else ""
+    latest_img_exists = os.path.exists(os.path.join(CONFIG["save_dir"], CONFIG["latest"]))
+    return render_template_string(
+        TPL,
+        ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        status="success" if text else "waiting",
+        text=text,
+        image=latest_img_exists,
+        rand=int(time.time())
+    )
 
-@app.route('/latest_image')
+@app.route("/latest_image")
 def latest_image():
-    """Serve the latest captured image"""
-    latest_path = os.path.join(CONFIG['save_dir'], CONFIG['latest_path'])
-    if os.path.exists(latest_path):
-        return send_file(latest_path, mimetype='image/png')
-    return "No image available", 404
+    path = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
+    return send_file(path, mimetype="image/png") if os.path.exists(path) else ("No image", 404)
 
+# ───────────────────────────── Main ───────────────────────────────────
 if __name__ == "__main__":
-    # Verify Tesseract is available
-    if not detect_tesseract():
-        log("Warning: Tesseract OCR not found - text extraction will not work")
-        log("Install with: brew install tesseract (macOS) or apt-get install tesseract-ocr (Linux)")
-    
-    # Start background thread
-    Thread(target=periodic_snapshot, daemon=True).start()
-    
-    # Get server IP
-    try:
-        ip = socket.gethostbyname(socket.gethostname())
-    except:
-        ip = "localhost"
-    
-    log(f"Starting server on http://{ip}:{CONFIG['port']}")
-    app.run(host="0.0.0.0", port=CONFIG['port'], debug=False)
+    Thread(target=worker, daemon=True).start()
+    ip = socket.gethostbyname(socket.gethostname()) or "localhost"
+    log(f"Serving on http://{ip}:{CONFIG['port']}")
+    app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)

@@ -1,64 +1,9 @@
-# Core Flask & Web Requirements
-blinker==1.9.0
-certifi==2025.6.15
-Flask==2.3.2
-Werkzeug==3.1.3
-Jinja2==3.1.6
-MarkupSafe==3.0.2
-click==8.2.1
-itsdangerous==2.2.0
+# --- Web server -------------------------------------------------
+Flask==2.3.2           # pulls in Werkzeug, Jinja2, click, itsdangerous
 
-# Image Processing
-# pillow==10.3.0  # More stable version than 11.2.1
-pytesseract==0.3.13
+# --- Imaging & OCR ---------------------------------------------
+Pillow~=11.3           # provides PIL.Image, ImageFilter, ImageEnhance
+pytesseract==0.3.13    # Python bindings; you still need the tesseract binary
 
-# OCR Support
-cffi==1.17.1
-pycparser==2.22
-
-# Networking
-requests==2.32.4
-urllib3==2.5.0
-charset-normalizer==3.4.2
-idna==3.10
-
-# Scientific Computing (Stable Versions)
-numpy==1.26.4
-llvmlite==0.44.0
-numba==0.61.2
-scipy==1.13.1
-
-# Utilities
-filelock==3.18.0
-fsspec==2025.5.1
-packaging==25.0
-tqdm==4.67.1
-typing_extensions==4.14.0
-regex==2024.11.6
-
-# Audio Processing
-sounddevice==0.4.6
-soundfile==0.13.1
-
-# OpenAI Whisper
-openai-whisper==20231117
-
-# Scikit-learn ecosystem for Data Science & ML
-scikit-learn==1.4.2
-pandas==2.2.2
-seaborn==0.13.2
-
-# Grid Search and Model Selection
-joblib==1.4.2
-
-# Preprocessing / Label Encoding / Imputation / Binarization
-category-encoders==2.6.3
-
-# Visualization
-matplotlib==3.8.4  # Added matplotlib for data visualization
-
-# Optional Dependencies (Uncomment if needed)
-# PyQt6==6.9.1
-# PyQt6-Qt6==6.9.1
-# PyQt6_sip==13.10.2
-# torch==2.2.2
+# --- macOS screen‑capture helper --------------------------------
+pyobjc-framework-Quartz ; platform_system == "Darwin"
