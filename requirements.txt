@@ -1,7 +1,7 @@
 # Core Flask & Web Requirements
 blinker==1.9.0
 certifi==2025.6.15
-Flask==3.1.1
+Flask==2.3.2
 Werkzeug==3.1.3
 Jinja2==3.1.6
 MarkupSafe==3.0.2
@@ -26,6 +26,7 @@ idna==3.10
 numpy==1.26.4
 llvmlite==0.44.0
 numba==0.61.2
+scipy==1.13.1
 
 # Utilities
 filelock==3.18.0
@@ -35,11 +36,29 @@ tqdm==4.67.1
 typing_extensions==4.14.0
 regex==2024.11.6
 
-# Optional (Commented Out - Uncomment if needed)
-# PyQt6==6.9.1                # Heavy GUI dependency
-# PyQt6-Qt6==6.9.1            # Only needed if using PyQt
-# PyQt6_sip==13.10.2          # Qt support
-sounddevice==0.5.2          # Audio - often problematic
-soundfile==0.13.1           # Requires libsndfile
-# torch==2.2.2                # Huge - install separately
-openai-whisper==20230314    # Older stable version
+# Audio Processing
+sounddevice==0.4.6
+soundfile==0.13.1
+
+# OpenAI Whisper
+openai-whisper==20231117
+
+# Scikit-learn ecosystem for Data Science & ML
+scikit-learn==1.4.2
+pandas==2.2.2
+seaborn==0.13.2
+
+# Grid Search and Model Selection
+joblib==1.4.2
+
+# Preprocessing / Label Encoding / Imputation / Binarization
+category-encoders==2.6.3
+
+# Visualization
+matplotlib==3.8.4  # Added matplotlib for data visualization
+
+# Optional Dependencies (Uncomment if needed)
+# PyQt6==6.9.1
+# PyQt6-Qt6==6.9.1
+# PyQt6_sip==13.10.2
+# torch==2.2.2
