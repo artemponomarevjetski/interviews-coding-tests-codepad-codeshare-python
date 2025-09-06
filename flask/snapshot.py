@@ -199,11 +199,11 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
   </div>
 
-  {% if text %}<pre id="ocrText">{{text}}</pre>{% endif %}
-
   {% if image %}<div class="imgwrap"><h3>Latest Snapshot:</h3>
     <img src="/latest_image?{{rand}}" alt="Latest screenshot">
   </div>{% endif %}
+
+  {% if text %}<pre id="ocrText">{{text}}</pre>{% endif %}
 
   <div id="copied" class="alert">Text copied ✓</div>
 </div>
