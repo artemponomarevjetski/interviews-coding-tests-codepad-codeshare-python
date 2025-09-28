@@ -1,0 +1,50 @@
+WOULD MOVE (no conflict): ./Makefile -> ./Makefile
+WOULD MOVE (no conflict): ./Profile Screening Questions - Data Science.xlsx -> ./Profile Screening Questions - Data Science.xlsx
+WOULD MOVE (no conflict): ./Python Assignment.pages -> ./Python Assignment.pages
+WOULD MOVE (no conflict): ./Python Assignment.pdf -> ./Python Assignment.pdf
+WOULD MOVE (no conflict): ./README.md -> ./README.md
+WOULD MOVE (no conflict): ./README_SYNC.md -> ./README_SYNC.md
+WOULD MOVE (no conflict): ./SQL and Python Questions Test.docx -> ./SQL and Python Questions Test.docx
+WOULD MOVE (no conflict): ./SQL and Python Questions Test.pages -> ./SQL and Python Questions Test.pages
+WOULD MOVE (no conflict): ./SQL and Python Questions Test.pdf -> ./SQL and Python Questions Test.pdf
+WOULD MOVE (no conflict): ./apply_sync.sh -> ./apply_sync.sh
+WOULD MOVE (no conflict): ./arithmetics.py -> ./arithmetics.py
+WOULD MOVE (no conflict): ./atoi.ipynb -> ./atoi.ipynb
+WOULD MOVE (no conflict): ./beef.csv -> ./beef.csv
+WOULD MOVE (no conflict): ./brackets.py -> ./brackets.py
+WOULD MOVE (no conflict): ./cdll.py -> ./cdll.py
+WOULD MOVE (no conflict): ./codeshare-test.png -> ./codeshare-test.png
+WOULD MOVE (no conflict): ./compare_folders.sh -> ./compare_folders.sh
+WOULD MOVE (no conflict): ./compare_folders_as_sets.sh -> ./compare_folders_as_sets.sh
+WOULD MOVE (no conflict): ./desklog.py -> ./desklog.py
+WOULD MOVE (no conflict): ./elastic_demand.py -> ./elastic_demand.py
+WOULD MOVE (no conflict): ./env-setup.sh -> ./env-setup.sh
+WOULD MOVE (no conflict): ./ex1.py -> ./ex1.py
+WOULD MOVE (no conflict): ./ex2.py -> ./ex2.py
+WOULD MOVE (no conflict): ./ex3.py -> ./ex3.py
+WOULD MOVE (no conflict): ./ex4.py -> ./ex4.py
+WOULD MOVE (no conflict): ./ex5.py -> ./ex5.py
+WOULD MOVE (no conflict): ./ex6.py -> ./ex6.py
+WOULD MOVE (no conflict): ./ex7.ipynb -> ./ex7.ipynb
+WOULD MOVE (no conflict): ./ex8.py -> ./ex8.py
+WOULD MOVE (no conflict): ./ex9.py -> ./ex9.py
+WOULD MOVE (no conflict): ./ex_finally.py -> ./ex_finally.py
+WOULD MOVE (no conflict): ./exam.py -> ./exam.py
+WOULD MOVE (no conflict): ./exam1.sh -> ./exam1.sh
+WOULD MOVE (no conflict): ./finaltest1.py -> ./finaltest1.py
+WOULD MOVE (no conflict): ./folder-sizes.sh -> ./folder-sizes.sh
+WOULD MOVE (no conflict): ./gitignore.sync.snippet -> ./gitignore.sync.snippet
+WOULD MOVE (no conflict): ./histogram.py -> ./histogram.py
+WOULD MOVE (no conflict): ./interactive-python-test.png -> ./interactive-python-test.png
+WOULD MOVE (no conflict): ./lidar-test.png -> ./lidar-test.png
+WOULD MOVE (no conflict): ./lidar-test.py -> ./lidar-test.py
+WOULD MOVE (no conflict): ./linked-list-inverted.png -> ./linked-list-inverted.png
+WOULD MOVE (no conflict): ./move_up.sh -> ./move_up.sh
+WOULD MOVE (no conflict): ./sim_sync.sh -> ./sim_sync.sh
+WOULD MOVE (no conflict): ./sync_by_rules.py -> ./sync_by_rules.py
+WOULD MOVE (no conflict): ./sync_toolkit.tar -> ./sync_toolkit.tar
+WOULD MOVE (no conflict): ./test.py -> ./test.py
+WOULD MOVE (no conflict): ./tree.py -> ./tree.py
+WOULD MOVE (no conflict): ./untitled0.py -> ./untitled0.py
+WOULD MOVE (no conflict): ./untitled1.py -> ./untitled1.py
+WOULD MOVE (no conflict): ./untitled2.py -> ./untitled2.py
