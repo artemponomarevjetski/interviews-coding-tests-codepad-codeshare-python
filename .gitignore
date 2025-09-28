@@ -6,6 +6,15 @@ venv/
 .ipynb_checkpoints/
 .vscode/
 temp/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Whisperer subdirectory environments
+whisperer_*/venv/
+whisperer_*/logs/
+whisperer_*/whisperer.pid
+whisperer_*/*.pid
 
 # File extensions
 *.py[cod]
@@ -24,6 +33,49 @@ temp/
 *.env
 *.secrets
 nohup.out
+*.csv
+*.data
+*.model
+*.pickle
+*.pkl
+*.joblib
 
-# System files
+# Audio/Model files (common in transcription projects)
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.model
+*.bin
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Compression
+*.gz
+*.tar
+*.zip
+*.7z
+
+# Documentation
+_site/
+.sass-cache/
+.jekyll-cache/

@@ -1,0 +1,51 @@
+kind,reason,src,dst
+MOVE,no conflict,Makefile,Makefile
+MOVE,no conflict,Profile Screening Questions - Data Science.xlsx,Profile Screening Questions - Data Science.xlsx
+MOVE,no conflict,Python Assignment.pages,Python Assignment.pages
+MOVE,no conflict,Python Assignment.pdf,Python Assignment.pdf
+MOVE,no conflict,README.md,README.md
+MOVE,no conflict,README_SYNC.md,README_SYNC.md
+MOVE,no conflict,SQL and Python Questions Test.docx,SQL and Python Questions Test.docx
+MOVE,no conflict,SQL and Python Questions Test.pages,SQL and Python Questions Test.pages
+MOVE,no conflict,SQL and Python Questions Test.pdf,SQL and Python Questions Test.pdf
+MOVE,no conflict,apply_sync.sh,apply_sync.sh
+MOVE,no conflict,arithmetics.py,arithmetics.py
+MOVE,no conflict,atoi.ipynb,atoi.ipynb
+MOVE,no conflict,beef.csv,beef.csv
+MOVE,no conflict,brackets.py,brackets.py
+MOVE,no conflict,cdll.py,cdll.py
+MOVE,no conflict,codeshare-test.png,codeshare-test.png
+MOVE,no conflict,compare_folders.sh,compare_folders.sh
+MOVE,no conflict,compare_folders_as_sets.sh,compare_folders_as_sets.sh
+MOVE,no conflict,desklog.py,desklog.py
+MOVE,no conflict,elastic_demand.py,elastic_demand.py
+MOVE,no conflict,env-setup.sh,env-setup.sh
+MOVE,no conflict,ex1.py,ex1.py
+MOVE,no conflict,ex2.py,ex2.py
+MOVE,no conflict,ex3.py,ex3.py
+MOVE,no conflict,ex4.py,ex4.py
+MOVE,no conflict,ex5.py,ex5.py
+MOVE,no conflict,ex6.py,ex6.py
+MOVE,no conflict,ex7.ipynb,ex7.ipynb
+MOVE,no conflict,ex8.py,ex8.py
+MOVE,no conflict,ex9.py,ex9.py
+MOVE,no conflict,ex_finally.py,ex_finally.py
+MOVE,no conflict,exam.py,exam.py
+MOVE,no conflict,exam1.sh,exam1.sh
+MOVE,no conflict,finaltest1.py,finaltest1.py
+MOVE,no conflict,folder-sizes.sh,folder-sizes.sh
+MOVE,no conflict,gitignore.sync.snippet,gitignore.sync.snippet
+MOVE,no conflict,histogram.py,histogram.py
+MOVE,no conflict,interactive-python-test.png,interactive-python-test.png
+MOVE,no conflict,lidar-test.png,lidar-test.png
+MOVE,no conflict,lidar-test.py,lidar-test.py
+MOVE,no conflict,linked-list-inverted.png,linked-list-inverted.png
+MOVE,no conflict,move_up.sh,move_up.sh
+MOVE,no conflict,sim_sync.sh,sim_sync.sh
+MOVE,no conflict,sync_by_rules.py,sync_by_rules.py
+MOVE,no conflict,sync_toolkit.tar,sync_toolkit.tar
+MOVE,no conflict,test.py,test.py
+MOVE,no conflict,tree.py,tree.py
+MOVE,no conflict,untitled0.py,untitled0.py
+MOVE,no conflict,untitled1.py,untitled1.py
+MOVE,no conflict,untitled2.py,untitled2.py
