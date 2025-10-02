@@ -43,7 +43,7 @@ mic_transcriptions = deque(maxlen=20)
 headphone_transcriptions = deque(maxlen=20)
 
 def get_audio_devices():
-    """Find both microphone input and headphone output devices"""
+    """Find both microphone input and headphone output devices - FIXED VERSION"""
     devices = sd.query_devices()
     
     mic_device = None
@@ -94,14 +94,44 @@ def get_audio_devices():
         if headphone_device is not None:
             break
     
-    # Fallbacks
+    # Fallbacks - FIXED: No more len() on sd.default.device
     if mic_device is None:
-        mic_device = sd.default.device[0]
-        logging.info(f"Using default input device for microphone: {devices[mic_device]['name']}")
+        # Get default input device safely
+        default_input = sd.default.device[0] if sd.default.device else None
+        if default_input is not None:
+            mic_device = default_input
+            logging.info(f"Using default input device for microphone: {devices[mic_device]['name']}")
+        else:
+            # Find first available input device
+            for i, dev in enumerate(devices):
+                if dev['max_input_channels'] > 0:
+                    mic_device = i
+                    logging.info(f"Using first available input device: {dev['name']} (ID: {i})")
+                    break
     
+    # FIXED: Handle headphone device selection without using len()
     if headphone_device is None:
-        headphone_device = sd.default.device[1] if len(sd.default.device) > 1 else sd.default.device[0]
-        logging.info(f"Using default output device for headphones: {devices[headphone_device]['name']}")
+        # Get default output device safely
+        default_output = None
+        if sd.default.device:
+            # Safe way to get output device without using len()
+            try:
+                # Try to access by index directly
+                default_output = sd.default.device[1]
+            except (IndexError, TypeError):
+                # Fallback to input device if output not available
+                default_output = sd.default.device[0]
+        
+        if default_output is not None:
+            headphone_device = default_output
+            logging.info(f"Using default output device for headphones: {devices[headphone_device]['name']}")
+        else:
+            # Find first available output device
+            for i, dev in enumerate(devices):
+                if dev['max_output_channels'] > 0:
+                    headphone_device = i
+                    logging.info(f"Using first available output device: {dev['name']} (ID: {i})")
+                    break
     
     return mic_device, headphone_device
 
@@ -112,13 +142,17 @@ def list_audio_devices():
     print("INPUT DEVICES:")
     for i, dev in enumerate(devices):
         if dev['max_input_channels'] > 0:
-            default_indicator = " (DEFAULT INPUT)" if i == sd.default.device[0] else ""
+            # FIXED: Safe default device checking
+            default_input = sd.default.device[0] if sd.default.device else None
+            default_indicator = " (DEFAULT INPUT)" if i == default_input else ""
             print(f"  {i}: {dev['name']}{default_indicator}")
     
     print("\nOUTPUT DEVICES:")
     for i, dev in enumerate(devices):
         if dev['max_output_channels'] > 0:
-            default_indicator = " (DEFAULT OUTPUT)" if i == sd.default.device[1] else ""
+            # FIXED: Safe default device checking
+            default_output = sd.default.device[1] if sd.default.device else None
+            default_indicator = " (DEFAULT OUTPUT)" if i == default_output else ""
             print(f"  {i}: {dev['name']}{default_indicator}")
     print("=====================================\n")
 
@@ -128,9 +162,13 @@ def transcribe_audio_stream(device_id, device_type, transcription_deque):
         device_name = sd.query_devices()[device_id]['name']
         logging.info(f"Starting {device_type} transcription from: {device_name} (ID: {device_id})")
 
+        # Get device info to handle channels properly
+        device_info = sd.query_devices(device_id)
+        channels = min(device_info['max_input_channels'], 1)  # Use mono for compatibility
+
         with sd.InputStream(
             samplerate=sampling_rate,
-            channels=1,
+            channels=channels,
             dtype='float32',
             device=device_id,
             blocksize=chunk_size,
@@ -202,6 +240,14 @@ def start_dual_transcription():
     
     # Get both devices
     mic_device, headphone_device = get_audio_devices()
+    
+    if mic_device is None:
+        logging.error("No microphone device found! Cannot start transcription.")
+        return
+        
+    if headphone_device is None:
+        logging.error("No headphone device found! Cannot start transcription.")
+        return
     
     # Start microphone transcription (what you're saying)
     mic_thread = threading.Thread(

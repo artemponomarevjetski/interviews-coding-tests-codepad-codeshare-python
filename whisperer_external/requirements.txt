@@ -2,3 +2,4 @@ Flask==2.3.2
 numpy==1.26.4
 sounddevice==0.4.6
 openai-whisper==20231117
+Werkzeug==2.3.7
