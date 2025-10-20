@@ -42,8 +42,8 @@ while (($#)); do ARGS+=("$1"); shift; done
 SRC="${ARGS[0]:-.}"
 DST="${ARGS[1]:-..}"
 
-die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
-log() { printf '%s\n' "$*"; }
+die()  { printf 'Error: %s\n' "$*" >&2; exit 1; }
+log()  { printf '%s\n' "$*"; }
 warn() { printf 'WARNING: %s\n' "$*" >&2; }
 
 # Resolve script path to avoid moving ourselves
@@ -87,7 +87,6 @@ run() {
 should_skip() {
   local p="$1"
   local b="${p##*/}"
-  # Skip the script itself and our logs to avoid weirdness with tee
   [[ "$p" == "$script_path" ]] && return 0
   [[ "$b" == "$script_base" ]] && return 0
   [[ "$b" == move_*.log ]] && return 0
@@ -108,20 +107,17 @@ move_file() {
   local base="${src##*/}"
   local dest="$dest_dir/$base"
 
-  # If destination path does not exist at all -> just move
   if [[ ! -e "$dest" ]]; then
     log "NEW: $dest  <-- $src"
-    run mv -- "$src" "$dest"
+    run mv -f "$src" "$dest"
     return 0
   fi
 
-  # Respect --no-clobber
   if (( NO_CLOBBER )); then
     warn "exists, skipping (no-clobber): $dest"
     return 0
   fi
 
-  # If both are regular files, apply policy
   if [[ -f "$src" && -f "$dest" ]]; then
     local sm dm ss ds
     sm=$(stat_mtime "$src") || sm=0
@@ -129,43 +125,39 @@ move_file() {
 
     if (( sm > dm )); then
       log "REPLACE (src newer): $dest  <-- $src"
-      run mv -- "$src" "$dest"
+      run mv -f "$src" "$dest"
       return 0
     elif (( sm < dm )); then
       log "KEEP (dest newer), drop src: $dest  [src=$src]"
-      run rm -f -- "$src"
+      run rm -f "$src"
       return 0
     fi
 
-    # Same mtime -> larger wins
     ss=$(stat_size "$src") || ss=0
     ds=$(stat_size "$dest") || ds=0
     if   (( ss > ds )); then
       log "REPLACE (same time, src larger): $dest  <-- $src"
-      run mv -- "$src" "$dest"
+      run mv -f "$src" "$dest"
     elif (( ss < ds )); then
       log "KEEP (same time, dest larger), drop src: $dest  [src=$src]"
-      run rm -f -- "$src"
+      run rm -f "$src"
     else
-      # Exact tie by time and size: dedupe by content
-      if cmp -s -- "$src" "$dest"; then
+      if cmp -s "$src" "$dest"; then
         log "SKIP (identical), drop src duplicate: $dest"
       else
         log "KEEP (same time & size but different; conservative), drop src: $dest"
       fi
-      run rm -f -- "$src"
+      run rm -f "$src"
     fi
     return 0
   fi
 
-  # Type mismatch / symlinks / special files: let mv handle it
   if [[ -d "$dest" ]]; then
-    # Moving file into an existing directory named like the file's base.
     log "INTO DIR: $dest/$base  <-- $src"
   else
     log "REPLACE (fallback type): $dest  <-- $src"
   fi
-  run mv -- "$src" "$dest"
+  run mv -f "$src" "$dest"
 }
 
 move_dir() {
@@ -175,7 +167,7 @@ move_dir() {
 
   if [[ ! -e "$dest" ]]; then
     log "NEW DIR: $dest  <-- $src"
-    run mv -- "$src" "$dest"
+    run mv -f "$src" "$dest"
     return 0
   fi
   if [[ ! -d "$dest" ]]; then
@@ -183,7 +175,6 @@ move_dir() {
     return 0
   fi
 
-  # Merge: move children into existing dest
   shopt -s dotglob nullglob
   local p
   for p in "$src"/*; do
@@ -199,13 +190,12 @@ move_dir() {
   done
   shopt -u dotglob nullglob
 
-  # Remove empty source directory (ignore if not empty)
-  run rmdir -- "$src" 2>/dev/null || true
+  run rmdir "$src" 2>/dev/null || true
 }
 
 # Clean top-level macOS junk file if present
 if [[ -e "$abs_src/.DS_Store" ]]; then
-  run rm -f -- "$abs_src/.DS_Store"
+  run rm -f "$abs_src/.DS_Store"
 fi
 
 # Main loop: move everything from SRC into DST
