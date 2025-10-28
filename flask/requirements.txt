@@ -1,16 +1,15 @@
+psutil
 # ===== Core Dependencies =====
-Flask==2.3.2               # Web framework (includes Werkzeug, Jinja2)
-itsdangerous==2.1.2        # Explicit security dependency
-click==8.1.3               # Command line interface
+Flask==2.3.2
+itsdangerous==2.1.2
+click==8.1.3
 
 # ===== Image Processing =====
-Pillow==11.3.0             # Image manipulation (PIL fork)
-pytesseract==0.3.13        # Tesseract OCR Python wrapper
-# Note: Requires tesseract-ocr installed separately
+Pillow==11.3.0
+pytesseract==0.3.13
+
+# ===== HTTP Requests =====
+requests==2.31.0
 
 # ===== macOS Specific =====
-pyobjc-framework-Quartz==9.2 ; sys_platform == 'darwin'  # Screen capture
-
-# ===== Development Extras =====
-# python-dotenv==1.0.0     # Uncomment for .env support
-# debugpy==1.6.7          # Uncomment for VSCode debugging
+pyobjc-framework-Quartz==9.2 ; sys_platform == 'darwin'

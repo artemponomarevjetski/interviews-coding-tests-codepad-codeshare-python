@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Screen OCR + Python Puzzle Solver with Balance, Process Monitoring & Kill Button
+Screen OCR + Python Puzzle Solver with Start/Stop Control
 """
 
 import os
@@ -9,9 +9,6 @@ import shutil
 import socket
 import subprocess
 import time
-import signal
-import sys
-import psutil
 from datetime import datetime
 from threading import Thread, Lock
 
@@ -29,7 +26,7 @@ CONFIG = {
     "latest": "snap_latest.png",
     "ocr_txt": "snapshot.txt",
     "gpt_analysis": "gpt_analysis.txt",
-    "gpt_control": "gpt_control.txt",
+    "gpt_control": "gpt_control.txt",  # New file for control state
     "port": 5000,
     "interval": 45,
     "retain": 20,
@@ -39,10 +36,8 @@ CONFIG = {
 os.makedirs(CONFIG["save_dir"], exist_ok=True)
 os.makedirs(CONFIG["log_dir"], exist_ok=True)
 
-# Global control variables
+# Global control variable with thread lock
 gpt_analysis_enabled = True  # Default: START (enabled)
-worker_running = True
-app_running = True
 control_lock = Lock()
 
 def log(msg: str):
@@ -51,74 +46,6 @@ def log(msg: str):
     with open(path, "a") as fh:
         fh.write(f"[{ts}] {msg}\n")
     print(f"[{ts}] {msg}")
-
-def shutdown_application():
-    """Shutdown the entire application"""
-    global worker_running, app_running
-    with control_lock:
-        worker_running = False
-        app_running = False
-    log("🛑 Application shutdown requested")
-    
-    def delayed_exit():
-        time.sleep(2)
-        log("👋 Application shutting down...")
-        os._exit(0)
-    
-    Thread(target=delayed_exit, daemon=True).start()
-
-def get_openai_balance():
-    """Get OpenAI balance - using known balance from billing page"""
-    return "$10.00"  # From your billing page
-
-def get_python_processes():
-    """Get current Python processes in the system"""
-    try:
-        python_processes = []
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info']):
-            try:
-                if 'python' in proc.info['name'].lower():
-                    cmdline = ' '.join(proc.info['cmdline'] or [])
-                    memory_mb = proc.info['memory_info'].rss / 1024 / 1024 if proc.info['memory_info'] else 0
-                    
-                    python_processes.append({
-                        'pid': proc.info['pid'],
-                        'name': proc.info['name'],
-                        'cmdline': cmdline[:100] + '...' if len(cmdline) > 100 else cmdline,
-                        'memory_mb': round(memory_mb, 1)
-                    })
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                continue
-        
-        python_processes.sort(key=lambda x: x['memory_mb'], reverse=True)
-        return python_processes
-    except Exception as e:
-        return [{'error': f'Failed to get processes: {str(e)}'}]
-
-def get_system_info():
-    """Get system information"""
-    try:
-        cpu_percent = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory()
-        memory_used = memory.used / 1024 / 1024 / 1024
-        memory_total = memory.total / 1024 / 1024 / 1024
-        memory_percent = memory.percent
-        disk = psutil.disk_usage('.')
-        disk_used = disk.used / 1024 / 1024 / 1024
-        disk_total = disk.total / 1024 / 1024 / 1024
-        disk_percent = disk.percent
-        
-        return {
-            'cpu_percent': round(cpu_percent, 1),
-            'memory_used_gb': round(memory_used, 1),
-            'memory_total_gb': round(memory_total, 1),
-            'memory_percent': round(memory_percent, 1),
-            'disk_used_gb': round(disk_used, 1),
-            'disk_total_gb': round(disk_total, 1),
-            'disk_percent': round(disk_percent, 1)
-        }
-    except Exception as e:
-        return {'error': f'Failed to get system info: {str(e)}'}
 
 # Load API key
 def load_api_key_from_env_file():
@@ -162,12 +89,13 @@ def load_gpt_control_state():
                     gpt_analysis_enabled = True
                     log("🟢 GPT analysis control: STARTED (loaded from file)")
         else:
+            # Default state: enabled
             gpt_analysis_enabled = True
             save_gpt_control_state()
             log("🟢 GPT analysis control: STARTED (default)")
     except Exception as e:
         log(f"❌ Error loading control state: {e}")
-        gpt_analysis_enabled = True
+        gpt_analysis_enabled = True  # Default to enabled on error
 
 def save_gpt_control_state():
     """Save current GPT control state to file"""
@@ -366,12 +294,11 @@ def worker():
     last_gpt_success = True
     gpt_call_count = 0
     
-    while worker_running:
+    while True:
         shot = capture_snapshot()
         if not shot:
-            if worker_running:
-                log("❌ Screenshot failed")
-                time.sleep(CONFIG["interval"])
+            log("❌ Screenshot failed")
+            time.sleep(CONFIG["interval"])
             continue
 
         txt = extract_text(shot)
@@ -380,7 +307,9 @@ def worker():
             with open(os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"]), "w") as f:
                 f.write(txt)
             
-            if is_gpt_analysis_enabled() and worker_running:
+            # Check if GPT analysis is enabled
+            if is_gpt_analysis_enabled():
+                # Only call GPT every 3rd cycle or if we have good text
                 should_call_gpt = (gpt_call_count % 3 == 0) or (len(txt) > 200 and "python" in txt.lower())
                 
                 if should_call_gpt and last_gpt_success:
@@ -404,19 +333,14 @@ def worker():
                 log("⏸️ GPT analysis is currently STOPPED")
                 gpt_call_count += 1
                     
-            if worker_running:
-                log(f"📸 OCR extracted {len(txt)} characters")
+            log(f"📸 OCR extracted {len(txt)} characters")
         else:
-            if worker_running:
-                log("📸 No text extracted")
+            log("📸 No text extracted")
 
-        if worker_running:
-            maintain_latest_symlink(shot)
-            time.sleep(CONFIG["interval"])
-    
-    log("👋 Worker thread stopped")
+        maintain_latest_symlink(shot)
+        time.sleep(CONFIG["interval"])
 
-# Flask UI with all features
+# Flask UI with control buttons
 TPL = """
 <!doctype html>
 <title>Python Puzzle Solver</title>
@@ -433,33 +357,16 @@ h1{margin-top:0}
 .btn-refresh{background:#2196f3;color:#fff}
 .btn-start{background:#28a745;color:#fff}
 .btn-stop{background:#dc3545;color:#fff}
-.btn-kill{background:#000;color:#fff;animation:pulse 2s infinite}
-.btn-billing{background:#ff9800;color:#fff}
 .btn:disabled{opacity:0.6;cursor:not-allowed}
 pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid #ddd;font-family:monospace}
 .imgwrap{text-align:center;margin-top:20px}
 .imgwrap img{max-width:100%;border:1px solid #ddd;border-radius:4px}
-.balance-info{background:#d4edda;border-left:4px solid #28a745;color:#155724;padding:15px;border-radius:6px;margin:15px 0}
-.system-info{background:#e2e3e5;border-left:4px solid #6c757d;color:#383d41;padding:15px;border-radius:6px;margin:15px 0}
-.process-info{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:15px;border-radius:6px;margin:15px 0}
+.python-mode{background:#e8f4fd;border-left:4px solid #2196f3;color:#0d47a1;padding:15px;border-radius:6px;margin:15px 0}
 .started-mode{background:#d4edda;border-left:4px solid #28a745;color:#155724;padding:15px;border-radius:6px;margin:15px 0}
 .stopped-mode{background:#f8d7da;border-left:4px solid #dc3545;color:#721c24;padding:15px;border-radius:6px;margin:15px 0}
 .warning{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:15px;border-radius:6px;margin:15px 0}
 .error{background:#f8d7da;border-left:4px solid #dc3545;color:#721c24;padding:15px;border-radius:6px;margin:15px 0}
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-.shutdown-message{background:#dc3545;color:white;padding:20px;border-radius:8px;text-align:center;margin:20px 0}
-.process-table{width:100%;border-collapse:collapse;margin:10px 0}
-.process-table th, .process-table td{padding:8px;text-align:left;border-bottom:1px solid #ddd}
-.process-table th{background:#f8f9fa;font-weight:600}
-.process-table tr:hover{background:#f5f5f5}
-.system-stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:15px;margin:15px 0}
-.stat-box{background:#f8f9fa;padding:15px;border-radius:6px;text-align:center;border:1px solid #e9ecef}
-.stat-value{font-size:1.5em;font-weight:bold;color:#007bff}
-.stat-label{font-size:0.9em;color:#6c757d;margin-top:5px}
+.control-status{margin:10px 0;font-weight:600}
 </style>
 
 <div class="container">
@@ -469,72 +376,14 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   <div class="controls">
     <button class="btn btn-copy" onclick="copyAllText()">Copy All Text</button>
     <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
-    <button class="btn btn-kill" onclick="killApp()">💀 Kill App & Close</button>
-    <a href="https://platform.openai.com/account/billing" target="_blank" class="btn btn-billing">💰 Check Usage</a>
     {% if gpt_enabled %}
       {% if gpt_analysis_enabled %}
-        <button class="btn btn-stop" onclick="stopAnalysis()">⏹️ Stop GPT</button>
-        <button class="btn btn-start" disabled>▶️ GPT Running</button>
+        <button class="btn btn-stop" onclick="stopAnalysis()">⏹️ Stop GPT Analysis</button>
+        <button class="btn btn-start" disabled>▶️ GPT Analysis Running</button>
       {% else %}
-        <button class="btn btn-stop" disabled>⏹️ GPT Stopped</button>
-        <button class="btn btn-start" onclick="startAnalysis()">▶️ Start GPT</button>
+        <button class="btn btn-stop" disabled>⏹️ GPT Analysis Stopped</button>
+        <button class="btn btn-start" onclick="startAnalysis()">▶️ Start GPT Analysis</button>
       {% endif %}
-    {% endif %}
-  </div>
-
-  <!-- Balance Information -->
-  <div class="balance-info">
-    <h3>💰 OpenAI Balance: {{balance}}</h3>
-    <p><strong>Auto-recharge:</strong> Enabled (recharges to $10.00 when balance reaches $5.00)</p>
-    <p><strong>Monthly recharge limit:</strong> $20.00</p>
-    <p><em>GPT-3.5 Turbo: ~$0.002 per 1K tokens | Screenshots/OCR: Free</em></p>
-  </div>
-
-  <!-- System Information -->
-  <div class="system-info">
-    <h3>🖥️ System Information</h3>
-    <div class="system-stats">
-      <div class="stat-box">
-        <div class="stat-value">{{system_info.cpu_percent}}%</div>
-        <div class="stat-label">CPU Usage</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value">{{system_info.memory_used_gb}}/{{system_info.memory_total_gb}} GB</div>
-        <div class="stat-label">Memory ({{system_info.memory_percent}}%)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value">{{system_info.disk_used_gb}}/{{system_info.disk_total_gb}} GB</div>
-        <div class="stat-label">Disk ({{system_info.disk_percent}}%)</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Python Processes -->
-  <div class="process-info">
-    <h3>🐍 Current Python Processes ({{python_processes|length}})</h3>
-    {% if python_processes and python_processes[0] is mapping %}
-    <table class="process-table">
-      <thead>
-        <tr>
-          <th>PID</th>
-          <th>Process</th>
-          <th>Memory</th>
-          <th>Command</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for proc in python_processes %}
-        <tr>
-          <td><code>{{proc.pid}}</code></td>
-          <td><strong>{{proc.name}}</strong></td>
-          <td>{{proc.memory_mb}} MB</td>
-          <td><small>{{proc.cmdline}}</small></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p>No Python processes found or error retrieving process information.</p>
     {% endif %}
   </div>
 
@@ -568,7 +417,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
       <p><em>System will automatically retry with longer delays</em></p>
     </div>
     {% else %}
-    <div class="started-mode">
+    <div class="python-mode">
       <h3>✅ Python Puzzle Solution:</h3>
       <pre id="gptAnalysis">{{gpt_analysis}}</pre>
     </div>
@@ -583,7 +432,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   {% endif %}
 
   {% if text %}
-  <div class="system-info">
+  <div class="section">
     <h3>📄 Raw OCR Text:</h3>
     <pre id="ocrText">{{text}}</pre>
   </div>
@@ -633,48 +482,6 @@ function stopAnalysis() {
       alert('Error stopping GPT analysis: ' + error);
     });
 }
-
-function killApp() {
-  if (confirm('🚨 This will KILL the entire application and close this page. Continue?')) {
-    const container = document.querySelector('.container');
-    container.innerHTML = `
-      <div class="shutdown-message">
-        <h1>💀 Application Shutting Down</h1>
-        <p>The Python Puzzle Solver is being terminated...</p>
-        <p>You can safely close this tab.</p>
-        <p><em>All processes will stop within 5 seconds.</em></p>
-      </div>
-    `;
-    
-    document.body.style.pointerEvents = 'none';
-    
-    fetch('/kill', { method: 'POST' })
-      .then(() => {
-        setTimeout(() => {
-          window.close();
-          window.location.href = 'about:blank';
-        }, 3000);
-      })
-      .catch(() => {
-        setTimeout(() => {
-          window.close();
-          window.location.href = 'about:blank';
-        }, 3000);
-      });
-  }
-}
-
-setInterval(() => {
-  fetch('/health').catch(() => {
-    document.body.innerHTML = `
-      <div class="shutdown-message">
-        <h1>🔌 Application Stopped</h1>
-        <p>The server has been terminated.</p>
-        <p>You can safely close this tab.</p>
-      </div>
-    `;
-  });
-}, 10000);
 </script>
 """
 
@@ -682,9 +489,6 @@ app = Flask(__name__)
 
 @app.route("/")
 def dashboard():
-    if not app_running:
-        return "Application is shutting down...", 503
-    
     txt_path = os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"])
     gpt_path = os.path.join(CONFIG["save_dir"], CONFIG["gpt_analysis"])
     
@@ -705,11 +509,6 @@ def dashboard():
     
     latest_img_exists = os.path.exists(os.path.join(CONFIG["save_dir"], CONFIG["latest"]))
     
-    # Get additional information
-    balance = get_openai_balance()
-    python_processes = get_python_processes()
-    system_info = get_system_info()
-    
     return render_template_string(
         TPL,
         ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -721,16 +520,11 @@ def dashboard():
         gpt_model=CONFIG["openai_model"],
         interval=CONFIG["interval"],
         image=latest_img_exists,
-        balance=balance,
-        python_processes=python_processes,
-        system_info=system_info,
         rand=int(time.time())
     )
 
 @app.route("/latest_image")
 def latest_image():
-    if not app_running:
-        return "Application is shutting down...", 503
     path = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
     return send_file(path, mimetype="image/png") if os.path.exists(path) else ("No image", 404)
 
@@ -750,28 +544,7 @@ def stop_gpt():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@app.route("/kill", methods=["POST"])
-def kill_app():
-    try:
-        log("💀 Kill request received from web interface")
-        shutdown_application()
-        return {"success": True, "message": "Application terminating..."}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@app.route("/health")
-def health():
-    return {"status": "running", "app_running": app_running}
-
 if __name__ == "__main__":
-    # Install psutil if not available
-    try:
-        import psutil
-    except ImportError:
-        log("📦 Installing psutil for system monitoring...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "psutil"], check=True)
-        import psutil
-    
     # Load control state on startup
     load_gpt_control_state()
     
@@ -780,18 +553,9 @@ if __name__ == "__main__":
     log(f"🚀 Python Puzzle Solver Started")
     log(f"📊 Dashboard: http://{ip}:{CONFIG['port']}")
     log(f"⏰ Interval: {CONFIG['interval']} seconds")
-    log(f"💰 OpenAI Balance: {get_openai_balance()}")
-    log("💀 KILL BUTTON: Available in dashboard")
     if gpt_enabled:
         log(f"🧠 Model: {CONFIG['openai_model']}")
         log("🎯 PRIMARY TASK: 'solve Python puzzle'")
         log(f"🔄 GPT Analysis: {'STARTED' if is_gpt_analysis_enabled() else 'STOPPED'}")
         log("🎛️ Controls: Use Start/Stop buttons in dashboard")
-    
-    try:
-        app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)
-    except KeyboardInterrupt:
-        log("👋 Application stopped by user")
-    finally:
-        worker_running = False
-        log("👋 Application shutdown complete")
+    app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)
