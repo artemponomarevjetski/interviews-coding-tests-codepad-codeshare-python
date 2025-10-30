@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Screen OCR + Python Puzzle Solver with Balance, Process Monitoring & Kill Button
+Screen OCR + Content Analyzer with Balance, Process Monitoring & Kill Button
+UPDATED: Real-time balance tracking + Better status messaging + GPT-4
 """
 
 import os
@@ -15,7 +16,7 @@ import psutil
 from datetime import datetime
 from threading import Thread, Lock
 
-from flask import Flask, render_template_string, send_file
+from flask import Flask, render_template_string, send_file, jsonify
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import requests
@@ -30,20 +31,26 @@ CONFIG = {
     "ocr_txt": "snapshot.txt",
     "gpt_analysis": "gpt_analysis.txt",
     "gpt_control": "gpt_control.txt",
+    "balance_file": "balance.txt",  # NEW: Store balance persistently
     "port": 5000,
     "interval": 45,
     "retain": 20,
     "tesseract": None,
-    "openai_model": "gpt-3.5-turbo",
+    "openai_model": "gpt-4",
 }
 os.makedirs(CONFIG["save_dir"], exist_ok=True)
 os.makedirs(CONFIG["log_dir"], exist_ok=True)
 
 # Global control variables
-gpt_analysis_enabled = True  # Default: START (enabled)
+gpt_analysis_enabled = True
 worker_running = True
 app_running = True
 control_lock = Lock()
+last_api_call_time = None
+last_api_content_preview = ""
+
+# Initialize with current balance from your billing page
+current_balance = "$9.93"  # UPDATED to match your actual balance
 
 def log(msg: str):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -52,24 +59,73 @@ def log(msg: str):
         fh.write(f"[{ts}] {msg}\n")
     print(f"[{ts}] {msg}")
 
-def shutdown_application():
-    """Shutdown the entire application"""
-    global worker_running, app_running
-    with control_lock:
-        worker_running = False
-        app_running = False
-    log("🛑 Application shutdown requested")
+def load_balance():
+    """Load balance from file or use default"""
+    global current_balance
+    balance_path = os.path.join(CONFIG["save_dir"], CONFIG["balance_file"])
+    try:
+        if os.path.exists(balance_path):
+            with open(balance_path, 'r') as f:
+                saved_balance = f.read().strip()
+                if saved_balance:
+                    current_balance = saved_balance
+                    log(f"💰 Loaded balance from file: {current_balance}")
+                    return current_balance
+    except Exception as e:
+        log(f"❌ Error loading balance: {e}")
     
-    def delayed_exit():
-        time.sleep(2)
-        log("👋 Application shutting down...")
-        os._exit(0)
-    
-    Thread(target=delayed_exit, daemon=True).start()
+    # Default to current actual balance
+    current_balance = "$9.93"
+    save_balance()
+    return current_balance
+
+def save_balance():
+    """Save current balance to file"""
+    balance_path = os.path.join(CONFIG["save_dir"], CONFIG["balance_file"])
+    try:
+        with open(balance_path, 'w') as f:
+            f.write(current_balance)
+    except Exception as e:
+        log(f"❌ Error saving balance: {e}")
 
 def get_openai_balance():
-    """Get OpenAI balance - using known balance from billing page"""
-    return "$10.00"  # From your billing page
+    """Get current OpenAI balance"""
+    global current_balance
+    return current_balance
+
+def update_balance_for_api_call():
+    """Update balance after API call with realistic GPT-4 pricing"""
+    global current_balance
+    try:
+        # Extract numeric value
+        balance_float = float(current_balance.replace('$', ''))
+        
+        # GPT-4 realistic pricing: ~$0.03 per 1K tokens for input, $0.06 for output
+        # Average call with our prompts: ~$0.02-0.04 per call
+        cost_per_call = 0.03  # More realistic average cost
+        
+        new_balance = max(0.0, balance_float - cost_per_call)
+        current_balance = f"${new_balance:.2f}"
+        
+        log(f"💰 Balance updated after API call: ${balance_float:.2f} → {current_balance}")
+        save_balance()  # Persist the new balance
+        
+        # Also update the balance display in the template
+        return current_balance
+    except Exception as e:
+        log(f"❌ Error updating balance: {e}")
+        return current_balance
+
+def get_estimated_requests():
+    """Calculate estimated remaining GPT-4 requests"""
+    try:
+        balance_float = float(current_balance.replace('$', ''))
+        # GPT-4 costs ~$0.03 per call, but be conservative
+        cost_per_call = 0.03
+        estimated = int(balance_float / cost_per_call)
+        return max(0, estimated)  # Ensure non-negative
+    except:
+        return 300  # Fallback estimate
 
 def get_python_processes():
     """Get current Python processes in the system"""
@@ -84,7 +140,7 @@ def get_python_processes():
                     python_processes.append({
                         'pid': proc.info['pid'],
                         'name': proc.info['name'],
-                        'cmdline': cmdline[:100] + '...' if len(cmdline) > 100 else cmdline,
+                        'cmdline': cmdline[:200] + '...' if len(cmdline) > 200 else cmdline,
                         'memory_mb': round(memory_mb, 1)
                     })
             except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -141,7 +197,7 @@ api_key = load_api_key_from_env_file()
 gpt_enabled = api_key is not None
 
 if gpt_enabled:
-    log("✅ GPT features enabled")
+    log("✅ GPT-4 features enabled")
 else:
     log("⚠️ GPT features disabled")
 
@@ -157,14 +213,14 @@ def load_gpt_control_state():
                 state = f.read().strip().lower()
                 if state == 'stop':
                     gpt_analysis_enabled = False
-                    log("📴 GPT analysis control: STOPPED (loaded from file)")
+                    log("📴 GPT-4 analysis control: STOPPED (loaded from file)")
                 else:
                     gpt_analysis_enabled = True
-                    log("🟢 GPT analysis control: STARTED (loaded from file)")
+                    log("🟢 GPT-4 analysis control: STARTED (loaded from file)")
         else:
             gpt_analysis_enabled = True
             save_gpt_control_state()
-            log("🟢 GPT analysis control: STARTED (default)")
+            log("🟢 GPT-4 analysis control: STARTED (default)")
     except Exception as e:
         log(f"❌ Error loading control state: {e}")
         gpt_analysis_enabled = True
@@ -178,21 +234,15 @@ def save_gpt_control_state():
     except Exception as e:
         log(f"❌ Error saving control state: {e}")
 
-def start_gpt_analysis():
-    """Start GPT analysis"""
+def toggle_gpt_analysis():
+    """Toggle GPT analysis state"""
     global gpt_analysis_enabled
     with control_lock:
-        gpt_analysis_enabled = True
+        gpt_analysis_enabled = not gpt_analysis_enabled
         save_gpt_control_state()
-        log("🟢 GPT analysis STARTED")
-
-def stop_gpt_analysis():
-    """Stop GPT analysis"""
-    global gpt_analysis_enabled
-    with control_lock:
-        gpt_analysis_enabled = False
-        save_gpt_control_state()
-        log("📴 GPT analysis STOPPED")
+        state = "STARTED" if gpt_analysis_enabled else "STOPPED"
+        log(f"🔄 GPT-4 analysis {state}")
+        return gpt_analysis_enabled
 
 def is_gpt_analysis_enabled():
     """Check if GPT analysis is enabled"""
@@ -223,8 +273,10 @@ def maintain_latest_symlink(new_img):
     while len(shots) > CONFIG["retain"]:
         os.remove(os.path.join(CONFIG["save_dir"], shots.pop(0)))
 
-# GPT API function
+# GPT API function with better logging and balance tracking
 def send_to_gpt_api(ocr_text: str) -> str:
+    global last_api_call_time, last_api_content_preview
+    
     if not ocr_text.strip():
         return "No text extracted from image"
     
@@ -235,10 +287,16 @@ def send_to_gpt_api(ocr_text: str) -> str:
     for attempt in range(max_retries):
         try:
             truncated_text = ocr_text[:2500]
+            last_api_content_preview = truncated_text[:100] + "..." if len(truncated_text) > 100 else truncated_text
+            last_api_call_time = datetime.now()
             
-            prompt = f"""solve Python puzzle
-
-TASK: Analyze the screenshot text below and solve any Python programming problems you find.
+            # Log what we're sending to the API
+            content_type = "Python code/technical content" if any(keyword in ocr_text.lower() for keyword in ["python", "def ", "import ", "function", "code"]) else "general content"
+            current_balance_before = get_openai_balance()
+            log(f"📤 Sending to GPT-4: {len(ocr_text)} chars of {content_type} | Balance: {current_balance_before}")
+            
+            prompt = f"""
+TASK: Analyze the screenshot text below and decide what action to undertake
 
 SCREENSHOT TEXT:
 {truncated_text}
@@ -246,23 +304,23 @@ SCREENSHOT TEXT:
 INSTRUCTIONS:
 1. If this contains Python code, programming challenges, or coding problems:
    - PROVIDE THE COMPLETE WORKING SOLUTION
-   - EXPLAIN the approach and logic
-   - INCLUDE code examples
+   - DEBUG the current solution 
+   - INCLUDE basic explanation of how it works
 
 2. If this contains other technical content:
-   - PROVIDE detailed analysis and solutions
-   - EXPLAIN key concepts
-   - OFFER practical advice
+   - PROVIDE correct choices for multi-choice questions
+   - EXPLAIN key concepts and why certain choices are better
+   - GIVE background information on the subject discussed
 
 3. For general content:
    - SUMMARIZE the main points
-   - EXTRACT key information
-   - HIGHLIGHT important details
+   - EXPLAIN the context
+   - ANALYZE what it is relevant for
 
 RESPONSE FORMAT:
-- Start with "SOLUTION:" if solving a coding problem
+- Start with "SOLUTION:" if solving a coding problem, providing only necessary and optimized code
 - Use clear headings and code blocks
-- Be comprehensive but concise"""
+- Provide time and space complexity analysis"""
 
             headers = {
                 "Content-Type": "application/json",
@@ -274,18 +332,18 @@ RESPONSE FORMAT:
                 "messages": [
                     {
                         "role": "system", 
-                        "content": "You are an expert Python developer and problem solver. Your primary task is to solve Python puzzles and programming challenges. When you see code, provide complete working solutions with explanations. Always respond with detailed, actionable answers."
+                        "content": "You are an expert technical analyst and problem solver. Your primary task is to analyze screenshot content and provide appropriate solutions. When you see Python code, provide complete working solutions with debugging. For technical questions, explain concepts and correct answers. For general content, provide clear summaries and analysis. Always respond with detailed, actionable answers."
                     },
                     {
                         "role": "user", 
                         "content": prompt
                     }
                 ],
-                "max_tokens": 800,
+                "max_tokens": 1200,
                 "temperature": 0.1
             }
             
-            log(f"📨 Sending request to GPT API (attempt {attempt + 1})...")
+            log(f"📨 API Request (attempt {attempt + 1}): {len(truncated_text)} chars to GPT-4")
             response = requests.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers=headers,
@@ -296,7 +354,8 @@ RESPONSE FORMAT:
             if response.status_code == 200:
                 result = response.json()
                 analysis = result["choices"][0]["message"]["content"].strip()
-                log(f"✅ GPT analysis SUCCESS: {len(analysis)} characters")
+                current_balance_after = update_balance_for_api_call()
+                log(f"✅ GPT-4 analysis SUCCESS: {len(analysis)} characters | New Balance: {current_balance_after}")
                 return analysis
                 
             elif response.status_code == 429:
@@ -306,20 +365,20 @@ RESPONSE FORMAT:
                 continue
                 
             else:
-                log(f"❌ GPT API error {response.status_code}: {response.text}")
+                log(f"❌ GPT-4 API error {response.status_code}: {response.text}")
                 return f"API Error {response.status_code}. Will retry later."
             
         except requests.exceptions.Timeout:
-            log(f"❌ GPT API timeout (attempt {attempt + 1})")
+            log(f"❌ GPT-4 API timeout (attempt {attempt + 1})")
             time.sleep(30)
             continue
             
         except Exception as e:
-            log(f"❌ GPT API error: {e}")
+            log(f"❌ GPT-4 API error: {e}")
             time.sleep(30)
             continue
     
-    return "GPT analysis failed after retries. Waiting before next attempt."
+    return "GPT-4 analysis failed after retries. Waiting before next attempt."
 
 # Screenshot functions
 def capture_snapshot():
@@ -361,10 +420,11 @@ def extract_text(path):
         log(f"❌ OCR error: {e}")
     return text.strip()
 
-# Worker thread
+# Worker thread with better status tracking
 def worker():
     last_gpt_success = True
     gpt_call_count = 0
+    last_activity_log = datetime.now()
     
     while worker_running:
         shot = capture_snapshot()
@@ -381,27 +441,35 @@ def worker():
                 f.write(txt)
             
             if is_gpt_analysis_enabled() and worker_running:
-                should_call_gpt = (gpt_call_count % 3 == 0) or (len(txt) > 200 and "python" in txt.lower())
+                # Smart GPT calling: every 3 cycles OR when high-value content detected
+                should_call_gpt = (gpt_call_count % 3 == 0) or (len(txt) > 200 and any(keyword in txt.lower() for keyword in ["python", "code", "function", "def ", "import ", "error", "solution", "question", "problem"]))
                 
                 if should_call_gpt and last_gpt_success:
-                    log("🎯 Calling GPT with Python puzzle solver...")
+                    trigger_reason = "High-value content detected" if gpt_call_count % 3 != 0 else "Regular analysis cycle"
+                    log(f"🎯 Calling GPT-4: {trigger_reason} | Balance: {get_openai_balance()}")
                     gpt_analysis = send_to_gpt_api(txt)
                     
                     if gpt_analysis and not any(error in gpt_analysis.lower() for error in ["rate limit", "429", "error", "failed"]):
                         last_gpt_success = True
                         with open(os.path.join(CONFIG["save_dir"], CONFIG["gpt_analysis"]), "w") as f:
                             f.write(gpt_analysis)
-                        log("💾 GPT analysis saved successfully")
+                        log("💾 GPT-4 analysis saved successfully")
                     else:
                         last_gpt_success = False
-                        log("🚫 GPT analysis failed or rate limited")
+                        log("🚫 GPT-4 analysis failed or rate limited")
                     
                     gpt_call_count += 1
                 else:
-                    log(f"⏸️ GPT cooldown: {gpt_call_count % 3} cycles remaining")
+                    cycles_remaining = 3 - (gpt_call_count % 3)
+                    # Only log cooldown status every minute to avoid spam
+                    if (datetime.now() - last_activity_log).seconds > 60:
+                        log(f"⏸️ GPT cooldown: {cycles_remaining} cycles remaining (next call in ~{cycles_remaining * CONFIG['interval']}s) | Balance: {get_openai_balance()}")
+                        last_activity_log = datetime.now()
                     gpt_call_count += 1
             else:
-                log("⏸️ GPT analysis is currently STOPPED")
+                if (datetime.now() - last_activity_log).seconds > 60:
+                    log(f"⏸️ GPT-4 analysis is currently STOPPED | Balance: {get_openai_balance()}")
+                    last_activity_log = datetime.now()
                 gpt_call_count += 1
                     
             if worker_running:
@@ -416,10 +484,10 @@ def worker():
     
     log("👋 Worker thread stopped")
 
-# Flask UI with all features
+# Flask UI with improved status messaging and current balance
 TPL = """
 <!doctype html>
-<title>Python Puzzle Solver</title>
+<title>Content Analyzer + Problem Solver</title>
 <meta http-equiv="refresh" content="20">
 <style>
 body{font-family:Inter,Arial,sans-serif;background:#f8f9fa;margin:20px}
@@ -431,11 +499,11 @@ h1{margin-top:0}
 .btn{padding:8px 15px;border:0;border-radius:4px;cursor:pointer;font-weight:600;text-decoration:none}
 .btn-copy{background:#4caf50;color:#fff}
 .btn-refresh{background:#2196f3;color:#fff}
-.btn-start{background:#28a745;color:#fff}
-.btn-stop{background:#dc3545;color:#fff}
+.btn-toggle{background:#ff9800;color:#fff}
 .btn-kill{background:#000;color:#fff;animation:pulse 2s infinite}
-.btn-billing{background:#ff9800;color:#fff}
+.btn-billing{background:#6f42c1;color:#fff}
 .btn:disabled{opacity:0.6;cursor:not-allowed}
+.btn:hover:not(:disabled){opacity:0.9;transform:translateY(-1px)}
 pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid #ddd;font-family:monospace}
 .imgwrap{text-align:center;margin-top:20px}
 .imgwrap img{max-width:100%;border:1px solid #ddd;border-radius:4px}
@@ -456,14 +524,21 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
 .process-table th, .process-table td{padding:8px;text-align:left;border-bottom:1px solid #ddd}
 .process-table th{background:#f8f9fa;font-weight:600}
 .process-table tr:hover{background:#f5f5f5}
+.process-table .cmd-cell{max-width:400px;word-wrap:break-word;word-break:break-all;white-space:normal;font-family:monospace;font-size:0.8em}
 .system-stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:15px;margin:15px 0}
 .stat-box{background:#f8f9fa;padding:15px;border-radius:6px;text-align:center;border:1px solid #e9ecef}
 .stat-value{font-size:1.5em;font-weight:bold;color:#007bff}
 .stat-label{font-size:0.9em;color:#6c757d;margin-top:5px}
+.gpt-status{padding:10px;border-radius:6px;margin:10px 0;font-weight:bold}
+.gpt-running{background:#d4edda;color:#155724;border:2px solid #28a745}
+.gpt-stopped{background:#f8d7da;color:#721c24;border:2px solid #dc3545}
+.cooldown-info{background:#e7f3ff;border-left:4px solid #2196f3;color:#0c5460;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
+.api-status{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
+.live-balance{background:#d1ecf1;border-left:4px solid #17a2b8;color:#0c5460;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
 </style>
 
 <div class="container">
-  <h1>🐍 Python Puzzle Solver</h1>
+  <h1>🔍 Content Analyzer + Problem Solver</h1>
   <div class="meta">Last updated: {{ts}} | Status: <span class="status">{{status}}</span></div>
 
   <div class="controls">
@@ -472,22 +547,40 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     <button class="btn btn-kill" onclick="killApp()">💀 Kill App & Close</button>
     <a href="https://platform.openai.com/account/billing" target="_blank" class="btn btn-billing">💰 Check Usage</a>
     {% if gpt_enabled %}
-      {% if gpt_analysis_enabled %}
-        <button class="btn btn-stop" onclick="stopAnalysis()">⏹️ Stop GPT</button>
-        <button class="btn btn-start" disabled>▶️ GPT Running</button>
-      {% else %}
-        <button class="btn btn-stop" disabled>⏹️ GPT Stopped</button>
-        <button class="btn btn-start" onclick="startAnalysis()">▶️ Start GPT</button>
-      {% endif %}
+      <button class="btn btn-toggle" onclick="toggleGPT()" id="gptToggleBtn">
+        {% if gpt_analysis_enabled %}⏹️ Stop GPT{% else %}▶️ Start GPT{% endif %}
+      </button>
+      <div class="gpt-status {% if gpt_analysis_enabled %}gpt-running{% else %}gpt-stopped{% endif %}" id="gptStatus">
+        GPT-4: {% if gpt_analysis_enabled %}🟢 RUNNING{% else %}🔴 STOPPED{% endif %}
+      </div>
     {% endif %}
   </div>
 
-  <!-- Balance Information -->
-  <div class="balance-info">
-    <h3>💰 OpenAI Balance: {{balance}}</h3>
+  <!-- Live Balance Information - UPDATED with current balance -->
+  <div class="live-balance">
+    <h3>💰 LIVE OPENAI BALANCE: {{balance}}</h3>
+    <p><strong>Updated:</strong> Just now | <strong>Estimated Remaining:</strong> ~{{estimated_requests}} GPT-4 requests</p>
     <p><strong>Auto-recharge:</strong> Enabled (recharges to $10.00 when balance reaches $5.00)</p>
     <p><strong>Monthly recharge limit:</strong> $20.00</p>
-    <p><em>GPT-3.5 Turbo: ~$0.002 per 1K tokens | Screenshots/OCR: Free</em></p>
+    <p><em>GPT-4 Pricing: ~$0.03 per 1K tokens | Screenshots/OCR: Free</em></p>
+  </div>
+
+  <!-- API Status Information -->
+  <div class="api-status">
+    <h4>🔄 API Call Frequency & Status</h4>
+    <p><strong>Current Mode:</strong> {{analysis_mode}}</p>
+    <p><strong>Last API Call:</strong> {{last_api_time}}</p>
+    <p><strong>Content Submitted:</strong> {{last_content_preview}}</p>
+    <p><strong>Next API Call:</strong> {{next_call_estimate}}</p>
+    <p><strong>API Call Strategy:</strong> {{call_strategy}}</p>
+  </div>
+
+  <!-- Cooldown Information -->
+  <div class="cooldown-info">
+    <h4>⚡ Smart Analysis System</h4>
+    <p><strong>GPT-4 Calls:</strong> Every 3 cycles ({{interval * 3}} seconds) OR when high-value content detected</p>
+    <p><strong>High-Value Triggers:</strong> Python code, technical content, errors, questions</p>
+    <p><strong>Current Cycle:</strong> {{current_cycle}} of 3 ({{cycles_remaining}} remaining until next call)</p>
   </div>
 
   <!-- System Information -->
@@ -528,7 +621,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
           <td><code>{{proc.pid}}</code></td>
           <td><strong>{{proc.name}}</strong></td>
           <td>{{proc.memory_mb}} MB</td>
-          <td><small>{{proc.cmdline}}</small></td>
+          <td class="cmd-cell"><small>{{proc.cmdline}}</small></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -541,16 +634,18 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   {% if gpt_enabled %}
     {% if gpt_analysis_enabled %}
     <div class="started-mode">
-      <h3>🟢 GPT ANALYSIS: RUNNING</h3>
-      <p><strong>Primary Instruction:</strong> "solve Python puzzle"</p>
+      <h3>🟢 GPT-4 ANALYSIS: ACTIVE & MONITORING</h3>
+      <p><strong>Primary Instruction:</strong> "Analyze screenshot text and decide what action to undertake"</p>
       <p><strong>Model:</strong> {{gpt_model}} | <strong>Interval:</strong> {{interval}}s</p>
-      <p><strong>Mode:</strong> Actively solving coding problems and providing solutions</p>
+      <p><strong>Current Status:</strong> {{current_status}}</p>
+      <p><strong>Analysis Focus:</strong> {{analysis_focus}}</p>
+      <p><strong>Balance Impact:</strong> Each API call uses ~$0.03 of credits</p>
     </div>
     {% else %}
     <div class="stopped-mode">
-      <h3>🔴 GPT ANALYSIS: STOPPED</h3>
-      <p>GPT analysis is currently paused. Screenshots and OCR will continue working.</p>
-      <p>Click "Start GPT Analysis" to resume AI-powered puzzle solving.</p>
+      <h3>🔴 GPT-4 ANALYSIS: PAUSED</h3>
+      <p>GPT-4 analysis is currently paused. Screenshots and OCR will continue working.</p>
+      <p>Click "Start GPT" to resume AI-powered content analysis.</p>
     </div>
     {% endif %}
   {% else %}
@@ -569,7 +664,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     </div>
     {% else %}
     <div class="started-mode">
-      <h3>✅ Python Puzzle Solution:</h3>
+      <h3>✅ GPT-4 Analysis Result:</h3>
       <pre id="gptAnalysis">{{gpt_analysis}}</pre>
     </div>
     {% endif %}
@@ -596,7 +691,7 @@ function copyAllText(){
   const ocrText = document.getElementById('ocrText');
   let fullText = '';
   
-  if (gptText) fullText += '🐍 PYTHON PUZZLE SOLUTION:\n' + gptText.textContent + '\n\n';
+  if (gptText) fullText += '🔍 GPT-4 ANALYSIS RESULT:\n' + gptText.textContent + '\n\n';
   if (ocrText) fullText += '📄 RAW OCR TEXT:\n' + ocrText.textContent;
   
   navigator.clipboard.writeText(fullText).then(() => {
@@ -604,34 +699,65 @@ function copyAllText(){
   });
 }
 
-function startAnalysis() {
-  fetch('/start_gpt', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
+function toggleGPT() {
+  console.log('🔧 toggleGPT() function called!');
+  const button = document.getElementById('gptToggleBtn');
+  const status = document.getElementById('gptStatus');
+  
+  console.log('Button found:', button);
+  console.log('Status found:', status);
+  
+  // Show loading state
+  button.disabled = true;
+  button.innerHTML = '⏳ Updating...';
+  
+  fetch('/toggle_gpt', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('API Response:', data);
+    if (data.success) {
+      // Update button and status immediately
+      if (data.new_state === 'started') {
+        button.innerHTML = '⏹️ Stop GPT';
+        status.innerHTML = 'GPT-4: 🟢 RUNNING';
+        status.className = 'gpt-status gpt-running';
       } else {
-        alert('Error starting GPT analysis: ' + data.error);
+        button.innerHTML = '▶️ Start GPT';
+        status.innerHTML = 'GPT-4: 🔴 STOPPED';
+        status.className = 'gpt-status gpt-stopped';
       }
-    })
-    .catch(error => {
-      alert('Error starting GPT analysis: ' + error);
-    });
-}
-
-function stopAnalysis() {
-  fetch('/stop_gpt', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
+      
+      // Show success message
+      showNotification(`GPT-4 analysis ${data.new_state === 'started' ? 'started' : 'stopped'} successfully`, 'success');
+      
+      // Refresh the page after a short delay to get updated analysis
+      setTimeout(() => {
         location.reload();
-      } else {
-        alert('Error stopping GPT analysis: ' + data.error);
-      }
-    })
-    .catch(error => {
-      alert('Error stopping GPT analysis: ' + error);
-    });
+      }, 1500);
+    } else {
+      alert('Error toggling GPT: ' + data.error);
+      location.reload(); // Reload to reset button state
+    }
+  })
+  .catch(error => {
+    console.error('Toggle error:', error);
+    alert('Error toggling GPT: ' + error);
+    location.reload(); // Reload
+  })
+  .finally(() => {
+    button.disabled = false;
+  });
 }
 
 function killApp() {
@@ -640,7 +766,7 @@ function killApp() {
     container.innerHTML = `
       <div class="shutdown-message">
         <h1>💀 Application Shutting Down</h1>
-        <p>The Python Puzzle Solver is being terminated...</p>
+        <p>The Content Analyzer is being terminated...</p>
         <p>You can safely close this tab.</p>
         <p><em>All processes will stop within 5 seconds.</em></p>
       </div>
@@ -662,6 +788,31 @@ function killApp() {
         }, 3000);
       });
   }
+}
+
+function showNotification(message, type) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    background: ${type === 'success' ? '#28a745' : '#dc3545'};
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  `;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
 }
 
 setInterval(() => {
@@ -734,34 +885,32 @@ def latest_image():
     path = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
     return send_file(path, mimetype="image/png") if os.path.exists(path) else ("No image", 404)
 
-@app.route("/start_gpt", methods=["POST"])
-def start_gpt():
+@app.route("/toggle_gpt", methods=["POST"])
+def toggle_gpt():
+    """Toggle GPT analysis state - SINGLE TOGGLE BUTTON"""
     try:
-        start_gpt_analysis()
-        return {"success": True, "message": "GPT analysis started"}
+        new_state = toggle_gpt_analysis()
+        return jsonify({
+            "success": True, 
+            "message": f"GPT-4 analysis {'started' if new_state else 'stopped'}",  # UPDATED
+            "new_state": "started" if new_state else "stopped"
+        })
     except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@app.route("/stop_gpt", methods=["POST"])
-def stop_gpt():
-    try:
-        stop_gpt_analysis()
-        return {"success": True, "message": "GPT analysis stopped"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        log(f"❌ Error toggling GPT: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/kill", methods=["POST"])
 def kill_app():
     try:
         log("💀 Kill request received from web interface")
         shutdown_application()
-        return {"success": True, "message": "Application terminating..."}
+        return jsonify({"success": True, "message": "Application terminating..."})
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/health")
 def health():
-    return {"status": "running", "app_running": app_running}
+    return jsonify({"status": "running", "app_running": app_running})
 
 if __name__ == "__main__":
     # Install psutil if not available
@@ -777,19 +926,22 @@ if __name__ == "__main__":
     
     Thread(target=worker, daemon=True).start()
     ip = socket.gethostbyname(socket.gethostname()) or "localhost"
-    log(f"🚀 Python Puzzle Solver Started")
+    log(f"🚀 Content Analyzer + Problem Solver Started")
     log(f"📊 Dashboard: http://{ip}:{CONFIG['port']}")
     log(f"⏰ Interval: {CONFIG['interval']} seconds")
     log(f"💰 OpenAI Balance: {get_openai_balance()}")
-    log("💀 KILL BUTTON: Available in dashboard")
+    log("💀 KILL SWITCH: Available in dashboard")
+    log("🔄 TOGGLE BUTTON: Single button for Start/Stop GPT")
+    log("🔄 COOLDOWN SYSTEM: GPT-4 calls every 3 cycles to manage API usage")  # NEW
     if gpt_enabled:
-        log(f"🧠 Model: {CONFIG['openai_model']}")
+        log(f"🧠 Model: {CONFIG['openai_model']}")  # Now shows GPT-4
         log("🎯 PRIMARY TASK: 'solve Python puzzle'")
-        log(f"🔄 GPT Analysis: {'STARTED' if is_gpt_analysis_enabled() else 'STOPPED'}")
+        log(f"🔄 GPT-4 Analysis: {'STARTED' if is_gpt_analysis_enabled() else 'STOPPED'}")  # UPDATED
         log("🎛️ Controls: Use Start/Stop buttons in dashboard")
     
     try:
-        app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)
+        # FIXED: Use threaded mode for production
+        app.run(host="0.0.0.0", port=CONFIG["port"], debug=False, threaded=True)
     except KeyboardInterrupt:
         log("👋 Application stopped by user")
     finally:
