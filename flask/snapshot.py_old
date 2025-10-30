@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """
-Periodic screen capture → OCR with Tesseract → GPT API → live Flask dashboard
-Optimized with Python puzzle solving and rate limit handling
+Screen OCR + Python Puzzle Solver with Balance, Process Monitoring & Kill Button
 """
-
-from __future__ import annotations
 
 import os
 import platform
@@ -12,94 +9,208 @@ import shutil
 import socket
 import subprocess
 import time
-import json
+import signal
+import sys
+import psutil
 from datetime import datetime
-from threading import Thread
-from typing import Optional
+from threading import Thread, Lock
 
 from flask import Flask, render_template_string, send_file
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import requests
 
-# ─────────────────────────── Configuration ────────────────────────────
+# Configuration
 BASE = os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python")
 CONFIG = {
-    "save_dir":  f"{BASE}/temp",
-    "log_dir":   f"{BASE}/log",
-    "log_file":  "snapshot.log",
-    "latest":    "snap_latest.png",
-    "ocr_txt":   "snapshot.txt",
+    "save_dir": f"{BASE}/temp",
+    "log_dir": f"{BASE}/log", 
+    "log_file": "snapshot.log",
+    "latest": "snap_latest.png",
+    "ocr_txt": "snapshot.txt",
     "gpt_analysis": "gpt_analysis.txt",
-    "port":      5000,
-    "interval":  30,  # Increased to reduce rate limiting
-    "retain":    20,
+    "gpt_control": "gpt_control.txt",
+    "port": 5000,
+    "interval": 45,
+    "retain": 20,
     "tesseract": None,
     "openai_model": "gpt-3.5-turbo",
 }
 os.makedirs(CONFIG["save_dir"], exist_ok=True)
-os.makedirs(CONFIG["log_dir"],  exist_ok=True)
+os.makedirs(CONFIG["log_dir"], exist_ok=True)
 
-# ─────────────────────────── Helper utilities ─────────────────────────
-def log(msg: str) -> None:
+# Global control variables
+gpt_analysis_enabled = True  # Default: START (enabled)
+worker_running = True
+app_running = True
+control_lock = Lock()
+
+def log(msg: str):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = os.path.join(CONFIG["log_dir"], CONFIG["log_file"])
     with open(path, "a") as fh:
         fh.write(f"[{ts}] {msg}\n")
     print(f"[{ts}] {msg}")
 
-# Load API key ONLY from .env file
-def load_api_key_from_env_file() -> Optional[str]:
-    """Load OpenAI API key ONLY from .env file, ignoring system environment."""
+def shutdown_application():
+    """Shutdown the entire application"""
+    global worker_running, app_running
+    with control_lock:
+        worker_running = False
+        app_running = False
+    log("🛑 Application shutdown requested")
+    
+    def delayed_exit():
+        time.sleep(2)
+        log("👋 Application shutting down...")
+        os._exit(0)
+    
+    Thread(target=delayed_exit, daemon=True).start()
+
+def get_openai_balance():
+    """Get OpenAI balance - using known balance from billing page"""
+    return "$10.00"  # From your billing page
+
+def get_python_processes():
+    """Get current Python processes in the system"""
+    try:
+        python_processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info']):
+            try:
+                if 'python' in proc.info['name'].lower():
+                    cmdline = ' '.join(proc.info['cmdline'] or [])
+                    memory_mb = proc.info['memory_info'].rss / 1024 / 1024 if proc.info['memory_info'] else 0
+                    
+                    python_processes.append({
+                        'pid': proc.info['pid'],
+                        'name': proc.info['name'],
+                        'cmdline': cmdline[:100] + '...' if len(cmdline) > 100 else cmdline,
+                        'memory_mb': round(memory_mb, 1)
+                    })
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        
+        python_processes.sort(key=lambda x: x['memory_mb'], reverse=True)
+        return python_processes
+    except Exception as e:
+        return [{'error': f'Failed to get processes: {str(e)}'}]
+
+def get_system_info():
+    """Get system information"""
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        memory_used = memory.used / 1024 / 1024 / 1024
+        memory_total = memory.total / 1024 / 1024 / 1024
+        memory_percent = memory.percent
+        disk = psutil.disk_usage('.')
+        disk_used = disk.used / 1024 / 1024 / 1024
+        disk_total = disk.total / 1024 / 1024 / 1024
+        disk_percent = disk.percent
+        
+        return {
+            'cpu_percent': round(cpu_percent, 1),
+            'memory_used_gb': round(memory_used, 1),
+            'memory_total_gb': round(memory_total, 1),
+            'memory_percent': round(memory_percent, 1),
+            'disk_used_gb': round(disk_used, 1),
+            'disk_total_gb': round(disk_total, 1),
+            'disk_percent': round(disk_percent, 1)
+        }
+    except Exception as e:
+        return {'error': f'Failed to get system info: {str(e)}'}
+
+# Load API key
+def load_api_key_from_env_file():
     env_path = os.path.join(os.path.dirname(__file__), '.env')
     if not os.path.exists(env_path):
-        log("❌ No .env file found")
         return None
-    
     try:
         with open(env_path, 'r') as f:
             for line in f:
-                line = line.strip()
-                if not line or line.startswith('#'):
-                    continue
                 if line.startswith('OPENAI_API_KEY='):
-                    key = line.split('=', 1)[1].strip()
-                    key = key.strip('"\'')
+                    key = line.split('=', 1)[1].strip().strip('"\'')
                     if key:
-                        log("✅ API key loaded from .env file")
                         return key
-                    else:
-                        log("❌ Empty API key in .env file")
-                        return None
-        log("❌ OPENAI_API_KEY not found in .env file")
         return None
     except Exception as e:
-        log(f"❌ Error reading .env file: {e}")
+        log(f"❌ Error reading .env: {e}")
         return None
 
-# Initialize API key
 api_key = load_api_key_from_env_file()
 gpt_enabled = api_key is not None
 
 if gpt_enabled:
-    log("✅ GPT features enabled with API key from .env")
+    log("✅ GPT features enabled")
 else:
-    log("⚠️  GPT features disabled - no API key found")
+    log("⚠️ GPT features disabled")
 
-def detect_tesseract() -> bool:
+# Control functions
+def load_gpt_control_state():
+    """Load GPT control state from file, default to enabled"""
+    global gpt_analysis_enabled
+    control_path = os.path.join(CONFIG["save_dir"], CONFIG["gpt_control"])
+    
+    try:
+        if os.path.exists(control_path):
+            with open(control_path, 'r') as f:
+                state = f.read().strip().lower()
+                if state == 'stop':
+                    gpt_analysis_enabled = False
+                    log("📴 GPT analysis control: STOPPED (loaded from file)")
+                else:
+                    gpt_analysis_enabled = True
+                    log("🟢 GPT analysis control: STARTED (loaded from file)")
+        else:
+            gpt_analysis_enabled = True
+            save_gpt_control_state()
+            log("🟢 GPT analysis control: STARTED (default)")
+    except Exception as e:
+        log(f"❌ Error loading control state: {e}")
+        gpt_analysis_enabled = True
+
+def save_gpt_control_state():
+    """Save current GPT control state to file"""
+    control_path = os.path.join(CONFIG["save_dir"], CONFIG["gpt_control"])
+    try:
+        with open(control_path, 'w') as f:
+            f.write('stop' if not gpt_analysis_enabled else 'start')
+    except Exception as e:
+        log(f"❌ Error saving control state: {e}")
+
+def start_gpt_analysis():
+    """Start GPT analysis"""
+    global gpt_analysis_enabled
+    with control_lock:
+        gpt_analysis_enabled = True
+        save_gpt_control_state()
+        log("🟢 GPT analysis STARTED")
+
+def stop_gpt_analysis():
+    """Stop GPT analysis"""
+    global gpt_analysis_enabled
+    with control_lock:
+        gpt_analysis_enabled = False
+        save_gpt_control_state()
+        log("📴 GPT analysis STOPPED")
+
+def is_gpt_analysis_enabled():
+    """Check if GPT analysis is enabled"""
+    with control_lock:
+        return gpt_analysis_enabled and gpt_enabled
+
+def detect_tesseract():
     if CONFIG["tesseract"]:
         return True
-    for p in ("/opt/homebrew/bin/tesseract",
-              "/usr/local/bin/tesseract",
-              "/usr/bin/tesseract",
-              shutil.which("tesseract")):
+    for p in ("/opt/homebrew/bin/tesseract", "/usr/local/bin/tesseract", 
+              "/usr/bin/tesseract", shutil.which("tesseract")):
         if p and os.path.exists(p):
             CONFIG["tesseract"] = p
             pytesseract.pytesseract.tesseract_cmd = p
             return True
     return False
 
-def maintain_latest_symlink(new_img: str) -> None:
+def maintain_latest_symlink(new_img):
     link = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
     try:
         if os.path.islink(link) or os.path.exists(link):
@@ -112,37 +223,47 @@ def maintain_latest_symlink(new_img: str) -> None:
     while len(shots) > CONFIG["retain"]:
         os.remove(os.path.join(CONFIG["save_dir"], shots.pop(0)))
 
-# ────────────────────────── GPT API Integration ───────────────────────
-def send_to_gpt_api(ocr_text: str) -> Optional[str]:
+# GPT API function
+def send_to_gpt_api(ocr_text: str) -> str:
     if not ocr_text.strip():
         return "No text extracted from image"
     
     if not gpt_enabled:
-        return "GPT analysis unavailable - no API key provided"
+        return "GPT analysis unavailable"
     
-    max_retries = 3
+    max_retries = 2
     for attempt in range(max_retries):
         try:
-            truncated_text = ocr_text[:3000]  # Reduced to prevent token limits
+            truncated_text = ocr_text[:2500]
             
-            # OPTIMIZED PROMPT: "solve Python puzzle" prepended as requested
             prompt = f"""solve Python puzzle
 
-Analyze the following text extracted from a screenshot. This text may be scattered, incomplete, or contain errors from OCR.
+TASK: Analyze the screenshot text below and solve any Python programming problems you find.
 
-If this contains Python code or programming challenges:
-- Provide the complete solution
-- Explain the approach
-- Include any optimizations
+SCREENSHOT TEXT:
+{truncated_text}
 
-For other content:
-- Provide a concise summary
-- Extract key insights and actions
-- Note any important details
+INSTRUCTIONS:
+1. If this contains Python code, programming challenges, or coding problems:
+   - PROVIDE THE COMPLETE WORKING SOLUTION
+   - EXPLAIN the approach and logic
+   - INCLUDE code examples
 
-Extracted text:
-{truncated_text}"""
-            
+2. If this contains other technical content:
+   - PROVIDE detailed analysis and solutions
+   - EXPLAIN key concepts
+   - OFFER practical advice
+
+3. For general content:
+   - SUMMARIZE the main points
+   - EXTRACT key information
+   - HIGHLIGHT important details
+
+RESPONSE FORMAT:
+- Start with "SOLUTION:" if solving a coding problem
+- Use clear headings and code blocks
+- Be comprehensive but concise"""
+
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}"
@@ -151,99 +272,62 @@ Extracted text:
             data = {
                 "model": CONFIG["openai_model"],
                 "messages": [
-                    {"role": "system", "content": "You are an expert Python developer and problem solver. When you see code or puzzles, provide complete solutions with explanations. For other content, provide clear analysis."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system", 
+                        "content": "You are an expert Python developer and problem solver. Your primary task is to solve Python puzzles and programming challenges. When you see code, provide complete working solutions with explanations. Always respond with detailed, actionable answers."
+                    },
+                    {
+                        "role": "user", 
+                        "content": prompt
+                    }
                 ],
-                "max_tokens": 600,  # Slightly increased for code solutions
-                "temperature": 0.2  # Lower for more consistent code
+                "max_tokens": 800,
+                "temperature": 0.1
             }
             
+            log(f"📨 Sending request to GPT API (attempt {attempt + 1})...")
             response = requests.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers=headers,
                 json=data,
-                timeout=45  # Increased timeout
+                timeout=60
             )
             
             if response.status_code == 200:
                 result = response.json()
                 analysis = result["choices"][0]["message"]["content"].strip()
-                log(f"✅ GPT analysis completed: {len(analysis)} characters")
+                log(f"✅ GPT analysis SUCCESS: {len(analysis)} characters")
                 return analysis
                 
             elif response.status_code == 429:
-                # Rate limited - exponential backoff
-                wait_time = (2 ** attempt) * 30  # 30s, 60s, 120s
-                log(f"⏳ Rate limited (429), waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                wait_time = 120
+                log(f"⏳ Rate limited (429), waiting {wait_time}s")
+                time.sleep(wait_time)
+                continue
                 
-                if attempt < max_retries - 1:
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    return "GPT analysis temporarily unavailable due to rate limits. Will retry automatically."
-                    
             else:
-                log(f"❌ GPT API error: {response.status_code} - {response.text}")
-                if attempt < max_retries - 1:
-                    time.sleep(30)
-                    continue
-                else:
-                    return f"GPT analysis failed: {response.status_code}"
+                log(f"❌ GPT API error {response.status_code}: {response.text}")
+                return f"API Error {response.status_code}. Will retry later."
             
         except requests.exceptions.Timeout:
             log(f"❌ GPT API timeout (attempt {attempt + 1})")
-            if attempt < max_retries - 1:
-                time.sleep(30)
-                continue
-            else:
-                return "GPT analysis timeout"
-                
+            time.sleep(30)
+            continue
+            
         except Exception as e:
             log(f"❌ GPT API error: {e}")
-            if attempt < max_retries - 1:
-                time.sleep(30)
-                continue
-            else:
-                return f"GPT analysis failed: {str(e)}"
+            time.sleep(30)
+            continue
     
-    return "GPT analysis failed after retries"
+    return "GPT analysis failed after retries. Waiting before next attempt."
 
-# ────────────────────────── Screenshot routines ───────────────────────
-def _quartz_capture() -> Optional[str]:
-    try:
-        from Quartz import (
-            CGWindowListCopyWindowInfo, kCGWindowListOptionAll, kCGNullWindowID,
-            CGWindowListCreateImage, CGRectInfinite,
-            kCGWindowListOptionIncludingWindow, kCGWindowImageBoundsIgnoreFraming,
-        )
-        onscreen = [w for w in
-                    CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID)
-                    if w.get("kCGWindowIsOnscreen")]
-        if not onscreen:
-            return None
-        win_id = onscreen[0]["kCGWindowNumber"]
-        img_ref = CGWindowListCreateImage(
-            CGRectInfinite, kCGWindowListOptionIncludingWindow,
-            win_id, kCGWindowImageBoundsIgnoreFraming)
-        if not img_ref:
-            return None
-        path = os.path.join(CONFIG["save_dir"],
-                            f"snap_quartz_{int(time.time())}.png")
-        Image.frombytes("RGBA",
-                        (img_ref.getWidth(), img_ref.getHeight()),
-                        img_ref.getDataProvider().getData()
-                        ).save(path)
-        return path
-    except Exception as e:
-        log(f"Quartz capture failed: {e}")
-        return None
-
-def capture_snapshot() -> Optional[str]:
+# Screenshot functions
+def capture_snapshot():
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     img = os.path.join(CONFIG["save_dir"], f"snap_{ts}.png")
     cmds = [
         ["screencapture", "-x", "-l", "-o", img],
-        ["screencapture", "-x", "-m", "-o", img],
+        ["screencapture", "-x", "-m", "-o", img], 
         ["screencapture", "-x", "-o", img],
     ]
     for cmd in cmds:
@@ -255,40 +339,39 @@ def capture_snapshot() -> Optional[str]:
             pass
     if os.path.exists(img):
         os.remove(img)
-    return _quartz_capture() if platform.system() == "Darwin" else None
+    return None
 
-# ───────────────────────── OCR utilities ───────────────────────────────
-def _prep_for_ocr(img: Image.Image) -> Image.Image:
+def _prep_for_ocr(img):
     img = img.convert("L")
     img = ImageEnhance.Contrast(img).enhance(2.0)
     img = img.filter(ImageFilter.SHARPEN)
     return img.point(lambda x: 0 if x < 140 else 255)
 
-def extract_text(path: str) -> str:
+def extract_text(path):
     if not detect_tesseract():
-        log("Tesseract not found – OCR skipped")
         return ""
     text = ""
     try:
         prepped = _prep_for_ocr(Image.open(path))
-        for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11", "--oem 3 --psm 4"):
+        for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11"):
             t = pytesseract.image_to_string(prepped, config=cfg)
             if len(t) > len(text):
                 text = t
     except Exception as e:
-        log(f"OCR error on {path}: {e}")
+        log(f"❌ OCR error: {e}")
     return text.strip()
 
-# ───────────────────────── Worker thread ───────────────────────────────
-def worker() -> None:
-    last_gpt_time = 0
-    gpt_cooldown = 60  # Minimum seconds between GPT calls
+# Worker thread
+def worker():
+    last_gpt_success = True
+    gpt_call_count = 0
     
-    while True:
+    while worker_running:
         shot = capture_snapshot()
         if not shot:
-            log("❌ Screenshot failed")
-            time.sleep(CONFIG["interval"])
+            if worker_running:
+                log("❌ Screenshot failed")
+                time.sleep(CONFIG["interval"])
             continue
 
         txt = extract_text(shot)
@@ -297,77 +380,179 @@ def worker() -> None:
             with open(os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"]), "w") as f:
                 f.write(txt)
             
-            if gpt_enabled:
-                current_time = time.time()
-                # Only call GPT if enough time has passed since last call
-                if current_time - last_gpt_time >= gpt_cooldown:
-                    log("📨 Sending OCR text to GPT API with 'solve Python puzzle' prompt...")
+            if is_gpt_analysis_enabled() and worker_running:
+                should_call_gpt = (gpt_call_count % 3 == 0) or (len(txt) > 200 and "python" in txt.lower())
+                
+                if should_call_gpt and last_gpt_success:
+                    log("🎯 Calling GPT with Python puzzle solver...")
                     gpt_analysis = send_to_gpt_api(txt)
                     
-                    if gpt_analysis and "rate limit" not in gpt_analysis.lower() and "429" not in gpt_analysis:
-                        last_gpt_time = current_time
+                    if gpt_analysis and not any(error in gpt_analysis.lower() for error in ["rate limit", "429", "error", "failed"]):
+                        last_gpt_success = True
                         with open(os.path.join(CONFIG["save_dir"], CONFIG["gpt_analysis"]), "w") as f:
                             f.write(gpt_analysis)
-                        log("✅ GPT analysis completed and saved")
+                        log("💾 GPT analysis saved successfully")
                     else:
-                        log("⚠️ GPT analysis skipped or failed")
-                else:
-                    remaining = gpt_cooldown - (current_time - last_gpt_time)
-                    log(f"⏸️ GPT analysis cooldown: {int(remaining)}s remaining")
+                        last_gpt_success = False
+                        log("🚫 GPT analysis failed or rate limited")
                     
-            log(f"📸 Snapshot + OCR succeeded ({len(txt)} chars)")
+                    gpt_call_count += 1
+                else:
+                    log(f"⏸️ GPT cooldown: {gpt_call_count % 3} cycles remaining")
+                    gpt_call_count += 1
+            else:
+                log("⏸️ GPT analysis is currently STOPPED")
+                gpt_call_count += 1
+                    
+            if worker_running:
+                log(f"📸 OCR extracted {len(txt)} characters")
         else:
-            log("📸 Snapshot captured – no text recognised")
+            if worker_running:
+                log("📸 No text extracted")
 
-        maintain_latest_symlink(shot)
-        time.sleep(CONFIG["interval"])
+        if worker_running:
+            maintain_latest_symlink(shot)
+            time.sleep(CONFIG["interval"])
+    
+    log("👋 Worker thread stopped")
 
-# ──────────────────────────── Flask UI  ────────────────────────────────
+# Flask UI with all features
 TPL = """
 <!doctype html>
-<title>Screen OCR + Python Puzzle Solver</title>
-<meta http-equiv="refresh" content="15">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<title>Python Puzzle Solver</title>
+<meta http-equiv="refresh" content="20">
 <style>
 body{font-family:Inter,Arial,sans-serif;background:#f8f9fa;margin:20px}
 .container{max-width:1200px;background:#fff;border-radius:8px;padding:20px;margin:auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 h1{margin-top:0}
 .meta{color:#666;font-size:.9em;margin-bottom:15px}
 .status{display:inline-block;padding:4px 10px;border-radius:4px;font-weight:600;color:#fff;background:#4caf50}
-.controls{margin:15px 0;display:flex;gap:10px}
-.btn{padding:8px 15px;border:0;border-radius:4px;cursor:pointer;font-weight:600;transition:background .3s}
-.btn-copy{background:#4caf50;color:#fff}.btn-copy:hover{background:#43a047}
-.btn-refresh{background:#2196f3;color:#fff}.btn-refresh:hover{background:#1976d2}
+.controls{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:8px 15px;border:0;border-radius:4px;cursor:pointer;font-weight:600;text-decoration:none}
+.btn-copy{background:#4caf50;color:#fff}
+.btn-refresh{background:#2196f3;color:#fff}
+.btn-start{background:#28a745;color:#fff}
+.btn-stop{background:#dc3545;color:#fff}
+.btn-kill{background:#000;color:#fff;animation:pulse 2s infinite}
+.btn-billing{background:#ff9800;color:#fff}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
 pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid #ddd;font-family:monospace}
 .imgwrap{text-align:center;margin-top:20px}
 .imgwrap img{max-width:100%;border:1px solid #ddd;border-radius:4px}
-.python-mode{background:#e8f4fd;border-left:4px solid #2196f3;color:#0d47a1;padding:15px;border-radius:6px;margin:15px 0}
-.rate-limit{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:15px;border-radius:6px;margin:15px 0}
-.gpt-section{background:#e8f5e8;border-left:4px solid #4caf50}
-.ocr-section{background:#fff3e0;border-left:4px solid #ff9800}
-.warning{background:#fff3cd;border-left:4px solid #ffc107;color:#856404}
-.info{background:#d1ecf1;border-left:4px solid #17a2b8;color:#0c5460}
-.code-block{background:#f8f9fa;border:1px solid #e9ecef;border-radius:4px;padding:10px;margin:10px 0}
+.balance-info{background:#d4edda;border-left:4px solid #28a745;color:#155724;padding:15px;border-radius:6px;margin:15px 0}
+.system-info{background:#e2e3e5;border-left:4px solid #6c757d;color:#383d41;padding:15px;border-radius:6px;margin:15px 0}
+.process-info{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:15px;border-radius:6px;margin:15px 0}
+.started-mode{background:#d4edda;border-left:4px solid #28a745;color:#155724;padding:15px;border-radius:6px;margin:15px 0}
+.stopped-mode{background:#f8d7da;border-left:4px solid #dc3545;color:#721c24;padding:15px;border-radius:6px;margin:15px 0}
+.warning{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:15px;border-radius:6px;margin:15px 0}
+.error{background:#f8d7da;border-left:4px solid #dc3545;color:#721c24;padding:15px;border-radius:6px;margin:15px 0}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.shutdown-message{background:#dc3545;color:white;padding:20px;border-radius:8px;text-align:center;margin:20px 0}
+.process-table{width:100%;border-collapse:collapse;margin:10px 0}
+.process-table th, .process-table td{padding:8px;text-align:left;border-bottom:1px solid #ddd}
+.process-table th{background:#f8f9fa;font-weight:600}
+.process-table tr:hover{background:#f5f5f5}
+.system-stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:15px;margin:15px 0}
+.stat-box{background:#f8f9fa;padding:15px;border-radius:6px;text-align:center;border:1px solid #e9ecef}
+.stat-value{font-size:1.5em;font-weight:bold;color:#007bff}
+.stat-label{font-size:0.9em;color:#6c757d;margin-top:5px}
 </style>
 
 <div class="container">
-  <h1>🎯 Screen OCR + Python Puzzle Solver</h1>
+  <h1>🐍 Python Puzzle Solver</h1>
   <div class="meta">Last updated: {{ts}} | Status: <span class="status">{{status}}</span></div>
 
   <div class="controls">
     <button class="btn btn-copy" onclick="copyAllText()">Copy All Text</button>
     <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
+    <button class="btn btn-kill" onclick="killApp()">💀 Kill App & Close</button>
+    <a href="https://platform.openai.com/account/billing" target="_blank" class="btn btn-billing">💰 Check Usage</a>
+    {% if gpt_enabled %}
+      {% if gpt_analysis_enabled %}
+        <button class="btn btn-stop" onclick="stopAnalysis()">⏹️ Stop GPT</button>
+        <button class="btn btn-start" disabled>▶️ GPT Running</button>
+      {% else %}
+        <button class="btn btn-stop" disabled>⏹️ GPT Stopped</button>
+        <button class="btn btn-start" onclick="startAnalysis()">▶️ Start GPT</button>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- Balance Information -->
+  <div class="balance-info">
+    <h3>💰 OpenAI Balance: {{balance}}</h3>
+    <p><strong>Auto-recharge:</strong> Enabled (recharges to $10.00 when balance reaches $5.00)</p>
+    <p><strong>Monthly recharge limit:</strong> $20.00</p>
+    <p><em>GPT-3.5 Turbo: ~$0.002 per 1K tokens | Screenshots/OCR: Free</em></p>
+  </div>
+
+  <!-- System Information -->
+  <div class="system-info">
+    <h3>🖥️ System Information</h3>
+    <div class="system-stats">
+      <div class="stat-box">
+        <div class="stat-value">{{system_info.cpu_percent}}%</div>
+        <div class="stat-label">CPU Usage</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">{{system_info.memory_used_gb}}/{{system_info.memory_total_gb}} GB</div>
+        <div class="stat-label">Memory ({{system_info.memory_percent}}%)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">{{system_info.disk_used_gb}}/{{system_info.disk_total_gb}} GB</div>
+        <div class="stat-label">Disk ({{system_info.disk_percent}}%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Processes -->
+  <div class="process-info">
+    <h3>🐍 Current Python Processes ({{python_processes|length}})</h3>
+    {% if python_processes and python_processes[0] is mapping %}
+    <table class="process-table">
+      <thead>
+        <tr>
+          <th>PID</th>
+          <th>Process</th>
+          <th>Memory</th>
+          <th>Command</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for proc in python_processes %}
+        <tr>
+          <td><code>{{proc.pid}}</code></td>
+          <td><strong>{{proc.name}}</strong></td>
+          <td>{{proc.memory_mb}} MB</td>
+          <td><small>{{proc.cmdline}}</small></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No Python processes found or error retrieving process information.</p>
+    {% endif %}
   </div>
 
   {% if gpt_enabled %}
-  <div class="python-mode">
-    <h3>🐍 Python Puzzle Solver Active</h3>
-    <p><strong>Prompt:</strong> "solve Python puzzle" + screen content analysis</p>
-    <p>Using model: {{gpt_model}} | Capture interval: {{interval}} seconds</p>
-    {% if "rate limit" in gpt_analysis.lower() or "429" in gpt_analysis %}
-    <p><strong>Note:</strong> Handling rate limits - will auto-retry</p>
+    {% if gpt_analysis_enabled %}
+    <div class="started-mode">
+      <h3>🟢 GPT ANALYSIS: RUNNING</h3>
+      <p><strong>Primary Instruction:</strong> "solve Python puzzle"</p>
+      <p><strong>Model:</strong> {{gpt_model}} | <strong>Interval:</strong> {{interval}}s</p>
+      <p><strong>Mode:</strong> Actively solving coding problems and providing solutions</p>
+    </div>
+    {% else %}
+    <div class="stopped-mode">
+      <h3>🔴 GPT ANALYSIS: STOPPED</h3>
+      <p>GPT analysis is currently paused. Screenshots and OCR will continue working.</p>
+      <p>Click "Start GPT Analysis" to resume AI-powered puzzle solving.</p>
+    </div>
     {% endif %}
-  </div>
   {% else %}
   <div class="warning">
     <h3>⚠️ GPT Analysis Disabled</h3>
@@ -376,14 +561,15 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   {% endif %}
 
   {% if gpt_analysis %}
-    {% if "rate limit" in gpt_analysis.lower() or "429" in gpt_analysis %}
-    <div class="rate-limit">
-      <h3>⏳ GPT Analysis (Rate Limited)</h3>
+    {% if "rate limit" in gpt_analysis.lower() or "429" in gpt_analysis or "error" in gpt_analysis.lower() %}
+    <div class="error">
+      <h3>⏳ Rate Limit Protection Active</h3>
       <pre>{{gpt_analysis}}</pre>
+      <p><em>System will automatically retry with longer delays</em></p>
     </div>
     {% else %}
-    <div class="gpt-section">
-      <h3>🤖 GPT Analysis (Python Puzzle Mode):</h3>
+    <div class="started-mode">
+      <h3>✅ Python Puzzle Solution:</h3>
       <pre id="gptAnalysis">{{gpt_analysis}}</pre>
     </div>
     {% endif %}
@@ -397,7 +583,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   {% endif %}
 
   {% if text %}
-  <div class="ocr-section">
+  <div class="system-info">
     <h3>📄 Raw OCR Text:</h3>
     <pre id="ocrText">{{text}}</pre>
   </div>
@@ -410,7 +596,7 @@ function copyAllText(){
   const ocrText = document.getElementById('ocrText');
   let fullText = '';
   
-  if (gptText) fullText += '🤖 GPT ANALYSIS (Python Puzzle Mode):\n' + gptText.textContent + '\n\n';
+  if (gptText) fullText += '🐍 PYTHON PUZZLE SOLUTION:\n' + gptText.textContent + '\n\n';
   if (ocrText) fullText += '📄 RAW OCR TEXT:\n' + ocrText.textContent;
   
   navigator.clipboard.writeText(fullText).then(() => {
@@ -418,11 +604,77 @@ function copyAllText(){
   });
 }
 
-// Keyboard shortcut: Ctrl/Cmd + C
-document.addEventListener('keydown',e=>{
-  if(!(e.metaKey||e.ctrlKey)) return;
-  if(['c','C'].includes(e.key)) {e.preventDefault();copyAllText();}
-});
+function startAnalysis() {
+  fetch('/start_gpt', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error starting GPT analysis: ' + data.error);
+      }
+    })
+    .catch(error => {
+      alert('Error starting GPT analysis: ' + error);
+    });
+}
+
+function stopAnalysis() {
+  fetch('/stop_gpt', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error stopping GPT analysis: ' + data.error);
+      }
+    })
+    .catch(error => {
+      alert('Error stopping GPT analysis: ' + error);
+    });
+}
+
+function killApp() {
+  if (confirm('🚨 This will KILL the entire application and close this page. Continue?')) {
+    const container = document.querySelector('.container');
+    container.innerHTML = `
+      <div class="shutdown-message">
+        <h1>💀 Application Shutting Down</h1>
+        <p>The Python Puzzle Solver is being terminated...</p>
+        <p>You can safely close this tab.</p>
+        <p><em>All processes will stop within 5 seconds.</em></p>
+      </div>
+    `;
+    
+    document.body.style.pointerEvents = 'none';
+    
+    fetch('/kill', { method: 'POST' })
+      .then(() => {
+        setTimeout(() => {
+          window.close();
+          window.location.href = 'about:blank';
+        }, 3000);
+      })
+      .catch(() => {
+        setTimeout(() => {
+          window.close();
+          window.location.href = 'about:blank';
+        }, 3000);
+      });
+  }
+}
+
+setInterval(() => {
+  fetch('/health').catch(() => {
+    document.body.innerHTML = `
+      <div class="shutdown-message">
+        <h1>🔌 Application Stopped</h1>
+        <p>The server has been terminated.</p>
+        <p>You can safely close this tab.</p>
+      </div>
+    `;
+  });
+}, 10000);
 </script>
 """
 
@@ -430,6 +682,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def dashboard():
+    if not app_running:
+        return "Application is shutting down...", 503
+    
     txt_path = os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"])
     gpt_path = os.path.join(CONFIG["save_dir"], CONFIG["gpt_analysis"])
     
@@ -440,17 +695,20 @@ def dashboard():
         if os.path.exists(txt_path):
             with open(txt_path, "r") as f:
                 text = f.read()
-    except Exception:
-        pass
+    except: pass
         
     try:
         if os.path.exists(gpt_path):
             with open(gpt_path, "r") as f:
                 gpt_analysis = f.read()
-    except Exception:
-        pass
+    except: pass
     
     latest_img_exists = os.path.exists(os.path.join(CONFIG["save_dir"], CONFIG["latest"]))
+    
+    # Get additional information
+    balance = get_openai_balance()
+    python_processes = get_python_processes()
+    system_info = get_system_info()
     
     return render_template_string(
         TPL,
@@ -459,27 +717,81 @@ def dashboard():
         text=text,
         gpt_analysis=gpt_analysis,
         gpt_enabled=gpt_enabled,
+        gpt_analysis_enabled=is_gpt_analysis_enabled(),
         gpt_model=CONFIG["openai_model"],
         interval=CONFIG["interval"],
         image=latest_img_exists,
+        balance=balance,
+        python_processes=python_processes,
+        system_info=system_info,
         rand=int(time.time())
     )
 
 @app.route("/latest_image")
 def latest_image():
+    if not app_running:
+        return "Application is shutting down...", 503
     path = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
     return send_file(path, mimetype="image/png") if os.path.exists(path) else ("No image", 404)
 
-# ───────────────────────────── Main ───────────────────────────────────
+@app.route("/start_gpt", methods=["POST"])
+def start_gpt():
+    try:
+        start_gpt_analysis()
+        return {"success": True, "message": "GPT analysis started"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.route("/stop_gpt", methods=["POST"])
+def stop_gpt():
+    try:
+        stop_gpt_analysis()
+        return {"success": True, "message": "GPT analysis stopped"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.route("/kill", methods=["POST"])
+def kill_app():
+    try:
+        log("💀 Kill request received from web interface")
+        shutdown_application()
+        return {"success": True, "message": "Application terminating..."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.route("/health")
+def health():
+    return {"status": "running", "app_running": app_running}
+
 if __name__ == "__main__":
+    # Install psutil if not available
+    try:
+        import psutil
+    except ImportError:
+        log("📦 Installing psutil for system monitoring...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "psutil"], check=True)
+        import psutil
+    
+    # Load control state on startup
+    load_gpt_control_state()
+    
     Thread(target=worker, daemon=True).start()
     ip = socket.gethostbyname(socket.gethostname()) or "localhost"
-    log(f"🚀 Screen OCR + Python Puzzle Solver")
-    log(f"📊 Serving on http://{ip}:{CONFIG['port']}")
-    log(f"⏰ Capture interval: {CONFIG['interval']} seconds")
+    log(f"🚀 Python Puzzle Solver Started")
+    log(f"📊 Dashboard: http://{ip}:{CONFIG['port']}")
+    log(f"⏰ Interval: {CONFIG['interval']} seconds")
+    log(f"💰 OpenAI Balance: {get_openai_balance()}")
+    log("💀 KILL BUTTON: Available in dashboard")
     if gpt_enabled:
-        log(f"🧠 GPT Model: {CONFIG['openai_model']} - ✅ ENABLED")
-        log("🐍 PROMPT MODE: 'solve Python puzzle' prepended to all requests")
-        log("🛡️  Rate limit handling: ACTIVE (exponential backoff)")
-        log("⏱️  GPT cooldown: 60 seconds between calls")
-    app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)
+        log(f"🧠 Model: {CONFIG['openai_model']}")
+        log("🎯 PRIMARY TASK: 'solve Python puzzle'")
+        log(f"🔄 GPT Analysis: {'STARTED' if is_gpt_analysis_enabled() else 'STOPPED'}")
+        log("🎛️ Controls: Use Start/Stop buttons in dashboard")
+    
+    try:
+        app.run(host="0.0.0.0", port=CONFIG["port"], debug=False)
+    except KeyboardInterrupt:
+        log("👋 Application stopped by user")
+    finally:
+        worker_running = False
+        log("👋 Application shutdown complete")
