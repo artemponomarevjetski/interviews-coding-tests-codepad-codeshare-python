@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
 # Launch the screen-OCR Flask dashboard on port 5000 with proper environment setup
+# Supports both GPT and no-GPT modes (default: no-gpt)
+# Usage: ./launch-flask-on5000.sh [no-gpt|gpt]
 # ------------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -12,6 +14,15 @@ LOG_DIR="$FLASK_DIR/log"
 TEMP_DIR="$FLASK_DIR/temp"
 VENVDIR="$BASE_DIR/venv"
 REQUIREMENTS="$FLASK_DIR/requirements.txt"
+
+# Mode selection (default: no-gpt mode)
+MODE="${1:-no-gpt}"
+if [[ "$MODE" != "gpt" && "$MODE" != "no-gpt" ]]; then
+    echo "Usage: $0 [no-gpt|gpt]"
+    echo "  no-gpt: Disable GPT-4, OCR-only mode (default)"
+    echo "  gpt:    Enable GPT-4 analysis"
+    exit 1
+fi
 
 # Initialize directories
 mkdir -p "$LOG_DIR" "$TEMP_DIR"
@@ -62,7 +73,8 @@ cd "$FLASK_DIR"  # Ensure we're in the correct directory
 IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1 || echo "127.0.0.1")
 echo -e "\n\033[1;34m🌐 Dashboard will be on: http://$IP:5000\033[0m"
 
-echo -e "\n\033[1;34m🚀 Starting Flask application...\033[0m"
+echo -e "\n\033[1;34m🚀 Starting Flask application in $MODE mode...\033[0m"
+export GPT_MODE="$MODE"
 nohup python -u snapshot.py >"$LOG_DIR/flask.log" 2>&1 &
 FLASK_PID=$!
 disown "$FLASK_PID"
@@ -77,6 +89,7 @@ for ((i=1; i<=ATTEMPTS; i++)); do
     echo -e "\n\033[1;32m✅ System is operational!\033[0m"
     echo -e "🔍 View logs with: tail -f \"$LOG_DIR/flask.log\""
     echo -e "🖥️  Access at: http://$IP:5000"
+    echo -e "📝 Mode: $MODE"
     exit 0
   fi
   sleep "$INTERVAL"

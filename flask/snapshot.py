@@ -4,9 +4,9 @@ Screen OCR + Content Analyzer
 - Automatic snapshots with timestamps
 - Manual refresh for immediate capture
 - Aggregate conversation log
-- Auto-GPT when content changes
-- Manual prompts
-- Auto-balance updates
+- Auto-GPT when content changes (in GPT mode)
+- Manual prompts (in GPT mode)
+- Auto-balance updates (in GPT mode)
 """
 
 import os
@@ -43,7 +43,7 @@ CONFIG = {
     "balance_interval": 600,
     "retain": 50,
     "tesseract": None,
-    "openai_model": "gpt-4",
+    "openai_model": "gpt-4o",
 }
 os.makedirs(CONFIG["save_dir"], exist_ok=True)
 os.makedirs(CONFIG["log_dir"], exist_ok=True)
@@ -60,6 +60,9 @@ api_key = None
 last_text_hash = ""
 conversation_history = []
 last_manual_capture_time = 0
+
+mode = os.environ.get('GPT_MODE', 'no-gpt').lower()
+GPT_MODE = mode if mode in ['gpt', 'no-gpt'] else 'no-gpt'  # Validate like shell script
 
 def log(msg: str):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -97,9 +100,12 @@ def log_conversation(role: str, content: str, content_type: str = "text"):
     except Exception as e:
         log(f"❌ Error writing to aggregate log: {e}")
 
-# Load API key
+# Load API key - only if in GPT mode
 def load_api_key_from_env_file():
     """Load OpenAI API key from .env file"""
+    if GPT_MODE != 'gpt':
+        return None
+        
     env_path = os.path.join(os.path.dirname(__file__), '.env')
     if not os.path.exists(env_path):
         return None
@@ -116,22 +122,25 @@ def load_api_key_from_env_file():
         log(f"❌ Error reading .env: {e}")
         return None
 
-# Initialize API key
+# Initialize API key based on mode
 api_key = load_api_key_from_env_file()
-gpt_enabled = api_key is not None
+gpt_enabled = api_key is not None and GPT_MODE == 'gpt'
 
-if gpt_enabled:
-    log("✅ GPT-4 features enabled")
+if GPT_MODE == 'gpt':
+    if gpt_enabled:
+        log("✅ GPT-4 features enabled")
+    else:
+        log("⚠️ GPT mode requested but no API key found")
 else:
-    log("⚠️ GPT features disabled")
+    log("📝 OCR-ONLY mode: GPT features disabled")
 
-# Balance functions
+# Balance functions - only in GPT mode
 def get_balance_from_api():
     """Get current OpenAI balance from API or use fallback"""
     global current_balance, api_key
     
-    if not api_key:
-        log("⚠️ No API key available, using fallback balance")
+    if not api_key or GPT_MODE != 'gpt':
+        log("⚠️ No API key available or OCR-only mode, using fallback balance")
         return "$9.40"
     
     try:
@@ -165,19 +174,22 @@ def get_balance_from_api():
 def get_openai_balance():
     """Get current OpenAI balance - returns string value"""
     global current_balance
-    return current_balance
+    return current_balance if GPT_MODE == 'gpt' else "N/A (OCR-only mode)"
 
 def get_openai_pricing():
     """Get current OpenAI pricing information"""
     pricing = {
-        "gpt-4": {"input": 0.03, "output": 0.06},
-        "gpt-4-turbo-preview": {"input": 0.01, "output": 0.03},
+        "gpt-4o": {"input": 0.005, "output": 0.015},      # $5/$15 per 1M tokens
+        "gpt-4-turbo": {"input": 0.01, "output": 0.03},   # $10/$30 per 1M tokens
+        "gpt-4": {"input": 0.03, "output": 0.06},         # $30/$60 per 1M tokens
         "gpt-3.5-turbo": {"input": 0.0015, "output": 0.002},
     }
-    return pricing.get(CONFIG["openai_model"], {"input": 0.03, "output": 0.06})
+    return pricing.get(CONFIG["openai_model"], pricing["gpt-4o"])
 
 def estimate_cost(text):
     """Estimate cost for processing text"""
+    if GPT_MODE != 'gpt':
+        return 0.0
     pricing = get_openai_pricing()
     estimated_tokens = len(text) / 4
     cost = (estimated_tokens / 1000) * pricing["input"]
@@ -185,6 +197,8 @@ def estimate_cost(text):
 
 def get_estimated_requests():
     """Calculate estimated remaining GPT-4 requests"""
+    if GPT_MODE != 'gpt':
+        return 0
     try:
         balance_clean = current_balance.replace('$', '').strip()
         balance_float = float(balance_clean)
@@ -288,14 +302,54 @@ def instant_capture():
         maintain_latest_symlink(shot)
         return shot, None
 
+def capture_snapshot():
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    img = os.path.join(CONFIG["save_dir"], f"snap_{ts}.png")
+    cmds = [
+        ["screencapture", "-x", "-l", "-o", img],
+        ["screencapture", "-x", "-m", "-o", img], 
+        ["screencapture", "-x", "-o", img],
+    ]
+    for cmd in cmds:
+        try:
+            subprocess.run(cmd, check=True, timeout=5, capture_output=True)
+            if os.path.getsize(img) > 0:
+                return img
+        except Exception:
+            pass
+    if os.path.exists(img):
+        os.remove(img)
+    return None
+
+def _prep_for_ocr(img):
+    img = img.convert("L")
+    img = ImageEnhance.Contrast(img).enhance(2.0)
+    img = img.filter(ImageFilter.SHARPEN)
+    return img.point(lambda x: 0 if x < 140 else 255)
+
+def extract_text(path):
+    if not detect_tesseract():
+        return ""
+    text = ""
+    try:
+        prepped = _prep_for_ocr(Image.open(path))
+        for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11"):
+            t = pytesseract.image_to_string(prepped, config=cfg)
+            if len(t) > len(text):
+                text = t
+    except Exception as e:
+        log(f"❌ OCR error: {e}")
+    return text.strip()
+
 def send_to_gpt_api(ocr_text: str, auto_mode: bool = False) -> str:
+    """Send text to GPT API - only works in GPT mode"""
     global last_api_call_time, last_api_content_preview, total_api_cost, current_balance
     
     if not ocr_text.strip():
         return "No text extracted from image"
     
-    if not gpt_enabled:
-        return "GPT analysis unavailable"
+    if not gpt_enabled or GPT_MODE != 'gpt':
+        return "GPT analysis unavailable (OCR-only mode)"
     
     try:
         truncated_text = ocr_text[:2500]
@@ -401,51 +455,12 @@ RESPONSE FORMAT:
         log(f"❌ GPT-4 API error: {e}")
         return f"API Error: {e}. Please try again."
 
-def capture_snapshot():
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    img = os.path.join(CONFIG["save_dir"], f"snap_{ts}.png")
-    cmds = [
-        ["screencapture", "-x", "-l", "-o", img],
-        ["screencapture", "-x", "-m", "-o", img], 
-        ["screencapture", "-x", "-o", img],
-    ]
-    for cmd in cmds:
-        try:
-            subprocess.run(cmd, check=True, timeout=5, capture_output=True)
-            if os.path.getsize(img) > 0:
-                return img
-        except Exception:
-            pass
-    if os.path.exists(img):
-        os.remove(img)
-    return None
-
-def _prep_for_ocr(img):
-    img = img.convert("L")
-    img = ImageEnhance.Contrast(img).enhance(2.0)
-    img = img.filter(ImageFilter.SHARPEN)
-    return img.point(lambda x: 0 if x < 140 else 255)
-
-def extract_text(path):
-    if not detect_tesseract():
-        return ""
-    text = ""
-    try:
-        prepped = _prep_for_ocr(Image.open(path))
-        for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11"):
-            t = pytesseract.image_to_string(prepped, config=cfg)
-            if len(t) > len(text):
-                text = t
-    except Exception as e:
-        log(f"❌ OCR error: {e}")
-    return text.strip()
-
 def balance_updater():
-    """Update balance automatically every 10 minutes"""
+    """Update balance automatically every 10 minutes - only in GPT mode"""
     while worker_running:
         try:
             time.sleep(CONFIG["balance_interval"])
-            if worker_running:
+            if worker_running and GPT_MODE == 'gpt':
                 global current_balance
                 new_balance = get_balance_from_api()
                 current_balance = new_balance
@@ -474,10 +489,10 @@ def worker():
             # Log OCR text to conversation
             log_conversation("system", f"OCR extracted {len(txt)} characters", "ocr_result")
             
-            # AUTO-GPT: Send to GPT if content changed and enough time passed
+            # AUTO-GPT: Only in GPT mode
             current_time = time.time()
             if (current_hash != last_text_hash and 
-                gpt_enabled and 
+                gpt_enabled and GPT_MODE == 'gpt' and
                 (current_time - last_gpt_call_time) >= CONFIG["gpt_interval"]):
                 
                 log("🎯 AUTO-GPT: Content changed, sending to GPT-4...")
@@ -491,7 +506,8 @@ def worker():
                 last_text_hash = current_hash
             
             if worker_running:
-                log(f"📸 AUTO-CAPTURE: {len(txt)} characters | Next in {CONFIG['interval']}s")
+                mode_info = "GPT" if GPT_MODE == 'gpt' else "OCR-ONLY"
+                log(f"📸 {mode_info} CAPTURE: {len(txt)} characters | Next in {CONFIG['interval']}s")
         else:
             if worker_running:
                 log("📸 AUTO-CAPTURE: No text extracted")
@@ -521,10 +537,10 @@ def kill_python_process():
         log(f"❌ Kill error: {e}")
         os._exit(1)
 
-# Flask UI - Simplified template
+# Flask UI - Mode-aware template
 TPL = """
 <!doctype html>
-<title>Content Analyzer</title>
+<title>Content Analyzer - {{ "GPT" if gpt_mode == "gpt" else "OCR-ONLY" }} Mode</title>
 <style>
 body{font-family:Inter,Arial,sans-serif;background:#f8f9fa;margin:20px}
 .container{max-width:1200px;background:#fff;border-radius:8px;padding:20px;margin:auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}
@@ -563,10 +579,24 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
 .cost-info{background:#fff3cd;border-left:4px solid #ffc107;color:#856404;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
 .auto-mode{background:#fff3cd;border-left:4px solid #ff9800;color:#e65100;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
 .instant-mode{background:#ffebee;border-left:4px solid #ff6b00;color:#c62828;padding:10px;border-radius:6px;margin:10px 0;font-size:0.9em}
+.mode-indicator {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #fff;
+    margin-left: 10px;
+}
+.mode-gpt { background: #28a745; }
+.mode-ocr { background: #6c757d; }
 </style>
 
 <div class="container">
-  <h1>Content Analyzer</h1>
+  <h1>Content Analyzer 
+    <span class="mode-indicator {{ 'mode-gpt' if gpt_mode == 'gpt' else 'mode-ocr' }}">
+      {{ "GPT MODE" if gpt_mode == "gpt" else "OCR-ONLY MODE" }}
+    </span>
+  </h1>
   <div class="meta">Last updated: {{ts}} | Status: <span class="status">{{status}}</span></div>
 
   <!-- CONTROLS -->
@@ -574,8 +604,10 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     <button class="btn btn-copy" onclick="copyAllText()">Copy All Text</button>
     <button class="btn btn-refresh" onclick="location.reload()">Refresh Page</button>
     <button class="btn btn-instant" onclick="instantCapture()" id="instantBtn">📸 INSTANT Capture</button>
+    {% if gpt_mode == "gpt" %}
     <button class="btn btn-prompt" onclick="sendPrompt()" id="promptBtn">🚀 INSTANT GPT Prompt</button>
     <a href="https://platform.openai.com/account/billing" target="_blank" class="btn btn-billing">💰 Check Usage</a>
+    {% endif %}
   </div>
 
   {% if last_manual_capture %}
@@ -586,7 +618,8 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   </div>
   {% endif %}
 
-  <!-- Balance Information -->
+  {% if gpt_mode == "gpt" %}
+  <!-- Balance Information (GPT mode only) -->
   <div class="balance-info">
     <h3>💰 OpenAI Balance: {{balance}}</h3>
     <p><em>GPT-4: ~$0.03 per 1K tokens | Screenshots/OCR: Free</em></p>
@@ -614,6 +647,14 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   <div class="warning">
     <h3>⚠️ GPT Analysis Disabled</h3>
     <p>OpenAI API key not found in .env file</p>
+  </div>
+  {% endif %}
+  {% else %}
+  <!-- OCR-only mode info -->
+  <div class="system-info">
+    <h3>📝 OCR-ONLY MODE</h3>
+    <p>GPT analysis is disabled. Only screenshot capture and OCR are active.</p>
+    <p>Run with <code>./launch-flask-on5000.sh gpt</code> to enable GPT features.</p>
   </div>
   {% endif %}
 
@@ -754,6 +795,7 @@ function instantCapture() {
     });
 }
 
+{% if gpt_mode == "gpt" %}
 function sendPrompt() {
     const button = document.getElementById('promptBtn');
     button.disabled = true;
@@ -777,6 +819,7 @@ function sendPrompt() {
         button.innerHTML = '🚀 INSTANT GPT Prompt';
     });
 }
+{% endif %}
 
 function showNotification(message, type) {
     const notification = document.createElement('div');
@@ -848,6 +891,7 @@ def dashboard():
         text=text,
         gpt_analysis=gpt_analysis,
         gpt_enabled=gpt_enabled,
+        gpt_mode=GPT_MODE,
         gpt_model=CONFIG["openai_model"],
         interval=CONFIG["interval"],
         gpt_interval=CONFIG["gpt_interval"],
@@ -859,7 +903,7 @@ def dashboard():
         last_api_time=last_api_time,
         last_content_preview=last_content_preview,
         total_cost=total_api_cost,
-        auto_gpt_active=gpt_enabled,
+        auto_gpt_active=gpt_enabled and GPT_MODE == 'gpt',
         last_manual_capture=last_manual_capture,
         rand=int(time.time())
     )
@@ -899,7 +943,10 @@ def instant_capture_endpoint():
 
 @app.route("/manual_prompt", methods=["POST"])
 def manual_prompt():
-    """Manual prompt endpoint - sends current OCR text to GPT-4 INSTANTLY"""
+    """Manual prompt endpoint - sends current OCR text to GPT-4 INSTANTLY (GPT mode only)"""
+    if GPT_MODE != 'gpt':
+        return jsonify({"success": False, "error": "GPT features are disabled in OCR-only mode"})
+        
     try:
         txt_path = os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"])
         if not os.path.exists(txt_path):
@@ -926,7 +973,7 @@ def manual_prompt():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "running", "app_running": app_running})
+    return jsonify({"status": "running", "app_running": app_running, "gpt_mode": GPT_MODE})
 
 if __name__ == "__main__":
     # Install psutil if not available
@@ -937,17 +984,26 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, "-m", "pip", "install", "psutil"], check=True)
         import psutil
     
-    # Initialize balance
-    current_balance = get_balance_from_api()
+    # Initialize balance only in GPT mode
+    if GPT_MODE == 'gpt':
+        current_balance = get_balance_from_api()
+    else:
+        current_balance = "N/A"
     
     # Start all threads
     Thread(target=worker, daemon=True).start()
-    Thread(target=balance_updater, daemon=True).start()
+    if GPT_MODE == 'gpt':
+        Thread(target=balance_updater, daemon=True).start()
     
     ip = socket.gethostbyname(socket.gethostname()) or "localhost"
-    log(f"🚀 Content Analyzer Started")
+    log(f"🚀 Content Analyzer Started - {GPT_MODE.upper()} MODE")
     log(f"📊 Dashboard: http://{ip}:{CONFIG['port']}")
-    log(f"💰 OpenAI Balance: {get_openai_balance()}")
+    
+    if GPT_MODE == 'gpt':
+        log(f"💰 OpenAI Balance: {get_openai_balance()}")
+        log("🎯 Auto-GPT: Enabled")
+    else:
+        log("📝 OCR-ONLY: GPT features disabled")
     
     try:
         app.run(host="0.0.0.0", port=CONFIG["port"], debug=False, threaded=True)
