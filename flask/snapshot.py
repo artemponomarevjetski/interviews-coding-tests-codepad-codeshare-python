@@ -537,7 +537,7 @@ def kill_python_process():
         log(f"❌ Kill error: {e}")
         os._exit(1)
 
-# Flask UI - Mode-aware template
+# Flask UI - Mode-aware template WITH WORKING COPY BUTTON
 TPL = """
 <!doctype html>
 <title>Content Analyzer - {{ "GPT" if gpt_mode == "gpt" else "OCR-ONLY" }} Mode</title>
@@ -610,6 +610,36 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     {% endif %}
   </div>
 
+  <!-- PRIMARY CONTENT - TOP OF PAGE -->
+  {% if gpt_analysis %}
+    {% if "error" in gpt_analysis.lower() or "429" in gpt_analysis %}
+    <div class="error">
+      <h3>❌ Analysis Failed</h3>
+      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
+    </div>
+    {% else %}
+    <div class="success">
+      <h3>✅ GPT-4 Analysis Result:</h3>
+      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  {% if image %}
+  <div class="imgwrap">
+    <h3>📸 Latest Screenshot:</h3>
+    <img src="/latest_image?{{rand}}" alt="Latest screenshot">
+  </div>
+  {% endif %}
+
+  {% if text %}
+  <div class="system-info">
+    <h3>📄 Raw OCR Text:</h3>
+    <pre id="ocrText">{{text|safe}}</pre>
+  </div>
+  {% endif %}
+
+  <!-- INFORMATIONAL SECTIONS - BOTTOM OF PAGE -->
   {% if last_manual_capture %}
   <div class="instant-mode">
     <h3>🎯 INSTANT CAPTURE ACTIVE</h3>
@@ -705,70 +735,56 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     <p>No Python processes found or error retrieving process information.</p>
     {% endif %}
   </div>
-
-  {% if gpt_analysis %}
-    {% if "error" in gpt_analysis.lower() or "429" in gpt_analysis %}
-    <div class="error">
-      <h3>❌ Analysis Failed</h3>
-      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
-    </div>
-    {% else %}
-    <div class="success">
-      <h3>✅ GPT-4 Analysis Result:</h3>
-      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
-    </div>
-    {% endif %}
-  {% endif %}
-
-  {% if image %}
-  <div class="imgwrap">
-    <h3>📸 Latest Screenshot:</h3>
-    <img src="/latest_image?{{rand}}" alt="Latest screenshot">
-  </div>
-  {% endif %}
-
-  {% if text %}
-  <div class="system-info">
-    <h3>📄 Raw OCR Text:</h3>
-    <pre id="ocrText">{{text|safe}}</pre>
-  </div>
-  {% endif %}
 </div>
 
 <script>
+// SIMPLE AND RELIABLE COPY FUNCTION - FIXED!
 function copyAllText(){ 
+    console.log('📋 Copy All Text clicked');
+    
+    const gptText = document.getElementById('gptAnalysis');
     const ocrText = document.getElementById('ocrText');
     let fullText = '';
     
-    if (ocrText && ocrText.textContent.trim()) {
-        const rawText = ocrText.textContent.trim();
-        const decodedText = decodeHtmlEntities(rawText);
-        fullText = '📄 RAW OCR TEXT FROM SCREENSHOT:\n' + decodedText;
-        
-        navigator.clipboard.writeText(fullText).then(() => {
-            showNotification('✅ OCR text copied to clipboard!', 'success');
-        }).catch(err => {
-            const textArea = document.createElement('textarea');
-            textArea.value = fullText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showNotification('✅ OCR text copied to clipboard!', 'success');
-            } catch (fallbackErr) {
-                showNotification('❌ Failed to copy text', 'error');
-            }
-            document.body.removeChild(textArea);
-        });
-    } else {
-        showNotification('❌ No OCR text available to copy!', 'error');
+    // Add GPT analysis if available
+    if (gptText && gptText.textContent && gptText.textContent.trim()) {
+        fullText += '🤖 GPT ANALYSIS:\\n' + gptText.textContent.trim() + '\\n\\n';
     }
-}
-
-function decodeHtmlEntities(html) {
+    
+    // Add OCR text if available
+    if (ocrText && ocrText.textContent && ocrText.textContent.trim()) {
+        fullText += '📄 RAW OCR TEXT:\\n' + ocrText.textContent.trim();
+    }
+    
+    // If no text found
+    if (!fullText.trim()) {
+        alert('❌ No text available to copy!');
+        return;
+    }
+    
+    // Create temporary textarea for copying
     const textArea = document.createElement('textarea');
-    textArea.innerHTML = html;
-    return textArea.value;
+    textArea.value = fullText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    
+    try {
+        // Try to copy
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            console.log('✅ Text copied to clipboard successfully');
+            showNotification('✅ All text copied to clipboard!', 'success');
+        } else {
+            console.error('❌ Copy command failed');
+            showNotification('❌ Failed to copy text', 'error');
+        }
+    } catch (err) {
+        console.error('❌ Copy error:', err);
+        document.body.removeChild(textArea);
+        showNotification('❌ Failed to copy text', 'error');
+    }
 }
 
 function instantCapture() {
