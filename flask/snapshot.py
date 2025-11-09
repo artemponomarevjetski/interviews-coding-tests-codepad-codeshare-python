@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 """
 Screen OCR + Content Analyzer
-- Automatic snapshots with timestamps
-- Manual refresh for immediate capture
-- Aggregate conversation log
-- Auto-GPT when content changes (in GPT mode)
-- Manual prompts (in GPT mode)
-- Auto-balance updates (in GPT mode)
+================================
+
+A Flask application that captures screenshots, performs OCR, and optionally 
+analyzes content using GPT-4. Runs in two modes:
+- GPT mode: Full AI-powered analysis with OpenAI API
+- OCR-only mode: Local screenshot capture and text extraction only
+
+Features:
+- Automatic screenshots with configurable intervals
+- Manual instant capture on demand
+- Real-time OCR text extraction
+- GPT-4 analysis when content changes (GPT mode only)
+- Manual GPT prompts (GPT mode only)
+- System monitoring and process tracking
+- Web dashboard with live updates
+
+Security:
+- In OCR-only mode: Zero API calls, complete offline operation
+- In GPT mode: Secure API key handling with cost tracking
+
+Directory Structure:
+~/interviews-coding-tests-codepad-codeshare-python/
+├── flask/
+│   ├── temp/           # ALL files: screenshots, OCR text, GPT analysis, logs
+│   ├── snapshot.py     # This application
+│   ├── requirements.txt
+│   └── .env            # API keys (GPT mode only)
 """
 
 import os
@@ -27,44 +48,77 @@ from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import requests
 
-# Configuration
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+# Base directory for the entire project
 BASE = os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python")
+
 CONFIG = {
-    "save_dir": f"{BASE}/temp",
-    "log_dir": f"{BASE}/log", 
+    # Storage directories - ALL in flask/temp
+    "save_dir": f"{BASE}/flask/temp",      # Screenshots, OCR text, GPT analysis
+    "log_dir": f"{BASE}/flask/temp",       # Application logs also in temp
+    
+    # File names
     "log_file": "snapshot.log",
     "aggregate_log": "aggregate_conversation.txt",
     "latest": "snap_latest.png",
     "ocr_txt": "snapshot.txt",
     "gpt_analysis": "gpt_analysis.txt",
+    
+    # Timing intervals (seconds)
     "port": 5000,
-    "interval": 10,
-    "gpt_interval": 20,
-    "balance_interval": 600,
-    "retain": 50,
-    "tesseract": None,
-    "openai_model": "gpt-4o",
+    "interval": 10,           # Screenshot capture interval
+    "gpt_interval": 20,       # Minimum time between GPT API calls
+    "balance_interval": 600,  # Balance update interval (GPT mode only)
+    
+    # Resource management
+    "retain": 50,            # Maximum screenshots to keep
+    "tesseract": None,       # Will be auto-detected
+    "openai_model": "gpt-4o", # GPT model to use
 }
+
+# Ensure directories exist
 os.makedirs(CONFIG["save_dir"], exist_ok=True)
 os.makedirs(CONFIG["log_dir"], exist_ok=True)
 
-# Global control variables
-worker_running = True
-app_running = True
-control_lock = Lock()
+# =============================================================================
+# GLOBAL VARIABLES & STATE MANAGEMENT
+# =============================================================================
+
+# Application control flags
+worker_running = True    # Controls the background screenshot worker
+app_running = True       # Controls the Flask application
+control_lock = Lock()    # Thread synchronization
+
+# GPT API state (only used in GPT mode)
 last_api_call_time = None
 last_api_content_preview = ""
 total_api_cost = 0.0
 current_balance = None
 api_key = None
-last_text_hash = ""
-conversation_history = []
-last_manual_capture_time = 0
 
+# Content tracking
+last_text_hash = ""              # Hash of last OCR text for change detection
+conversation_history = []        # In-memory conversation log
+last_manual_capture_time = 0     # Timestamp of last manual capture
+
+# Mode detection and validation
 mode = os.environ.get('GPT_MODE', 'no-gpt').lower()
-GPT_MODE = mode if mode in ['gpt', 'no-gpt'] else 'no-gpt'  # Validate like shell script
+GPT_MODE = mode if mode in ['gpt', 'no-gpt'] else 'no-gpt'
+
+# =============================================================================
+# LOGGING & UTILITY FUNCTIONS
+# =============================================================================
 
 def log(msg: str):
+    """
+    Unified logging function that writes to both console and log file.
+    
+    Args:
+        msg: Message to log with timestamp
+    """
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = os.path.join(CONFIG["log_dir"], CONFIG["log_file"])
     with open(path, "a") as fh:
@@ -73,7 +127,14 @@ def log(msg: str):
     print(f"[{ts}] {msg}")
 
 def log_conversation(role: str, content: str, content_type: str = "text"):
-    """Log to aggregate conversation file"""
+    """
+    Log conversation entries to both in-memory history and aggregate log file.
+    
+    Args:
+        role: 'user', 'assistant', or 'system'
+        content: The text content to log
+        content_type: Type of content ('ocr_result', 'gpt_analysis', etc.)
+    """
     global conversation_history
     
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -89,7 +150,7 @@ def log_conversation(role: str, content: str, content_type: str = "text"):
     if len(conversation_history) > 100:
         conversation_history.pop(0)
     
-    # Append to file
+    # Append to persistent log file
     aggregate_path = os.path.join(CONFIG["log_dir"], CONFIG["aggregate_log"])
     try:
         with open(aggregate_path, "a", encoding="utf-8") as f:
@@ -100,9 +161,17 @@ def log_conversation(role: str, content: str, content_type: str = "text"):
     except Exception as e:
         log(f"❌ Error writing to aggregate log: {e}")
 
-# Load API key - only if in GPT mode
+# =============================================================================
+# API KEY MANAGEMENT (GPT MODE ONLY)
+# =============================================================================
+
 def load_api_key_from_env_file():
-    """Load OpenAI API key from .env file"""
+    """
+    Load OpenAI API key from .env file - only in GPT mode.
+    
+    Returns:
+        API key string or None if not found or not in GPT mode
+    """
     if GPT_MODE != 'gpt':
         return None
         
@@ -126,6 +195,7 @@ def load_api_key_from_env_file():
 api_key = load_api_key_from_env_file()
 gpt_enabled = api_key is not None and GPT_MODE == 'gpt'
 
+# Log mode status
 if GPT_MODE == 'gpt':
     if gpt_enabled:
         log("✅ GPT-4 features enabled")
@@ -134,9 +204,17 @@ if GPT_MODE == 'gpt':
 else:
     log("📝 OCR-ONLY mode: GPT features disabled")
 
-# Balance functions - only in GPT mode
+# =============================================================================
+# OPENAI API FUNCTIONS (GPT MODE ONLY)
+# =============================================================================
+
 def get_balance_from_api():
-    """Get current OpenAI balance from API or use fallback"""
+    """
+    Get current OpenAI balance from API or use fallback.
+    
+    Returns:
+        Balance string like "$9.40" or fallback if API unavailable
+    """
     global current_balance, api_key
     
     if not api_key or GPT_MODE != 'gpt':
@@ -177,7 +255,7 @@ def get_openai_balance():
     return current_balance if GPT_MODE == 'gpt' else "N/A (OCR-only mode)"
 
 def get_openai_pricing():
-    """Get current OpenAI pricing information"""
+    """Get current OpenAI pricing information per 1K tokens"""
     pricing = {
         "gpt-4o": {"input": 0.005, "output": 0.015},      # $5/$15 per 1M tokens
         "gpt-4-turbo": {"input": 0.01, "output": 0.03},   # $10/$30 per 1M tokens
@@ -187,16 +265,16 @@ def get_openai_pricing():
     return pricing.get(CONFIG["openai_model"], pricing["gpt-4o"])
 
 def estimate_cost(text):
-    """Estimate cost for processing text"""
+    """Estimate cost for processing text - returns 0 in OCR-only mode"""
     if GPT_MODE != 'gpt':
         return 0.0
     pricing = get_openai_pricing()
-    estimated_tokens = len(text) / 4
+    estimated_tokens = len(text) / 4  # Rough estimation
     cost = (estimated_tokens / 1000) * pricing["input"]
     return max(0.01, cost)
 
 def get_estimated_requests():
-    """Calculate estimated remaining GPT-4 requests"""
+    """Calculate estimated remaining GPT-4 requests - returns 0 in OCR-only mode"""
     if GPT_MODE != 'gpt':
         return 0
     try:
@@ -209,8 +287,12 @@ def get_estimated_requests():
     except:
         return 300
 
+# =============================================================================
+# SYSTEM MONITORING FUNCTIONS
+# =============================================================================
+
 def get_python_processes():
-    """Get current Python processes in the system"""
+    """Get current Python processes in the system with memory usage"""
     try:
         python_processes = []
         for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info']):
@@ -234,7 +316,7 @@ def get_python_processes():
         return [{'error': f'Failed to get processes: {str(e)}'}]
 
 def get_system_info():
-    """Get system information"""
+    """Get comprehensive system information (CPU, memory, disk)"""
     try:
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
@@ -258,7 +340,12 @@ def get_system_info():
     except Exception as e:
         return {'error': f'Failed to get system info: {str(e)}'}
 
+# =============================================================================
+# SCREENSHOT & OCR FUNCTIONS
+# =============================================================================
+
 def detect_tesseract():
+    """Auto-detect Tesseract OCR executable path"""
     if CONFIG["tesseract"]:
         return True
     for p in ("/opt/homebrew/bin/tesseract", "/usr/local/bin/tesseract", 
@@ -270,6 +357,12 @@ def detect_tesseract():
     return False
 
 def maintain_latest_symlink(new_img):
+    """
+    Maintain symlink to latest screenshot and manage screenshot retention.
+    
+    Args:
+        new_img: Path to the new screenshot file
+    """
     link = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
     try:
         if os.path.islink(link) or os.path.exists(link):
@@ -277,13 +370,20 @@ def maintain_latest_symlink(new_img):
         os.symlink(new_img, link)
     except OSError:
         shutil.copy2(new_img, link)
+    
+    # Clean up old screenshots beyond retention limit
     shots = sorted(f for f in os.listdir(CONFIG["save_dir"])
                    if f.startswith("snap_") and f.endswith(".png"))
     while len(shots) > CONFIG["retain"]:
         os.remove(os.path.join(CONFIG["save_dir"], shots.pop(0)))
 
 def instant_capture():
-    """Take an immediate screenshot and process it"""
+    """
+    Take an immediate screenshot and process it - triggered by user action.
+    
+    Returns:
+        Tuple of (screenshot_path, extracted_text) or (None, None) on failure
+    """
     log("🎯 INSTANT CAPTURE: Manual refresh requested")
     shot = capture_snapshot()
     if not shot:
@@ -303,13 +403,22 @@ def instant_capture():
         return shot, None
 
 def capture_snapshot():
+    """
+    Capture screenshot using macOS screencapture command.
+    
+    Returns:
+        Path to captured image file or None on failure
+    """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     img = os.path.join(CONFIG["save_dir"], f"snap_{ts}.png")
+    
+    # Try different screencapture methods
     cmds = [
-        ["screencapture", "-x", "-l", "-o", img],
-        ["screencapture", "-x", "-m", "-o", img], 
-        ["screencapture", "-x", "-o", img],
+        ["screencapture", "-x", "-l", "-o", img],  # Capture active window
+        ["screencapture", "-x", "-m", "-o", img],  # Capture menu
+        ["screencapture", "-x", "-o", img],        # Capture entire screen
     ]
+    
     for cmd in cmds:
         try:
             subprocess.run(cmd, check=True, timeout=5, capture_output=True)
@@ -317,22 +426,43 @@ def capture_snapshot():
                 return img
         except Exception:
             pass
+    
+    # Clean up failed capture
     if os.path.exists(img):
         os.remove(img)
     return None
 
 def _prep_for_ocr(img):
-    img = img.convert("L")
-    img = ImageEnhance.Contrast(img).enhance(2.0)
-    img = img.filter(ImageFilter.SHARPEN)
-    return img.point(lambda x: 0 if x < 140 else 255)
+    """
+    Preprocess image for better OCR results.
+    
+    Args:
+        img: PIL Image object
+        
+    Returns:
+        Preprocessed PIL Image
+    """
+    img = img.convert("L")  # Convert to grayscale
+    img = ImageEnhance.Contrast(img).enhance(2.0)  # Enhance contrast
+    img = img.filter(ImageFilter.SHARPEN)  # Sharpen image
+    return img.point(lambda x: 0 if x < 140 else 255)  # Thresholding
 
 def extract_text(path):
+    """
+    Extract text from image using Tesseract OCR.
+    
+    Args:
+        path: Path to image file
+        
+    Returns:
+        Extracted text string or empty string on failure
+    """
     if not detect_tesseract():
         return ""
     text = ""
     try:
         prepped = _prep_for_ocr(Image.open(path))
+        # Try different OCR configurations for best results
         for cfg in ("--oem 3 --psm 6", "--oem 3 --psm 11"):
             t = pytesseract.image_to_string(prepped, config=cfg)
             if len(t) > len(text):
@@ -341,18 +471,32 @@ def extract_text(path):
         log(f"❌ OCR error: {e}")
     return text.strip()
 
+# =============================================================================
+# GPT API INTEGRATION (GPT MODE ONLY)
+# =============================================================================
+
 def send_to_gpt_api(ocr_text: str, auto_mode: bool = False) -> str:
-    """Send text to GPT API - only works in GPT mode"""
+    """
+    Send text to GPT API for analysis - only works in GPT mode.
+    
+    Args:
+        ocr_text: Text extracted from screenshot
+        auto_mode: True if auto-triggered, False if manual
+        
+    Returns:
+        GPT analysis result or error message
+    """
     global last_api_call_time, last_api_content_preview, total_api_cost, current_balance
     
     if not ocr_text.strip():
         return "No text extracted from image"
     
+    # Safety check: Block API calls in OCR-only mode
     if not gpt_enabled or GPT_MODE != 'gpt':
         return "GPT analysis unavailable (OCR-only mode)"
     
     try:
-        truncated_text = ocr_text[:2500]
+        truncated_text = ocr_text[:2500]  # Limit input size
         last_api_content_preview = truncated_text[:100] + "..." if len(truncated_text) > 100 else truncated_text
         last_api_call_time = datetime.now()
         
@@ -455,6 +599,10 @@ RESPONSE FORMAT:
         log(f"❌ GPT-4 API error: {e}")
         return f"API Error: {e}. Please try again."
 
+# =============================================================================
+# BACKGROUND WORKERS
+# =============================================================================
+
 def balance_updater():
     """Update balance automatically every 10 minutes - only in GPT mode"""
     while worker_running:
@@ -469,6 +617,10 @@ def balance_updater():
             log(f"❌ Auto-balance update error: {e}")
 
 def worker():
+    """
+    Main background worker that captures screenshots and processes them.
+    Handles automatic GPT analysis when content changes (GPT mode only).
+    """
     global last_text_hash
     last_gpt_call_time = 0
     
@@ -483,13 +635,14 @@ def worker():
         current_hash = hash(txt) if txt else ""
         
         if txt:
+            # Save OCR text to file
             with open(os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"]), "w") as f:
                 f.write(txt)
             
             # Log OCR text to conversation
             log_conversation("system", f"OCR extracted {len(txt)} characters", "ocr_result")
             
-            # AUTO-GPT: Only in GPT mode
+            # AUTO-GPT: Only in GPT mode with content change detection
             current_time = time.time()
             if (current_hash != last_text_hash and 
                 gpt_enabled and GPT_MODE == 'gpt' and
@@ -519,12 +672,12 @@ def worker():
     log("👋 Worker thread stopped")
 
 def kill_python_process():
-    """Simple and reliable process termination"""
+    """Clean process termination with proper thread shutdown"""
     try:
         current_pid = os.getpid()
         log(f"💀 AUTO-KILL: Terminating process PID {current_pid}")
         
-        # Stop all threads
+        # Stop all threads gracefully
         global worker_running, app_running
         worker_running = False
         app_running = False
@@ -537,7 +690,11 @@ def kill_python_process():
         log(f"❌ Kill error: {e}")
         os._exit(1)
 
-# Flask UI - Mode-aware template WITH WORKING COPY BUTTON
+# =============================================================================
+# FLASK WEB APPLICATION
+# =============================================================================
+
+# Flask UI template
 TPL = """
 <!doctype html>
 <title>Content Analyzer - {{ "GPT" if gpt_mode == "gpt" else "OCR-ONLY" }} Mode</title>
@@ -859,14 +1016,15 @@ function showNotification(message, type) {
 """
 
 app = Flask(__name__)
-
 last_manual_capture_time = 0
 
 @app.route("/")
 def dashboard():
+    """Main dashboard route - serves the web interface"""
     if not app_running:
         return "Application is shutting down...", 503
     
+    # Load current OCR text and GPT analysis
     txt_path = os.path.join(CONFIG["save_dir"], CONFIG["ocr_txt"])
     gpt_path = os.path.join(CONFIG["save_dir"], CONFIG["gpt_analysis"])
     
@@ -887,13 +1045,13 @@ def dashboard():
     
     latest_img_exists = os.path.exists(os.path.join(CONFIG["save_dir"], CONFIG["latest"]))
     
-    # Get additional information
+    # Get system information for dashboard
     balance = get_openai_balance()
     python_processes = get_python_processes()
     system_info = get_system_info()
     estimated_requests = get_estimated_requests()
     
-    # Format last API call time
+    # Format timestamps for display
     last_api_time = "Never" if last_api_call_time is None else last_api_call_time.strftime("%Y-%m-%d %H:%M:%S")
     last_content_preview = last_api_content_preview if last_api_content_preview else "No content analyzed yet"
     
@@ -926,6 +1084,7 @@ def dashboard():
 
 @app.route("/latest_image")
 def latest_image():
+    """Serve the latest screenshot image"""
     if not app_running:
         return "Application is shutting down...", 503
     path = os.path.join(CONFIG["save_dir"], CONFIG["latest"])
@@ -939,7 +1098,7 @@ def latest_image():
 
 @app.route("/instant_capture", methods=["POST"])
 def instant_capture_endpoint():
-    """Take an immediate screenshot when user clicks INSTANT Capture"""
+    """API endpoint for manual screenshot capture"""
     global last_manual_capture_time
     try:
         shot, txt = instant_capture()
@@ -959,7 +1118,7 @@ def instant_capture_endpoint():
 
 @app.route("/manual_prompt", methods=["POST"])
 def manual_prompt():
-    """Manual prompt endpoint - sends current OCR text to GPT-4 INSTANTLY (GPT mode only)"""
+    """API endpoint for manual GPT prompts - disabled in OCR-only mode"""
     if GPT_MODE != 'gpt':
         return jsonify({"success": False, "error": "GPT features are disabled in OCR-only mode"})
         
@@ -989,7 +1148,12 @@ def manual_prompt():
 
 @app.route("/health")
 def health():
+    """Health check endpoint"""
     return jsonify({"status": "running", "app_running": app_running, "gpt_mode": GPT_MODE})
+
+# =============================================================================
+# APPLICATION STARTUP
+# =============================================================================
 
 if __name__ == "__main__":
     # Install psutil if not available
@@ -1006,11 +1170,12 @@ if __name__ == "__main__":
     else:
         current_balance = "N/A"
     
-    # Start all threads
+    # Start background threads
     Thread(target=worker, daemon=True).start()
     if GPT_MODE == 'gpt':
         Thread(target=balance_updater, daemon=True).start()
     
+    # Display startup information
     ip = socket.gethostbyname(socket.gethostname()) or "localhost"
     log(f"🚀 Content Analyzer Started - {GPT_MODE.upper()} MODE")
     log(f"📊 Dashboard: http://{ip}:{CONFIG['port']}")
@@ -1021,6 +1186,7 @@ if __name__ == "__main__":
     else:
         log("📝 OCR-ONLY: GPT features disabled")
     
+    # Start Flask application
     try:
         app.run(host="0.0.0.0", port=CONFIG["port"], debug=False, threaded=True)
     except KeyboardInterrupt:
