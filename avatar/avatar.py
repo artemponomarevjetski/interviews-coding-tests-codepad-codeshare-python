@@ -1,15 +1,42 @@
 """
-The following app serves as an AI avatar of its maker.
-The workflow is: maker begins a conversation with an interlocutor ->
-the app is activated and takes over the conversation -->
-the maker can stop the app and continue the conversation.
+🎭 AI Avatar System
 
-The app:
-1. can mimic the voice of the maker;
-2. transcribe the input from the builtin mic;
-3. send the transcribed text as a prompt to the GPT API;
-4. receive the prompt response as text;
-5. read the text in maker's voice from the builtin speaker.
+A real-time AI avatar that can temporarily take over conversations on your behalf.
+
+WORKFLOW:
+1. You begin a conversation naturally
+2. Activate the avatar to handle the discussion  
+3. The AI responds using your voice and conversational style
+4. Seamlessly take back control when ready
+
+CORE CAPABILITIES:
+• Real-time speech recognition via built-in microphone
+• Intelligent conversation handling using GPT-4
+• Voice cloning through ElevenLabs API
+• System text-to-speech fallback
+• Web-based monitoring and control interface
+• Global hotkey support for delegation/takeover
+
+TECHNICAL ARCHITECTURE:
+- Audio Processing: Real-time microphone input with silence detection
+- AI Integration: OpenAI Whisper (STT) + GPT-4 (reasoning) 
+- Voice Synthesis: ElevenLabs (cloned voice) + System TTS (fallback)
+- Web Interface: Flask-based real-time monitoring dashboard
+- Control System: Hotkey-driven state management with graceful fallbacks
+
+USAGE:
+1. Configure API keys in .env file
+2. Run: ./launch-avatar.sh
+3. Access web interface: http://localhost:5000
+4. Use hotkeys: 
+   - Ctrl+Shift+D: Delegate to avatar
+   - Ctrl+Shift+T: Take over conversation  
+   - Ctrl+Shift+Q: Quit system
+
+SECURITY NOTE:
+- API keys are loaded from .env (excluded from version control)
+- No conversation data is persisted long-term
+- All audio processing happens locally until API calls
 """
 import os
 import sys

@@ -15,9 +15,9 @@ cleanup() {
     lsof -ti:5000 | xargs kill -9 2>/dev/null
     
     # Kill specific Python processes
-    pkill -f "python3 conversation_delegator.py" 2>/dev/null
+    pkill -f "python3 avatar.py" 2>/dev/null
     pkill -f "flask" 2>/dev/null
-    pkill -f "python.*conversation_delegator" 2>/dev/null
+    pkill -f "python.*avatar" 2>/dev/null
     
     # Small delay to ensure cleanup
     sleep 2
@@ -32,7 +32,7 @@ cleanup() {
 # Run cleanup
 cleanup
 
-# Rest of the script remains the same...
+# Check virtual environment
 if [ -d "venv" ]; then
     source venv/bin/activate
     echo "✅ Virtual environment activated"
@@ -41,13 +41,16 @@ else
     exit 1
 fi
 
+# Check environment file
 if [ ! -f ".env" ]; then
     echo "❌ .env file not found. Please create it with your API keys."
     exit 1
 fi
 
+# Load environment variables
 export $(grep -v '^#' .env | xargs)
 
+# Check OpenAI API key
 if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "sk-your-openai-api-key-here" ]; then
     echo "❌ OPENAI_API_KEY not configured in .env file"
     exit 1
@@ -55,6 +58,7 @@ fi
 
 echo "✅ OpenAI API key configured"
 
+# Check ElevenLabs configuration
 if [ -n "$ELEVENLABS_API_KEY" ] && [ "$ELEVENLABS_API_KEY" != "your-elevenlabs-api-key-here" ]; then
     echo "✅ ElevenLabs configured for cloned voice"
 else
@@ -67,7 +71,8 @@ echo "🌐 Web Interface: http://localhost:${PORT:-5000}"
 echo "🎮 Hotkeys: Ctrl+Shift+D (Delegate), Ctrl+Shift+T (Takeover), Ctrl+Shift+Q (Quit)"
 echo ""
 
-python3 conversation_delegator.py
+# Start the application - CORRECTED FILENAME
+python3 avatar.py
 
 echo ""
 echo "🎭 AI Avatar System stopped"
