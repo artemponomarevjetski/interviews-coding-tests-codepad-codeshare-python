@@ -1,276 +1,610 @@
-# 🎭 AI Avatar System
+# 🚀 Flask Applications Portfolio
 
-A real-time AI assistant that can temporarily take over conversations using your cloned voice. Seamlessly delegate discussions to AI and take back control when needed.
+[![Flask](https://img.shields.io/badge/Flask-2.3%2B-green)](https://flask.palletsprojects.com/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)](https://www.docker.com/)
+[![Architecture](https://img.shields.io/badge/Architecture-Production--Ready-red)]()
 
-## ✨ Features
+A professional collection of production-ready Flask applications demonstrating modern web development patterns, scalable architecture, and enterprise-grade design principles.
 
-- **🎙️ Voice Cloning** - Create a realistic voice clone using ElevenLabs API
-- **🤖 Intelligent Conversations** - GPT-4 powered responses with conversation memory
-- **🎮 Hotkey Control** - Delegate/takeover conversations with keyboard shortcuts
-- **🌐 Web Dashboard** - Real-time monitoring interface at `localhost:5000`
-- **🔊 Multi-platform Audio** - Works on macOS, Linux, and Windows
-- **⚡ Real-time Processing** - Low-latency speech recognition and synthesis
-- **🎯 Graceful Fallbacks** - System TTS when voice cloning unavailable
+## 🏗️ Architecture Philosophy
 
-## 🚀 Quick Start
+This portfolio showcases **modular, scalable Flask applications** built with:
+- **Microservices Architecture**: Independently deployable Flask services
+- **Domain-Driven Design**: Clear separation of concerns
+- **Event-Driven Patterns**: Asynchronous processing with message queues
+- **API-First Development**: RESTful and WebSocket APIs
+- **Container-First Design**: Docker and Kubernetes readiness
 
-### Prerequisites
-- Python 3.8+
-- OpenAI API key
-- ElevenLabs API key (optional, for voice cloning)
-- macOS/Linux/Windows with microphone
+## 📦 Application Showcase
 
-### Installation
+### 🎭 Avatar AI System (`flask-apps/avatar/`)
+**Production-Grade AI Assistant Platform**
 
-```bash
-# Clone and setup
-git clone <repository-url>
-cd avatar
+```python
+# Core Architecture Pattern
+from flask import Flask
+from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
+from celery import Celery
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure API keys
-cp .env.example .env
-# Edit .env with your API keys
+# Application Factory with Blueprints
+def create_app(config_name='production'):
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    
+    # Initialize Extensions
+    db.init_app(app)
+    socketio.init_app(app)
+    celery.conf.update(app.config)
+    
+    # Register Blueprints
+    from .api.v1 import api_v1_bp
+    from .websocket import ws_bp
+    from .admin import admin_bp
+    
+    app.register_blueprint(api_v1_bp, url_prefix='/api/v1')
+    app.register_blueprint(ws_bp)
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+    
+    return app
 ```
 
-### Voice Cloning Setup
+**Key Design Patterns:**
+- **Factory Pattern**: Configurable application creation
+- **Blueprint Architecture**: Modular route organization
+- **Dependency Injection**: Service layer abstraction
+- **Observer Pattern**: Event-driven component communication
+- **Strategy Pattern**: Pluggable AI provider implementations
 
-```bash
-# Place your voice samples in audio/ folder (3-5 samples, 10-30s each)
-# Then run voice cloning setup
-python3 voice-clone.py
+### 🎤 Real-time Transcription Service (`flask-apps/whisperer/`)
+**WebSocket-Based Audio Processing**
+
+```python
+# WebSocket Architecture for Real-time Audio
+@socketio.on('audio_stream')
+def handle_audio_stream(data):
+    """Real-time audio processing pipeline"""
+    # 1. Audio chunk reception via WebSocket
+    audio_chunk = AudioChunk(data['audio'], data['session_id'])
+    
+    # 2. Queue for async processing
+    process_audio.delay(audio_chunk)
+    
+    # 3. Real-time transcription via WebSocket
+    emit('transcription_update', {
+        'status': 'processing',
+        'chunk_id': audio_chunk.id
+    })
+
+# Celery Task for Background Processing
+@celery.task
+def process_audio(audio_chunk):
+    """Background audio processing"""
+    transcription = whisper.transcribe(audio_chunk.data)
+    
+    # Publish to WebSocket room
+    socketio.emit('transcription_result', {
+        'text': transcription,
+        'chunk_id': audio_chunk.id
+    }, room=audio_chunk.session_id)
 ```
 
-### Launch the System
+## 🏛️ Core Architecture Components
 
-```bash
-# Start the AI avatar
-./launch-avatar.sh
-# Access dashboard at http://localhost:5000
+### 1. **Application Factory Pattern**
+```python
+# config.py - Environment-based configuration
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Celery configuration
+    CELERY_BROKER_URL = os.environ.get('REDIS_URL')
+    CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+    
+    # Flask-SocketIO
+    SOCKETIO_MESSAGE_QUEUE = os.environ.get('REDIS_URL')
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+    EXPLAIN_TEMPLATE_LOADING = True
+
+class ProductionConfig(Config):
+    DEBUG = False
+    PREFERRED_URL_SCHEME = 'https'
 ```
 
-## 📁 Project Structure
+### 2. **Service Layer Architecture**
+```python
+# services/ai_service.py - Abstraction layer for AI providers
+class AIService:
+    def __init__(self, provider='openai'):
+        self.provider = self._initialize_provider(provider)
+    
+    def _initialize_provider(self, provider_name):
+        """Strategy Pattern for multiple AI providers"""
+        providers = {
+            'openai': OpenAIProvider(),
+            'anthropic': AnthropicProvider(),
+            'local': LocalLLMProvider(),
+            'azure': AzureOpenAIProvider()
+        }
+        return providers.get(provider_name, providers['openai'])
+    
+    def generate_response(self, prompt, context=None):
+        """Unified interface for AI generation"""
+        return self.provider.generate(prompt, context)
+    
+    def stream_response(self, prompt, callback):
+        """Streaming response handling"""
+        return self.provider.stream(prompt, callback)
 
-```
-avatar/
-├── avatar.py              # Main AI system (29KB)
-├── voice-clone.py         # Voice cloning utility (8KB)
-├── launch-avatar.sh       # Launcher script (1.9KB)
-├── requirements.txt       # Dependencies
-├── .env                   # API configuration
-├── audio/                 # Voice samples (~1MB)
-│   ├── voice_preview_art.mp3
-│   ├── original.m4a
-│   └── clone.mp3
-└── venv/                  # Virtual environment
-```
-
-## 🎮 Usage
-
-### Conversation Flow
-1. **Start Speaking** - Begin conversation naturally
-2. **Delegate** - Press `Ctrl+Shift+D` to activate AI avatar
-3. **Monitor** - Watch AI handle conversation with your cloned voice
-4. **Take Over** - Press `Ctrl+Shift+T` to resume control anytime
-
-### Web Interface
-Access `http://localhost:5000` for:
-- Real-time conversation monitoring
-- Manual delegation controls
-- Conversation history
-- System status
-
-### Hotkeys
-- **Ctrl+Shift+D** - Delegate to AI avatar
-- **Ctrl+Shift+T** - Take back control
-- **Ctrl+Shift+Q** - Quit system
-
-## 🔧 Configuration
-
-### API Keys Required
-Create a `.env` file with:
-```bash
-OPENAI_API_KEY=sk-your-openai-key
-ELEVENLABS_API_KEY=your-elevenlabs-key  # Optional
-ELEVENLABS_VOICE_ID=auto-generated
-GPT_MODEL=gpt-4
-PORT=5000
+# Dependency Injection in Flask routes
+@app.route('/api/chat', methods=['POST'])
+def chat_endpoint():
+    ai_service = current_app.config['AI_SERVICE']
+    response = ai_service.generate_response(request.json['message'])
+    return jsonify({'response': response})
 ```
 
-### Audio Requirements
-For best voice cloning results:
-- 3-5 audio samples, 10-30 seconds each
-- Clear recordings with minimal background noise
-- Various phrases and speaking styles
-- Supported formats: MP3, WAV, M4A
+### 3. **Database Abstraction Layer**
+```python
+# models/base.py - SQLAlchemy with repository pattern
+class BaseRepository:
+    def __init__(self, model):
+        self.model = model
+    
+    def get(self, id):
+        return self.model.query.get(id)
+    
+    def create(self, **kwargs):
+        instance = self.model(**kwargs)
+        db.session.add(instance)
+        db.session.commit()
+        return instance
+    
+    def update(self, instance, **kwargs):
+        for key, value in kwargs.items():
+            setattr(instance, key, value)
+        db.session.commit()
+        return instance
 
-## 🛠️ Technical Details
-
-### Core Components
-- **Speech Recognition**: OpenAI Whisper API
-- **Language Model**: GPT-4 (configurable to GPT-3.5-turbo)
-- **Voice Synthesis**: ElevenLabs API + system TTS fallback
-- **Audio Processing**: Real-time streaming with silence detection
-- **Web Server**: Flask with auto-refresh interface
-
-### System Architecture
-The system manages three conversation states:
-- `HUMAN_LEAD` - Human controls conversation
-- `AVATAR_ACTIVE` - AI responds with cloned voice
-- `TRANSITIONING` - Smooth state transition
-
-### Performance Metrics
-- **Response Time**: <2 seconds for AI processing
-- **Audio Latency**: Real-time streaming
-- **Memory Usage**: Optimized for continuous operation
-- **Error Handling**: Graceful fallbacks throughout
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**Hotkeys Not Working (macOS)**
-```bash
-# Grant Accessibility permissions:
-# System Settings → Privacy & Security → Accessibility
-# Add your terminal application
+# models/conversation.py - Domain model
+class Conversation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(64), unique=True)
+    messages = db.relationship('Message', backref='conversation', lazy='dynamic')
+    
+    @property
+    def recent_messages(self, limit=10):
+        return self.messages.order_by(Message.timestamp.desc()).limit(limit).all()
 ```
 
-**Port 5000 Already in Use**
-```bash
-# The launch script automatically cleans up ports
-# Or manually: lsof -ti:5000 | xargs kill -9
+## 📁 Project Structure Patterns
+
+### **Enterprise Flask Application Structure**
+```
+flask-apps/avatar/
+├── app/                          # Application package
+│   ├── __init__.py              # Application factory
+│   ├── config.py                # Configuration classes
+│   │
+│   ├── api/                     # API layer (REST/WebSocket)
+│   │   ├── __init__.py
+│   │   ├── v1/                  # API versioning
+│   │   │   ├── __init__.py
+│   │   │   ├── conversation.py  # Conversation endpoints
+│   │   │   ├── voice.py         # Voice endpoints
+│   │   │   └── admin.py         # Admin endpoints
+│   │   └── websocket.py         # WebSocket handlers
+│   │
+│   ├── models/                  # Database models
+│   │   ├── __init__.py
+│   │   ├── conversation.py
+│   │   ├── message.py
+│   │   └── user.py
+│   │
+│   ├── services/                # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── ai_service.py        # AI provider abstraction
+│   │   ├── voice_service.py     # Voice processing
+│   │   └── storage_service.py   # File storage
+│   │
+│   ├── tasks/                   # Celery background tasks
+│   │   ├── __init__.py
+│   │   ├── audio_tasks.py
+│   │   └── ai_tasks.py
+│   │
+│   ├── utils/                   # Utilities and helpers
+│   │   ├── __init__.py
+│   │   ├── validators.py
+│   │   ├── decorators.py
+│   │   └── helpers.py
+│   │
+│   └── extensions.py            # Flask extensions initialization
+│
+├── migrations/                  # Database migrations (Alembic)
+├── tests/                       # Comprehensive test suite
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+├── static/                      # Static assets
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+├── templates/                   # Jinja2 templates
+│   ├── base.html
+│   ├── dashboard.html
+│   └── admin/
+│
+├── requirements/                # Dependency management
+│   ├── base.txt
+│   ├── dev.txt
+│   └── prod.txt
+│
+├── Dockerfile                   # Multi-stage Docker build
+├── docker-compose.yml           # Service orchestration
+├── .env.example                 # Environment template
+├── .flake8                      # Code style
+├── pytest.ini                   # Test configuration
+└── README.md                    # Application-specific docs
 ```
 
-**Missing Audio Libraries**
-```bash
-# macOS
-brew install portaudio
+## 🔧 Technical Implementation Patterns
 
-# Ubuntu/Debian
-sudo apt-get install portaudio19-dev python3-pyaudio
+### **Dependency Management with Poetry**
+```toml
+# pyproject.toml - Modern dependency management
+[tool.poetry]
+name = "avatar-ai-system"
+version = "1.0.0"
+description = "Production AI Assistant Platform"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+flask = "^2.3.0"
+flask-sqlalchemy = "^3.0.5"
+flask-socketio = "^5.3.0"
+celery = "^5.3.0"
+openai = "^0.28.0"
+redis = "^5.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
+pytest-cov = "^4.1.0"
 ```
 
-### API Errors
-- Verify API keys in `.env` are valid
-- Check billing/credits on OpenAI and ElevenLabs
-- Ensure internet connection is stable
-
-## 📚 Dependencies
-
-```bash
-# Core AI & APIs
-openai>=1.0.0
-elevenlabs>=0.2.28
-
-# Audio Processing
-sounddevice>=0.4.6
-soundfile>=0.12.1
-speechrecognition>=3.10.0
-
-# Web Interface & Control
-flask>=2.3.0
-keyboard>=0.13.5
-requests>=2.28.0
-
-# Utilities
-python-dotenv>=1.0.0
-numpy>=1.21.0
+### **Asynchronous Task Processing**
+```python
+# tasks/audio_tasks.py - Celery task orchestration
+@celery.task(bind=True, max_retries=3)
+def process_audio_task(self, audio_data, session_id):
+    """Background audio processing with retry logic"""
+    try:
+        # 1. Audio preprocessing
+        processed_audio = audio_preprocessor(audio_data)
+        
+        # 2. Transcription
+        transcription = whisper_client.transcribe(processed_audio)
+        
+        # 3. AI response generation
+        response = ai_service.generate_response(transcription)
+        
+        # 4. Update WebSocket clients
+        socketio.emit('response_ready', {
+            'transcription': transcription,
+            'response': response,
+            'session_id': session_id
+        })
+        
+        return {'status': 'success', 'session_id': session_id}
+        
+    except Exception as exc:
+        self.retry(exc=exc, countdown=2 ** self.request.retries)
 ```
 
-## ⚠️ Important Notes
+### **WebSocket Integration Pattern**
+```python
+# api/websocket.py - Real-time communication
+@socketio.on('connect')
+def handle_connect():
+    """Client connection handler"""
+    session_id = generate_session_id()
+    join_room(session_id)
+    
+    emit('session_created', {
+        'session_id': session_id,
+        'status': 'connected'
+    })
 
-### Security
-- Never commit `.env` file to version control
-- Conversation data is not persisted long-term
-- Audio processing happens locally before API calls
+@socketio.on('audio_chunk')
+def handle_audio_chunk(data):
+    """Process incoming audio chunks"""
+    # Validate and process chunk
+    chunk_validator.validate(data)
+    
+    # Queue for background processing
+    process_audio_task.delay(
+        audio_data=data['audio'],
+        session_id=data['session_id']
+    )
+    
+    # Immediate acknowledgement
+    emit('chunk_received', {
+        'chunk_id': data['chunk_id'],
+        'status': 'processing'
+    })
+```
 
-### Ethical Use
-- Always inform others when using AI assistance
-- Take responsibility for AI-generated content
-- Use for productivity enhancement, not deception
+## 🚀 Deployment Architecture
 
-### Limitations
-- Requires stable internet connection for API calls
-- Voice cloning quality depends on sample quality
-- Real-time performance varies by system resources
+### **Multi-Stage Docker Build**
+```dockerfile
+# Dockerfile
+# Stage 1: Builder
+FROM python:3.9-slim as builder
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+RUN pip install poetry && \
+    poetry export -f requirements.txt --output requirements.txt --without-hashes
 
+# Stage 2: Runtime
+FROM python:3.9-slim
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python dependencies
+COPY --from=builder /app/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Run as non-root user
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+EXPOSE 5000
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:create_app()"]
+```
+
+### **Kubernetes Deployment**
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: avatar-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: avatar-api
+  template:
+    metadata:
+      labels:
+        app: avatar-api
+    spec:
+      containers:
+      - name: flask-app
+        image: avatar-ai:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: avatar-config
+        - secretRef:
+            name: avatar-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
 ---
-
-# 🛠️ Development & Interview Toolkit
-
-This repository is part of a larger collection of development tools and interview preparation materials.
-
-## 📁 Project Structure
-
-### 🎭 AI Avatar System (Current)
-The primary system described above for conversational AI with voice cloning.
-
-### 🔄 File Synchronization Toolkit
-Intelligent file synchronization with conflict resolution and dry-run capabilities.
-
-**Files:**
-- `sync_by_rules.py` - Core synchronization logic (Python 3.8+)
-- `sim_sync.sh` - Dry-run simulation wrapper
-- `apply_sync.sh` - Apply changes wrapper
-- `Makefile` - Convenience targets for common operations
-
-**Usage:**
-```bash
-# Dry-run with defaults
-./sim_sync.sh
-
-# Apply changes safely
-python3 sync_by_rules.py --apply
-
-# Apply with conflict resolution
-python3 sync_by_rules.py --apply --delete-older-source
-
-# Recursive synchronization
-python3 sync_by_rules.py --apply --recursive
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: avatar-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: avatar-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
 ```
 
-### 📝 Interview & Coding Tests
-- **Coding Tests** - Python solutions for technical interviews
-- **SQL & Python Questions** - Database and programming challenges  
-- **Algorithm Problems** - Data structures and algorithms
-- **Web Scraping** - Data extraction and processing scripts
+## 🧪 Testing Strategy
 
-### 🗂️ Key Directories
-- `assesments/` - Coding assessment solutions
-- `flask/` - Web application projects
-- `overlay/` - Browser overlay utilities
-- `whisperer_external/` & `whisperer_internal/` - Speech-to-text AI projects
-- `chatterbox/` - Chat application prototypes
-- `png/` - Documentation screenshots
+### **Comprehensive Test Suite**
+```python
+# tests/integration/test_api_v1.py
+class TestConversationAPI:
+    def test_create_conversation(self, client, auth_headers):
+        """Test conversation creation endpoint"""
+        response = client.post(
+            '/api/v1/conversations',
+            json={'title': 'Test Conversation'},
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 201
+        assert 'id' in response.json
+        assert response.json['title'] == 'Test Conversation'
+    
+    def test_streaming_response(self, client, auth_headers):
+        """Test streaming AI responses"""
+        with client.stream(
+            'POST',
+            '/api/v1/chat/stream',
+            json={'message': 'Hello'},
+            headers=auth_headers
+        ) as response:
+            chunks = []
+            for line in response.iter_lines():
+                if line:
+                    chunks.append(json.loads(line))
+            
+            assert len(chunks) > 0
+            assert all('chunk' in chunk for chunk in chunks)
 
-### 📊 Analysis & Utilities
-- `compare_folders.sh` - Folder comparison tools
-- `folder-sizes.sh` - Disk usage analysis
-- `dedupe_suffixes.py` - File deduplication
-- `move_up.sh` - File organization utilities
+# tests/unit/test_ai_service.py
+def test_ai_service_strategy_pattern():
+    """Test strategy pattern for AI providers"""
+    service = AIService(provider='openai')
+    assert isinstance(service.provider, OpenAIProvider)
+    
+    service = AIService(provider='anthropic')
+    assert isinstance(service.provider, AnthropicProvider)
+    
+    # Default fallback
+    service = AIService(provider='unknown')
+    assert isinstance(service.provider, OpenAIProvider)
+```
 
-### 📋 Featured Code Samples
-- **Data Structures:** `cdll.py` (Circular Doubly Linked List)
-- **Algorithms:** `tree.py`, `atoi.ipynb`
-- **Web Development:** `app.py`, `desklog.py`
-- **Data Analysis:** `lidar-test.py`, `heart.csv` processing
+## 📚 Design Patterns Demonstrated
 
-### 🔧 Requirements
-- Python 3.8+
-- Bash shell
-- Common Unix utilities
+### **1. Factory Pattern**
+- Application factory for different environments
+- Service factories for dependency injection
 
-## 📄 License
+### **2. Strategy Pattern**
+- Pluggable AI providers
+- Configurable storage backends
+- Multiple authentication methods
 
-MIT License - See LICENSE file for details.
+### **3. Observer Pattern**
+- Event-driven architecture with WebSockets
+- Real-time notifications
+- Pub/Sub message distribution
 
----
+### **4. Repository Pattern**
+- Abstract database operations
+- Clean separation of data access
+- Testable data layer
 
-**Ready to deploy your AI avatar? Run `./launch-avatar.sh` and start the conversation!**
+### **5. Decorator Pattern**
+- Authentication decorators
+- Rate limiting
+- Request validation
+
+## 🔄 CI/CD Pipeline
+
+```yaml
+# .github/workflows/ci.yml
+name: Flask CI/CD Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        pip install poetry
+        poetry install
+    
+    - name: Run tests
+      run: |
+        poetry run pytest tests/ --cov=app --cov-report=xml
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+    
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./flask-apps/avatar
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/avatar-ai:latest
+          ${{ secrets.DOCKER_USERNAME }}/avatar-ai:${{ github.sha }}
+```
+
+## 🎯 Learning Outcomes
+
+This portfolio demonstrates proficiency in:
+
+1. **Production Flask Development**
+   - Application factory patterns
+   - Blueprint architecture
+   - Extension management
+
+2. **Scalable Architecture**
+   - Microservices design
+   - Database abstraction layers
+   - Caching strategies
+
+3. **Real-time Systems**
+   - WebSocket integration
+   - Event-driven programming
+   - Background task processing
+
+4. **DevOps Practices**
+   - Containerization with Docker
+   - Kubernetes deployment
+   - CI/CD pipeline design
+
+5. **Testing & Quality**
+   - Comprehensive test suites
+   - Code coverage requirements
+   - Integration testing
