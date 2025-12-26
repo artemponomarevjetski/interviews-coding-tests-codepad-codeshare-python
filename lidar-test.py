@@ -1,61 +1,64 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 16 11:38:01 2020
-
-@author: artemponomarev
-"""
-
-# Time sync the messages from different topics, coming in at different times
+# Time sync the messages from different topics, coming in at different times 
 # input: dict of topic_name: sorted list of timestamps {<topic_name>:[timestamps]}
 # output: list of synced topics.  [{<topic_name>:timestamp}]
 
+import sys
 def sync_msgs(messages):
-    """
-    lidar0 first reading might need to be left unmatched, if there is
-    no exact match from lidar1 and lidar2
-    """
-    # make code O(N), list comprehensions, make it more readable
-    lst=[]
-    idx=0
-    idx1=0
+  """
+  Artem wrote this, there is a repeating code that needs to be simplified
+  """
+  lst = []
+  b_test0 = False
+  for ts1 in messages['lidar_0']:
+    for ts2 in messages['lidar_1']:
+      if ts1 == ts2:
+        b_test0 = True
+
+  if b_test0:
     for ts0 in messages['lidar_0']:
-        if idx==0 and ts0 < messages['lidar_1'][0] and idx1 == 0\
-            and ts0 < messages['lidar_2'][0]:
-            if abs(ts0-messages['lidar_1'][0])<abs(ts0-messages['lidar_1'][1]):
-                print('qqq', abs(ts0-messages['lidar_1'][0]), abs(ts0-messages['lidar_1'][1]))
-        else:
-            dict_ = {}
-            while idx<len(messages['lidar_1']) and messages['lidar_1'][idx] <= ts0:
-                idx+=1
-            if idx < len(messages['lidar_1']):
-                if abs(messages['lidar_1'][idx]-ts0)>abs(messages['lidar_1'][idx-1]-ts0):
-                    dict_['lidar_0'] = ts0
-                    dict_['lidar_1'] = messages['lidar_1'][idx-1]
-                else:
-                    dict_['lidar_0'] = ts0
-                    dict_['lidar_1'] = messages['lidar_1'][idx]
-            else:
-                dict_['lidar_0'] = ts0
-                dict_['lidar_1']=messages['lidar_1'][idx-1]
+      dict_ = {}
+      dict_['lidar_0'] = ts0
+      min_ = sys.float_info.max
+      ts1_star = 0.0
+      for ts1 in messages['lidar_1']:
+        if min_ > abs(ts0-ts1):
+          min_ = min(min_, abs(ts0-ts1))
+          ts1_star = ts1
+      dict_['lidar_1'] = ts1_star  
+      min_ = sys.float_info.max
+      ts2_star = 0.0
+      for ts2 in messages['lidar_2']:
+        if min_> abs(ts0-ts2):
+          min_ = min(min_, abs(ts0-ts2))
+          ts2_star = ts2
+      dict_['lidar_2'] = ts2_star
+      lst.append(dict_)
+  else:
+    i = 0
+    for ts0 in messages['lidar_0']:
+      if i > 0:
+        dict_ = {}
+        dict_['lidar_0'] = ts0
+        min_ = sys.float_info.max
+        ts1_star = 0.0
+        for ts1 in messages['lidar_1']:
+          if min_ > abs(ts0-ts1):
+            min_ = min(min_, abs(ts0-ts1))
+            ts1_star = ts1
+        dict_['lidar_1'] = ts1_star  
+        min_ = sys.float_info.max
+        ts2_star = 0.0
+        for ts2 in messages['lidar_2']:
+          if min_ > abs(ts0-ts2):
+            min_ = min(min_, abs(ts0-ts2))
+            ts2_star = ts2
+        dict_['lidar_2'] = ts2_star
+        
+        lst.append(dict_)
 
-            while idx1<len(messages['lidar_2']) and messages['lidar_2'][idx1] <= ts0:
-                idx1+=1
-            if idx1 < len(messages['lidar_2']):
-                if abs(messages['lidar_2'][idx1]-ts0)>abs(messages['lidar_2'][idx1-1]-ts0):
-                    dict_['lidar_0'] = ts0
-                    dict_['lidar_2'] = messages['lidar_2'][idx1-1]
-                else:
-                    dict_['lidar_0'] = ts0
-                    dict_['lidar_2'] = messages['lidar_2'][idx1]
-            else:
-                dict_['lidar_0'] = ts0
-                dict_['lidar_2']=messages['lidar_2'][idx1-1]
+      i += 1
 
-            lst.append(dict_)
-
-    print(lst)
-    return lst
+  return lst
 
 # 3 topics, difffernt frequency, in sync
 def unit_test_1():
@@ -208,3 +211,4 @@ if __name__ == "__main__":
         success = compare_output(unit_test[1], synced_messages)
 
         print("unit_test " + str(index) + " " + str(success) )
+
