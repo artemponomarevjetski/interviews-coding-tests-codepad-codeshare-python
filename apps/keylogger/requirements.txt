@@ -1,0 +1,4 @@
+# Keyboard-Only Logger Dependencies
+# Only pynput is needed for keyboard monitoring
+
+pynput>=1.7.6      # Keyboard input monitoring
