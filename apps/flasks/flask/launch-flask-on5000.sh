@@ -8,7 +8,8 @@
 set -Eeuo pipefail
 
 # Configuration
-BASE_DIR="${BASE_DIR:-$HOME/interviews-coding-tests-codepad-codeshare-python}"
+BASE_DIR="${BASE_DIR:-$HOME/interviews-coding-tests-codepad-codeshare-python/apps/flasks/}"
+
 FLASK_DIR="$BASE_DIR/flask"
 LOG_DIR="$FLASK_DIR/log"
 TEMP_DIR="$FLASK_DIR/temp"
