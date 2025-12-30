@@ -19,7 +19,7 @@ def find_free_port(starting_port=5000):
 
 @app.route('/')
 def display_image():
-    image_path = os.path.join(os.getcwd(), 'temp', 'snap_latest.png')
+    image_path = os.path.join(os.getcwd(), 'test-snapshot', 'snap_latest.png')
     print(f"Current working directory: {os.getcwd()}")  # Log current working directory
     print(f"Looking for image at: {image_path}")  # Log image path
     if os.path.exists(image_path):
