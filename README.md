@@ -14,7 +14,14 @@ A comprehensive collection of Python applications, scripts, and utilities demons
 interviews-coding-tests-codepad-codeshare-python/
 ├── 📦 Production Applications
 │   ├── apps/
-│   │   ├── flasks/           # Flask web applications and APIs
+│   │   ├── flasks/
+│   │   │   ├── flask-exercise/     # Flask learning exercises and examples
+│   │   │   ├── flask-test/         # Flask testing framework with demo app
+│   │   │   ├── flask/              # Main Flask application (snapshot.py)
+│   │   │   ├── whisperer_internal/ # Internal audio transcription
+│   │   │   ├── whisperer_external/ # External audio transcription
+│   │   │   ├── avatar/             # Voice cloning systems
+│   │   │   └── image-to-gpt/       # Visual analysis tools
 │   │   ├── keylogger/        # Keylogger analysis and visualization tools
 │   │   ├── overlay/          # Browser overlay and transparency tools
 │   │   ├── chatterbox/       # Chat/communication applications
@@ -115,25 +122,30 @@ python web_dashboard.py  # Launches visualization interface
 - Pattern analysis for productivity
 - Security auditing capabilities
 
-### 🔄 **Intelligent File Synchronization** (`sync_by_rules.py`)
-**Rule-based file synchronization with intelligent conflict resolution**
+### 🚀 **Flask Development Framework** (`apps/flasks/`)
+**Comprehensive Flask development and testing environment**
 
-```bash
-# Advanced sync capabilities:
-./sync_by_rules.py --dry-run  # Preview changes
-./sync_by_rules.py --sync     # Execute synchronization
-./sync_by_rules.py --rules custom_rules.json  # Custom rules
+```python
+# Projects Included:
+# • flask-exercise/ - Basic Flask learning exercises
+# • flask-test/     - Testing framework with demo image server
+# • flask/          - Production Flask application with GPT analysis
+# • whisperer_internal/ - Internal audio transcription
+# • whisperer_external/ - External audio transcription
+# • avatar/ - Voice cloning systems
+# • image-to-gpt/ - Visual analysis tools
 
-# Companion scripts:
-./sim_sync.sh    # Simulation mode
-./apply_sync.sh  # Apply changes
+# Test the Flask demo server:
+cd apps/flasks/flask-test
+python app.py
+# Open: http://localhost:5001
 ```
 
-**Capabilities:**
-- Rule-based file operations
-- Intelligent conflict detection
-- Dry-run simulations
-- Customizable synchronization rules
+**Features:**
+- **Demo Image Server** - Serves test images from `test-snapshot/` directory
+- **Clean Separation** - Test vs production environments
+- **Temporary Files Management** - `temp/` ignored globally via `.gitignore`
+- **Structured Testing** - Organized test assets in `test-snapshot/`
 
 ## 🏗️ Technical Architecture
 
@@ -142,15 +154,31 @@ python web_dashboard.py  # Launches visualization interface
 ```python
 # apps/flasks/ - Example Flask application structure
 flasks/
-├── snapshot.py          # Screen OCR and GPT analysis dashboard
-├── requirements.txt     # Python dependencies
-├── static/             # Frontend assets
-├── templates/          # HTML templates
-└── logs/               # Application logging
+├── flask-exercise/     # Flask learning exercises
+├── flask-test/         # Flask testing and demo applications
+├── whisperer_internal/ # Internal audio processing
+├── whisperer_external/ # External audio processing
+├── avatar/             # Voice cloning and avatar systems
+└── image-to-gpt/       # Visual analysis tools
+```
 
-# Launch with different modes:
-./launch-flask-on5000.sh no-gpt   # OCR-only mode
-./launch-flask-on5000.sh gpt      # GPT-4 enhanced mode
+### **File Management Strategy**
+
+```bash
+# Temporary files (.gitignore):
+temp/              # Ignored globally - for runtime temporary files
+*.tmp              # Temporary file patterns
+*.log              # Log files (kept local)
+
+# Test assets (tracked):
+test-snapshot/     # Tracked test images and assets
+demo/              # Demonstration files
+examples/          # Example data and configurations
+
+# Best Practices:
+# 1. Use 'test-snapshot/' for test images you want to track
+# 2. Use 'temp/' for runtime files you don't want in git
+# 3. Keep production code separate from test/demo code
 ```
 
 ### **Audio Processing Pipeline**
@@ -171,20 +199,6 @@ def start_dual_transcription():
     # Thread 4: Web interface updates
 ```
 
-### **Development Workflow Automation**
-
-```bash
-# env-setup.sh - Comprehensive environment setup
-#!/bin/bash
-# Sets up Python environment, installs dependencies
-# Configures audio devices, verifies permissions
-# Launches applications with proper configuration
-
-# move_up.sh - Intelligent file organization
-# Moves files up directory hierarchies based on patterns
-# Maintains organization while preserving structure
-```
-
 ## 🚀 Getting Started
 
 ### **Quick Setup**
@@ -199,6 +213,8 @@ cd interviews-coding-tests-codepad-codeshare-python
 
 # 3. Choose an application to run
 cd whisperer_external && ./launch-flask-on5000-whisperer-external.sh
+# OR test Flask demo:
+cd apps/flasks/flask-test && python app.py
 # OR
 cd apps/overlay && python browser-overlay.py
 # OR
