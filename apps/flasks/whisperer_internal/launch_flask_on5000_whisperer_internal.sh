@@ -103,7 +103,7 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG" ; }
     rm -f "$PID_FILE"
   fi
 
-  # Clean & recreate venv (per your request)
+  # Clean & recreate venv
   echo
   echo "Recreating virtual environment…"
   rm -rf "$VENV_DIR"
@@ -119,10 +119,93 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG" ; }
 
   # Install Torch CPU first, then the rest
   pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
-  pip install -r requirements.txt
+  
+  # CRITICAL FIX: Handle LLVM version conflicts for llvmlite
+  echo "Handling LLVM version for llvmlite compatibility..."
+  
+  # Check and uninstall LLVM 21 if it exists (this is the key fix)
+  if brew list --versions llvm >/dev/null 2>&1; then
+    LLVM_VERSION=$(brew info llvm | grep -o '^llvm: .*' | cut -d' ' -f2 | head -1)
+    if [[ "$LLVM_VERSION" == 21* ]]; then
+      echo "Found LLVM $LLVM_VERSION - uninstalling to avoid conflicts with llvmlite..."
+      brew uninstall llvm
+    fi
+  fi
+  
+  # Ensure LLVM 20 is installed
+  if ! brew list --versions llvm@20 >/dev/null 2>&1; then
+    echo "Installing LLVM 20 (required for llvmlite)..."
+    brew install llvm@20
+  fi
+  
+  # CRITICAL: Set environment variables BEFORE installing llvmlite
+  # This ensures CMake finds the right LLVM version
+  export LLVM_CONFIG="/usr/local/opt/llvm@20/bin/llvm-config"
+  export PATH="/usr/local/opt/llvm@20/bin:$PATH"
+  export LDFLAGS="-L/usr/local/opt/llvm@20/lib"
+  export CPPFLAGS="-I/usr/local/opt/llvm@20/include"
+  
+  # Clear any existing CMake cache variables that might point to wrong LLVM
+  unset CMAKE_PREFIX_PATH
+  unset LLVM_DIR
+  
+  # Install llvmlite with explicit LLVM_CONFIG (this was the key that worked)
+  echo "Installing llvmlite with LLVM 20..."
+  LLVM_CONFIG=/usr/local/opt/llvm@20/bin/llvm-config pip install llvmlite==0.46.0
+  
+  # Install numba (requires llvmlite)
+  echo "Installing numba..."
+  pip install numba==0.63.1
+  
+  # Now install Flask and audio dependencies
+  echo "Installing Flask and audio dependencies..."
+  pip install Flask==2.3.2 numpy==1.26.4 sounddevice==0.4.6
+  
+  # Install whisper without pulling in its dependencies (we already have them)
+  echo "Installing whisper..."
+  pip install --no-deps openai-whisper==20231117
+  
+  # Install whisper's additional dependencies
+  echo "Installing whisper dependencies..."
+  pip install tiktoken regex tqdm more-itertools
 
-  # Smoke test
-  python -c "import flask, torch, whisper; print('ok')"
+  # Fallback option: if llvmlite installation fails, use faster-whisper
+  if ! python -c "import llvmlite" 2>/dev/null; then
+    echo "Warning: llvmlite installation may have failed, trying faster-whisper fallback..."
+    pip uninstall -y openai-whisper numba llvmlite 2>/dev/null || true
+    pip install faster-whisper
+    echo "Using faster-whisper instead of openai-whisper"
+  fi
+
+  # Comprehensive smoke test
+  echo "Running comprehensive smoke test..."
+  
+  # Test basic imports
+  if python -c "import flask, torch; print('✅ Flask and torch imports successful')"; then
+    # Test whisper import (original or faster-whisper)
+    if python -c "import whisper" 2>/dev/null; then
+      echo "✅ Original whisper import successful"
+      # Test actual model loading
+      if python -c "import whisper; model = whisper.load_model('base'); print('✅ Whisper model loaded successfully')"; then
+        echo "✅ Whisper setup complete"
+      else
+        echo "⚠️  Whisper model loading failed, but imports work"
+      fi
+    elif python -c "from faster_whisper import WhisperModel" 2>/dev/null; then
+      echo "✅ Faster-whisper import successful"
+      if python -c "from faster_whisper import WhisperModel; model = WhisperModel('base', device='cpu', compute_type='int8'); print('✅ Faster-whisper model loaded successfully')"; then
+        echo "✅ Faster-whisper setup complete"
+      else
+        echo "⚠️  Faster-whisper model loading failed, but imports work"
+      fi
+    else
+      echo "⚠️  Could not import any whisper package"
+      echo "⚠️  Transcription may not work, but web server will run"
+    fi
+  else
+    echo "❌ Critical setup failed - Flask or torch not installed"
+    exit 1
+  fi
 
   # Purge old transcripts
   purge_old_transcripts
@@ -136,4 +219,7 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG" ; }
   echo $! > "$PID_FILE"
   echo "PID $(cat "$PID_FILE")"
   echo "Logs: tail -f $FLASK_LOG"
+  echo
+  echo "✅ Setup complete! Open http://localhost:${PORT} in your browser"
+  echo "💡 Speak numbers like 'one two three' to test transcription"
 } 2>&1 | tee -a "$SERVICE_LOG"

@@ -5,6 +5,8 @@
 [![Bash](https://img.shields.io/badge/Bash-Scripting-4EAA25)](https://www.gnu.org/software/bash/)
 [![Production-Ready](https://img.shields.io/badge/Production--Ready-Yes-success)]()
 [![License](https://img.shields.io/badge/License-MIT-yellow)]()
+[![LLVM](https://img.shields.io/badge/LLVM-20.1.8-blueviolet)](https://llvm.org/)
+[![Whisper](https://img.shields.io/badge/Whisper-AI-7B68EE)](https://openai.com/research/whisper)
 
 A comprehensive collection of Python applications, scripts, and utilities demonstrating modern software development, automation, and full-stack capabilities.
 
@@ -18,7 +20,7 @@ interviews-coding-tests-codepad-codeshare-python/
 │   │   │   ├── flask-exercise/     # Flask learning exercises and examples
 │   │   │   ├── flask-test/         # Flask testing framework with demo app
 │   │   │   ├── flask/              # Main Flask application (snapshot.py)
-│   │   │   ├── whisperer_internal/ # Internal audio transcription
+│   │   │   ├── whisperer_internal/ # ✅ Internal audio transcription with LLVM fix
 │   │   │   ├── whisperer_external/ # External audio transcription
 │   │   │   ├── avatar/             # Voice cloning systems
 │   │   │   └── image-to-gpt/       # Visual analysis tools
@@ -28,7 +30,7 @@ interviews-coding-tests-codepad-codeshare-python/
 │   │   └── assesments/       # Assessment and testing tools
 │   │
 │   ├── whisperer_external/   # Dual audio transcription (mic + system audio)
-│   ├── whisperer_internal/   # Internal audio transcription systems
+│   ├── whisperer_internal/   # ✅ Fixed LLVM version compatibility issue
 │   └── lidar/                # LiDAR data processing applications
 │
 ├── 🔧 Development Tools
@@ -36,6 +38,7 @@ interviews-coding-tests-codepad-codeshare-python/
 │   ├── dedupe_suffixes.py    # File deduplication with suffix management
 │   ├── move_up.sh           # File organization automation
 │   ├── compare_folders.sh   # Folder comparison utilities
+│   ├── launch_flask_on5000_whisperer_internal.sh  # ✅ Fixed deployment script
 │   └── sync_toolkit.tar     # Complete synchronization toolkit
 │
 ├── 📚 Learning & Practice
@@ -52,7 +55,41 @@ interviews-coding-tests-codepad-codeshare-python/
 
 ## 🎯 Featured Projects
 
+### 🎤 **Internal Audio Transcription System** (`whisperer_internal/`) ✅ **RECENTLY FIXED**
+
+**Real-time microphone transcription with LLVM compatibility fix**
+
+```bash
+# ✅ FIXED: LLVM 21 → 20 compatibility issue resolved
+# Features:
+# • MacBook Pro microphone optimization
+# • Real-time Whisper AI transcription  
+# • Automatic LLVM version management
+# • Web dashboard with live updates
+# • Fallback to faster-whisper if needed
+
+# Launch the system (now with fixed LLVM):
+cd whisperer_internal
+./launch_flask_on5000_whisperer_internal.sh
+# Open: http://localhost:5000
+```
+
+**Recent Fix - LLVM Compatibility:**
+- **Problem**: llvmlite 0.46.0 only supports LLVM 20, but system had LLVM 21
+- **Solution**: Automated LLVM version management in deployment script
+- **Key Fix**: `brew uninstall llvm` (removes LLVM 21) + `brew install llvm@20`
+- **Environment**: Sets `LLVM_CONFIG=/usr/local/opt/llvm@20/bin/llvm-config`
+- **Fallback**: Automatically switches to `faster-whisper` if llvmlite fails
+
+**Architecture:**
+- **Optimized audio capture** for MacBook Pro microphones
+- **Whisper AI** for real-time transcription
+- **LLVM 20 compatibility** with automated version management
+- **Flask web interface** with auto-refresh (2-second updates)
+- **Graceful degradation** to faster-whisper if needed
+
 ### 🎤 **Dual Audio Transcription System** (`whisperer_external/`)
+
 **Real-time microphone + YouTube audio transcription**
 
 ```bash
@@ -77,6 +114,7 @@ cd whisperer_external
 - **Crash protection** and graceful recovery
 
 ### 🎭 **Browser Overlay System** (`apps/overlay/`)
+
 **Semi-transparent, always-on-top browser windows**
 
 ```python
@@ -102,6 +140,7 @@ python browser-overlay.py
 - Learning tools transparency
 
 ### 🔑 **Keylogger Analysis Suite** (`apps/keylogger/`)
+
 **Professional keyboard activity analysis and visualization**
 
 ```python
@@ -123,6 +162,7 @@ python web_dashboard.py  # Launches visualization interface
 - Security auditing capabilities
 
 ### 🚀 **Flask Development Framework** (`apps/flasks/`)
+
 **Comprehensive Flask development and testing environment**
 
 ```python
@@ -130,7 +170,7 @@ python web_dashboard.py  # Launches visualization interface
 # • flask-exercise/ - Basic Flask learning exercises
 # • flask-test/     - Testing framework with demo image server
 # • flask/          - Production Flask application with GPT analysis
-# • whisperer_internal/ - Internal audio transcription
+# • whisperer_internal/ - ✅ Fixed internal audio transcription
 # • whisperer_external/ - External audio transcription
 # • avatar/ - Voice cloning systems
 # • image-to-gpt/ - Visual analysis tools
@@ -156,7 +196,7 @@ python app.py
 flasks/
 ├── flask-exercise/     # Flask learning exercises
 ├── flask-test/         # Flask testing and demo applications
-├── whisperer_internal/ # Internal audio processing
+├── whisperer_internal/ # ✅ Fixed internal audio processing (LLVM 20)
 ├── whisperer_external/ # External audio processing
 ├── avatar/             # Voice cloning and avatar systems
 └── image-to-gpt/       # Visual analysis tools
@@ -169,6 +209,8 @@ flasks/
 temp/              # Ignored globally - for runtime temporary files
 *.tmp              # Temporary file patterns
 *.log              # Log files (kept local)
+venv/              # Virtual environments
+logs/              # Application logs
 
 # Test assets (tracked):
 test-snapshot/     # Tracked test images and assets
@@ -179,24 +221,53 @@ examples/          # Example data and configurations
 # 1. Use 'test-snapshot/' for test images you want to track
 # 2. Use 'temp/' for runtime files you don't want in git
 # 3. Keep production code separate from test/demo code
+# 4. Logs go to 'logs/' directory for each application
 ```
 
-### **Audio Processing Pipeline**
+### **Audio Processing Pipeline** ✅ **IMPROVED**
 
 ```python
-# whisperer_external/whisperer-external.py
-def get_audio_devices():
-    """Intelligent device detection for dual audio capture"""
-    # Auto-detects external microphone
-    # Auto-detects BlackHole for system audio
-    # Fallback mechanisms for robustness
+# whisperer_internal/whisperer.py - FIXED VERSION
+def initialize_whisper_model():
+    """
+    Loads Whisper model with LLVM 20 compatibility
+    Falls back to faster-whisper if llvmlite fails
+    """
+    try:
+        # Try original whisper (requires llvmlite with LLVM 20)
+        import whisper
+        return whisper.load_model("base")
+    except Exception:
+        # Fallback to faster-whisper (no LLVM dependencies)
+        from faster_whisper import WhisperModel
+        return WhisperModel("base", device="cpu", compute_type="int8")
+```
 
-def start_dual_transcription():
-    """Multi-threaded audio processing"""
-    # Thread 1: Microphone capture
-    # Thread 2: System audio capture  
-    # Thread 3: Whisper AI transcription
-    # Thread 4: Web interface updates
+### **LLVM Compatibility Management** 🔧 **NEW SECTION**
+
+```bash
+# launch_flask_on5000_whisperer_internal.sh - Key Fixes:
+# 1. Check for LLVM 21 and remove it
+if brew list --versions llvm | grep -q "21"; then
+    brew uninstall llvm
+fi
+
+# 2. Ensure LLVM 20 is installed
+if ! brew list --versions llvm@20; then
+    brew install llvm@20
+fi
+
+# 3. Set environment variables for LLVM 20
+export LLVM_CONFIG="/usr/local/opt/llvm@20/bin/llvm-config"
+export PATH="/usr/local/opt/llvm@20/bin:$PATH"
+
+# 4. Install llvmlite with correct LLVM version
+LLVM_CONFIG=/usr/local/opt/llvm@20/bin/llvm-config pip install llvmlite==0.46.0
+
+# 5. Fallback mechanism
+if ! python -c "import llvmlite"; then
+    pip install faster-whisper  # Alternative without LLVM
+fi
 ```
 
 ## 🚀 Getting Started
@@ -212,12 +283,12 @@ cd interviews-coding-tests-codepad-codeshare-python
 ./env-setup.sh
 
 # 3. Choose an application to run
-cd whisperer_external && ./launch-flask-on5000-whisperer-external.sh
+cd whisperer_internal && ./launch_flask_on5000_whisperer_internal.sh  # ✅ FIXED
 # OR test Flask demo:
 cd apps/flasks/flask-test && python app.py
-# OR
+# OR test browser overlay:
 cd apps/overlay && python browser-overlay.py
-# OR
+# OR test keylogger analysis:
 cd apps/keylogger && python web_dashboard.py
 ```
 
@@ -226,8 +297,24 @@ cd apps/keylogger && python web_dashboard.py
 - **Python 3.8+** with virtual environment support
 - **macOS** (optimized, but cross-platform compatible)
 - **Audio devices** for transcription applications
-- **BlackHole 2ch** (for system audio capture - optional)
+- **LLVM 20** (for whisper transcription - automatically managed)
 - **Homebrew** (for package management on macOS)
+- **PortAudio** (for audio capture: `brew install portaudio`)
+
+### **Installation Notes** 📝 **UPDATED**
+
+```bash
+# For whisperer_internal - Automated LLVM management
+cd whisperer_internal
+./launch_flask_on5000_whisperer_internal.sh
+# Script will:
+# 1. Check for LLVM 21 and remove it if present
+# 2. Install LLVM 20 if not installed
+# 3. Set proper environment variables
+# 4. Install llvmlite with LLVM 20
+# 5. Install whisper and dependencies
+# 6. Launch Flask application on port 5000
+```
 
 ## 🔧 Development Patterns
 
@@ -247,6 +334,14 @@ cd apps/keylogger && python web_dashboard.py
 # Visual breakdown of folder sizes
 # Sort by size, date, or type
 # Export to CSV for analysis
+
+# launch_flask_on5000_whisperer_internal.sh - ✅ Improved deployment
+# Features:
+# • LLVM version management
+# • Port conflict resolution
+# • Virtual environment management
+# • Log rotation and cleanup
+# • PID management for graceful shutdown
 ```
 
 ### **Data Processing Utilities**
@@ -292,12 +387,28 @@ python -m pytest apps/                  # Unit tests
 ./compare_folders.sh --test             # Script validation
 python sync_by_rules.py --dry-run       # Safe execution testing
 
+# LLVM compatibility testing (for whisper applications)
+cd whisperer_internal
+./launch_flask_on5000_whisperer_internal.sh --test
+# Verifies LLVM 20 installation and whisper import
+
 # Code quality standards
 # • PEP 8 compliance
 # • Comprehensive error handling
 # • Logging and monitoring
 # • Documentation coverage
+# • LLVM version compatibility checks
 ```
+
+## 📈 Performance Characteristics
+
+| Application | Resource Usage | Real-time Capable | Production Ready | LLVM Compatibility |
+|-------------|----------------|-------------------|------------------|-------------------|
+| Whisperer Internal | Medium CPU, Low RAM | ✅ Yes | ✅ Yes | ✅ LLVM 20 |
+| Whisperer External | Medium CPU, Medium RAM | ✅ Yes | ✅ Yes | ✅ LLVM 20 |
+| Browser Overlay | Low CPU/GPU | ✅ Yes | ✅ Yes | ❌ Not required |
+| Keylogger Tools | Low CPU/RAM | ✅ Real-time | ✅ Yes | ❌ Not required |
+| Sync Tools | Low CPU, Variable I/O | ❌ Batch | ✅ Yes | ❌ Not required |
 
 ## 🎓 Learning Resources
 
@@ -307,12 +418,42 @@ This repository also serves as a learning portfolio:
 - **Algorithm Implementations** - Common patterns and solutions
 - **Project Documentation** - Real-world application examples
 - **Development Workflows** - Professional practices demonstrated
+- **LLVM Compatibility** - System library version management
 
-## 📈 Performance Characteristics
+## 🔄 Recent Updates
 
-| Application | Resource Usage | Real-time Capable | Production Ready |
-|-------------|----------------|-------------------|------------------|
-| Whisperer | Medium CPU, Low RAM | ✅ Yes | ✅ Yes |
-| Browser Overlay | Low CPU/GPU | ✅ Yes | ✅ Yes |
-| Keylogger Tools | Low CPU/RAM | ✅ Real-time | ✅ Yes |
-| Sync Tools | Low CPU, Variable I/O | ❌ Batch | ✅ Yes |
+### **✅ Fixed Issues:**
+1. **LLVM 21 → 20 Compatibility** - Resolved llvmlite installation failures
+2. **Deployment Script Improvements** - Added LLVM version management
+3. **Fallback Mechanisms** - Automatic switch to faster-whisper if needed
+4. **Environment Variable Handling** - Proper LLVM_CONFIG settings
+
+### **🆕 New Features:**
+1. **Automated LLVM Management** - Scripts handle LLVM version conflicts
+2. **Enhanced Error Recovery** - Graceful degradation options
+3. **Better Logging** - Structured log files in `logs/` directory
+4. **PID Management** - Proper process tracking and cleanup
+
+### **📋 Known Issues & Solutions:**
+- **Issue**: `llvmlite` fails with LLVM 21
+- **Solution**: Script automatically installs LLVM 20 and sets environment
+- **Fallback**: Uses `faster-whisper` if llvmlite installation fails
+- **Prevention**: Checks for LLVM 21 and removes it before installation
+
+## 🤝 Contributing
+
+This repository demonstrates real-world problem-solving:
+- **System Compatibility** - Handling LLVM version conflicts
+- **Production Deployment** - Robust installation scripts
+- **Error Recovery** - Graceful degradation patterns
+- **Documentation** - Clear troubleshooting guides
+
+For issues or improvements, please reference the specific application directory and include:
+1. System information (macOS version, Python version)
+2. LLVM version (`llvm-config --version`)
+3. Error messages from logs
+4. Steps to reproduce
+
+## 📜 License
+
+MIT License - see LICENSE file for details.
