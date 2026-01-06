@@ -23,9 +23,9 @@ show_processes() {
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
     
     # Check PID file
-    if [ -f ".whisperer.pid" ]; then
-        PID=$(cat .whisperer.pid)
-        echo -e "${BOLD}📄 Found PID file:${NC} .whisperer.pid (PID: $PID)"
+    if [ -f "whisperer.pid" ]; then
+        PID=$(cat whisperer.pid)
+        echo -e "${BOLD}📄 Found PID file:${NC} whisperer.pid (PID: $PID)"
         ps -p $PID >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             echo -e "   Status: ${GREEN}✅ RUNNING${NC}"
@@ -34,7 +34,7 @@ show_processes() {
             echo -e "   Status: ${RED}❌ NOT RUNNING (stale PID file)${NC}"
         fi
     else
-        echo -e "${YELLOW}📄 No .whisperer.pid file found${NC}"
+        echo -e "${YELLOW}📄 No whisperer.pid file found${NC}"
     fi
     
     echo -e "\n${BOLD}🔌 Checking ports 5000-5010:${NC}"
@@ -111,8 +111,8 @@ kill_processes() {
     echo -e "\n${RED}🛑 Killing processes...${NC}"
     
     # Kill by PID file
-    if [ -f ".whisperer.pid" ]; then
-        PID=$(cat .whisperer.pid)
+    if [ -f "whisperer.pid" ]; then
+        PID=$(cat whisperer.pid)
         echo -e "${YELLOW}📄 Killing PID from file: $PID${NC}"
         kill -9 $PID 2>/dev/null
         if [ $? -eq 0 ]; then
@@ -120,7 +120,7 @@ kill_processes() {
         else
             echo -e "   ${YELLOW}⚠️  Process $PID not found or already terminated${NC}"
         fi
-        rm -f .whisperer.pid
+        rm -f whisperer.pid
     fi
     
     # Kill by port

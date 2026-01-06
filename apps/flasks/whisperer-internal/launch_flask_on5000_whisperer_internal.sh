@@ -213,7 +213,7 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG" ; }
   # Launch app in the background (survives terminal close)
   echo
   echo "Starting Whisperer service on http://localhost:${PORT} …"
-  nohup bash -lc 'source venv/bin/activate; python -u whisperer.py' \
+  nohup bash -lc 'source venv/bin/activate; python -u whisperer-internal.py' \
       >> "$FLASK_LOG" 2>&1 &
 
   echo $! > "$PID_FILE"
