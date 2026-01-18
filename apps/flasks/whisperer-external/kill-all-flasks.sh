@@ -7,14 +7,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-PURPLE='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # ASCII Art for header
 echo -e "${CYAN}"
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║           WHISPERER CONTROL PANEL                    ║"
+echo "║      🛑 WHISPERER PROCESS KILLER - INTERACTIVE       ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -89,116 +88,6 @@ show_processes() {
     
     if [ $processes_found -eq 0 ]; then
         echo -e "   ${GREEN}✅ No running whisperer/Flask/Python app processes found${NC}"
-    fi
-    
-    echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
-}
-
-# Function to check whisperer status
-check_status() {
-    echo -e "\n${PURPLE}📊 WHISPERER STATUS CHECK${NC}"
-    echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
-    
-    # Check PID file
-    if [ -f "whisperer.pid" ]; then
-        PID=$(cat whisperer.pid)
-        echo -e "${BOLD}📄 PID File:${NC} whisperer.pid (PID: ${CYAN}$PID${NC})"
-        
-        if ps -p $PID >/dev/null 2>&1; then
-            echo -e "   Status: ${GREEN}✅ RUNNING${NC}"
-            
-            # Show process details
-            echo -e "   ${BOLD}📈 Resource Usage:${NC}"
-            ps -o pid,user,%cpu,%mem,etime,command -p $PID | tail -1 | while read line; do
-                echo "   $line" | awk '{printf "   CPU: %s%%  MEM: %s%%  UPTIME: %s\n   CMD: %s %s %s\n", $3, $4, $5, $6, $7, $8}'
-            done
-            
-            # Check if it's using audio
-            echo -e "\n   ${BOLD}🎤 Audio Status:${NC}"
-            if lsof -p $PID 2>/dev/null | grep -q -i "sounddevice\|portaudio\|coreaudio"; then
-                echo -e "   ${GREEN}✅ Audio device is active${NC}"
-            else
-                echo -e "   ${YELLOW}⚠️  Audio device may not be active${NC}"
-            fi
-        else
-            echo -e "   Status: ${RED}❌ NOT RUNNING (stale PID file)${NC}"
-        fi
-    else
-        echo -e "${YELLOW}📄 No PID file found${NC}"
-    fi
-    
-    # Check web interface
-    echo -e "\n${BOLD}🌐 Web Interface:${NC}"
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/ 2>/dev/null || echo "000")
-    
-    if [ "$HTTP_CODE" = "200" ]; then
-        echo -e "   ${GREEN}✅ http://localhost:5000 is responding${NC}"
-        
-        # Try to get recent transcriptions
-        echo -e "   ${BOLD}📝 Recent Transcriptions:${NC}"
-        curl -s http://localhost:5000/ 2>/dev/null | grep -o '>[^<]*<' | sed 's/[<>]//g' | grep -v 'Live Number' | head -5 | while read line; do
-            if [ -n "$line" ]; then
-                echo -e "   📄 $line"
-            fi
-        done
-        
-        if [ $? -ne 0 ]; then
-            echo -e "   ${YELLOW}No transcriptions displayed on page${NC}"
-        fi
-    elif [ "$HTTP_CODE" = "000" ]; then
-        echo -e "   ${RED}❌ http://localhost:5000 is not responding (connection refused)${NC}"
-    else
-        echo -e "   ${YELLOW}⚠️  http://localhost:5000 returned HTTP $HTTP_CODE${NC}"
-    fi
-    
-    # Check log file
-    echo -e "\n${BOLD}📋 Recent Logs:${NC}"
-    if [ -f "logs/flask_app.log" ]; then
-        LOG_SIZE=$(stat -f%z "logs/flask_app.log" 2>/dev/null || echo "0")
-        if [ "$LOG_SIZE" -gt 1000 ]; then
-            echo -e "   Last 3 log entries:"
-            tail -3 "logs/flask_app.log" | while read line; do
-                # Truncate long lines
-                if [ ${#line} -gt 80 ]; then
-                    echo -e "   📄 ${line:0:77}..."
-                else
-                    echo -e "   📄 $line"
-                fi
-            done
-        else
-            echo -e "   ${YELLOW}Log file exists but is small or empty${NC}"
-        fi
-    else
-        echo -e "   ${YELLOW}No log file found at logs/flask_app.log${NC}"
-    fi
-    
-    # Quick system check
-    echo -e "\n${BOLD}⚙️  System Check:${NC}"
-    
-    # Check if port 5000 is in use
-    if lsof -ti:5000 >/dev/null 2>&1; then
-        PORT_PIDS=$(lsof -ti:5000 | tr '\n' ' ')
-        echo -e "   ${YELLOW}Port 5000: IN USE by PIDs: $PORT_PIDS${NC}"
-    else
-        echo -e "   ${GREEN}Port 5000: FREE${NC}"
-    fi
-    
-    # Check Python environment
-    if [ -d "venv" ]; then
-        echo -e "   ${GREEN}Virtual environment: EXISTS${NC}"
-    else
-        echo -e "   ${YELLOW}Virtual environment: NOT FOUND${NC}"
-    fi
-    
-    echo -e "\n${BOLD}🎯 Recommended Action:${NC}"
-    if [ -f "whisperer.pid" ] && ps -p $(cat whisperer.pid 2>/dev/null) >/dev/null 2>&1; then
-        echo -e "   💡 App appears to be running."
-        echo -e "   💡 To stop gracefully: ${CYAN}Choose option 3${NC}"
-        echo -e "   💡 To force stop: ${CYAN}Choose option 4${NC}"
-        echo -e "   💡 To view live logs: ${CYAN}tail -f logs/flask_app.log${NC}"
-    else
-        echo -e "   💡 App does not appear to be running."
-        echo -e "   💡 To start: ${CYAN}./set-up-and-launch-whisperer-internal.sh${NC}"
     fi
     
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
@@ -284,11 +173,10 @@ show_menu() {
     echo -e "${CYAN}╚══════════════════════════════════════════════════════╝${NC}"
     echo -e ""
     echo -e "${BOLD}1.${NC} 🔍 Scan & Show running processes"
-    echo -e "${BOLD}2.${NC} 📊 Check whisperer status (web, logs, audio)"
-    echo -e "${BOLD}3.${NC} 🛑 Kill all whisperer/Flask processes (with confirmation)"
-    echo -e "${BOLD}4.${NC} 💀 Force kill all processes (no confirmation)"
-    echo -e "${BOLD}5.${NC} 🎯 Kill specific process by PID"
-    echo -e "${BOLD}6.${NC} 🚪 Exit"
+    echo -e "${BOLD}2.${NC} 🛑 Kill all whisperer/Flask processes (with confirmation)"
+    echo -e "${BOLD}3.${NC} 💀 Force kill all processes (no confirmation)"
+    echo -e "${BOLD}4.${NC} 🎯 Kill specific process by PID"
+    echo -e "${BOLD}5.${NC} 🚪 Exit"
     echo -e ""
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
@@ -327,7 +215,7 @@ kill_specific_pid() {
 # Main interactive loop
 while true; do
     show_menu
-    echo -n "Select option (1-6): "
+    echo -n "Select option (1-5): "
     read choice
     
     case $choice in
@@ -335,25 +223,22 @@ while true; do
             show_processes
             ;;
         2)
-            check_status
-            ;;
-        3)
             show_processes
             kill_processes "interactive"
             ;;
-        4)
+        3)
             show_processes
             kill_processes "force"
             ;;
-        5)
+        4)
             kill_specific_pid
             ;;
-        6)
+        5)
             echo -e "\n${GREEN}👋 Goodbye!${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}❌ Invalid option. Please select 1-6${NC}"
+            echo -e "${RED}❌ Invalid option. Please select 1-5${NC}"
             ;;
     esac
     
