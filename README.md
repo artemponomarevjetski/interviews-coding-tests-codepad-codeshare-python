@@ -19,7 +19,7 @@ interviews-coding-tests-codepad-codeshare-python/
 │   │   ├── flasks/
 │   │   │   ├── flask-exercise/     # Flask learning exercises and examples
 │   │   │   ├── flask-test/         # Flask testing framework with demo app
-│   │   │   ├── flask/              # Main Flask application (snapshot.py)
+│   │   │   ├── solver/             # OCR Dashboard application
 │   │   │   ├── whisperer_internal/ # ✅ Internal audio transcription with LLVM fix
 │   │   │   ├── whisperer_external/ # External audio transcription
 │   │   │   ├── avatar/             # Voice cloning systems
@@ -113,6 +113,34 @@ cd whisperer_external
 - **BlackHole audio routing** for system capture
 - **Crash protection** and graceful recovery
 
+### 🔤 **OCR Dashboard** (`apps/flasks/solver/`) ✅ **UPDATED**
+
+**Screen capture OCR application with improved launcher**
+
+```bash
+# Launch the OCR dashboard:
+cd apps/flasks/solver
+./set-up-and-launch-solver-app.sh [no-gpt|gpt]
+
+# Default: no-gpt mode (OCR-only)
+./set-up-and-launch-solver-app.sh
+# Open: http://localhost:5000
+```
+
+**Key Features:**
+- **Screen capture with OCR** using Tesseract
+- **Optional GPT-4 analysis** for extracted text
+- **Background operation** with automatic cleanup
+- **MacOS permissions validation** with troubleshooting
+- **Virtual environment management**
+- **Log rotation and health monitoring**
+
+**Files in `solver/` directory:**
+- `set-up-and-launch-solver-app.sh` - Main launcher script
+- `snapshot.py` - Flask OCR application
+- `requirements.txt` - Python dependencies
+- `archive/` - Legacy scripts for reference
+
 ### 🎭 **Browser Overlay System** (`apps/overlay/`)
 
 **Semi-transparent, always-on-top browser windows**
@@ -169,7 +197,7 @@ python web_dashboard.py  # Launches visualization interface
 # Projects Included:
 # • flask-exercise/ - Basic Flask learning exercises
 # • flask-test/     - Testing framework with demo image server
-# • flask/          - Production Flask application with GPT analysis
+# • solver/         - OCR Dashboard application (formerly flask/)
 # • whisperer_internal/ - ✅ Fixed internal audio transcription
 # • whisperer_external/ - External audio transcription
 # • avatar/ - Voice cloning systems
@@ -196,6 +224,7 @@ python app.py
 flasks/
 ├── flask-exercise/     # Flask learning exercises
 ├── flask-test/         # Flask testing and demo applications
+├── solver/             # ✅ OCR Dashboard application
 ├── whisperer_internal/ # ✅ Fixed internal audio processing (LLVM 20)
 ├── whisperer_external/ # External audio processing
 ├── avatar/             # Voice cloning and avatar systems
@@ -283,6 +312,8 @@ cd interviews-coding-tests-codepad-codeshare-python
 ./env-setup.sh
 
 # 3. Choose an application to run
+cd apps/flasks/solver && ./set-up-and-launch-solver-app.sh  # ✅ OCR Dashboard
+# OR test audio transcription:
 cd whisperer_internal && ./launch_flask_on5000_whisperer_internal.sh  # ✅ FIXED
 # OR test Flask demo:
 cd apps/flasks/flask-test && python app.py
@@ -304,7 +335,16 @@ cd apps/keylogger && python web_dashboard.py
 ### **Installation Notes** 📝 **UPDATED**
 
 ```bash
-# For whisperer_internal - Automated LLVM management
+# For OCR Dashboard:
+cd apps/flasks/solver
+./set-up-and-launch-solver-app.sh [no-gpt|gpt]
+# Script will:
+# 1. Check MacOS screen recording permissions
+# 2. Setup virtual environment with dependencies
+# 3. Start Flask app in background with health checks
+# 4. Provide troubleshooting for common issues
+
+# For whisperer_internal - Automated LLVM management:
 cd whisperer_internal
 ./launch_flask_on5000_whisperer_internal.sh
 # Script will:
@@ -321,6 +361,15 @@ cd whisperer_internal
 ### **Production-Ready Scripting**
 
 ```bash
+# set-up-and-launch-solver-app.sh - OCR Dashboard launcher
+#!/bin/bash
+# Features:
+# • MacOS permissions validation with troubleshooting
+# • Virtual environment management
+# • Background operation with automatic cleanup
+# • Health monitoring with timeout
+# • GPT/No-GPT mode selection
+
 # compare_folders.sh - Professional folder comparison
 #!/bin/bash
 # Usage: ./compare_folders.sh /path/to/folder1 /path/to/folder2
@@ -329,11 +378,6 @@ cd whisperer_internal
 # • File size and timestamp analysis
 # • Missing file detection
 # • Summary reporting
-
-# folder-sizes.sh - Disk usage analysis
-# Visual breakdown of folder sizes
-# Sort by size, date, or type
-# Export to CSV for analysis
 
 # launch_flask_on5000_whisperer_internal.sh - ✅ Improved deployment
 # Features:
@@ -364,10 +408,10 @@ def deduplicate_files(directory):
 ## 📊 Application Portfolio
 
 ### **Web Applications**
-- **Flask Dashboards** - Real-time monitoring and visualization
+- **OCR Dashboard** - Screen capture with OCR and GPT analysis
 - **Audio Transcription** - Live speech-to-text with dual inputs
 - **Keylogger Analysis** - Typing pattern visualization
-- **Screen OCR** - Screen capture with GPT analysis
+- **Flask Dashboards** - Real-time monitoring and visualization
 
 ### **Desktop Applications**
 - **Browser Overlay** - Transparent, always-on-top browsers
@@ -386,6 +430,11 @@ def deduplicate_files(directory):
 python -m pytest apps/                  # Unit tests
 ./compare_folders.sh --test             # Script validation
 python sync_by_rules.py --dry-run       # Safe execution testing
+
+# OCR Dashboard testing:
+cd apps/flasks/solver
+./set-up-and-launch-solver-app.sh no-gpt  # Test OCR-only mode
+# Verify dashboard at http://localhost:5000
 
 # LLVM compatibility testing (for whisper applications)
 cd whisperer_internal
@@ -406,6 +455,7 @@ cd whisperer_internal
 |-------------|----------------|-------------------|------------------|-------------------|
 | Whisperer Internal | Medium CPU, Low RAM | ✅ Yes | ✅ Yes | ✅ LLVM 20 |
 | Whisperer External | Medium CPU, Medium RAM | ✅ Yes | ✅ Yes | ✅ LLVM 20 |
+| OCR Dashboard | Low CPU, Medium RAM | ✅ Yes | ✅ Yes | ❌ Not required |
 | Browser Overlay | Low CPU/GPU | ✅ Yes | ✅ Yes | ❌ Not required |
 | Keylogger Tools | Low CPU/RAM | ✅ Real-time | ✅ Yes | ❌ Not required |
 | Sync Tools | Low CPU, Variable I/O | ❌ Batch | ✅ Yes | ❌ Not required |
@@ -429,16 +479,40 @@ This repository also serves as a learning portfolio:
 4. **Environment Variable Handling** - Proper LLVM_CONFIG settings
 
 ### **🆕 New Features:**
-1. **Automated LLVM Management** - Scripts handle LLVM version conflicts
-2. **Enhanced Error Recovery** - Graceful degradation options
-3. **Better Logging** - Structured log files in `logs/` directory
-4. **PID Management** - Proper process tracking and cleanup
+1. **Improved OCR Dashboard Launcher** - Better background operation
+2. **MacOS Permissions Check** - Detailed screen recording troubleshooting
+3. **Enhanced Error Recovery** - Graceful degradation options
+4. **Better Logging** - Structured log files in `logs/` directory
+5. **PID Management** - Proper process tracking and cleanup
 
 ### **📋 Known Issues & Solutions:**
 - **Issue**: `llvmlite` fails with LLVM 21
 - **Solution**: Script automatically installs LLVM 20 and sets environment
 - **Fallback**: Uses `faster-whisper` if llvmlite installation fails
 - **Prevention**: Checks for LLVM 21 and removes it before installation
+
+## 📋 Quick Start Guide
+
+### **For OCR Dashboard:**
+```bash
+cd apps/flasks/solver
+./set-up-and-launch-solver-app.sh      # Default: no-GPT mode
+
+# With GPT analysis:
+./set-up-and-launch-solver-app.sh gpt  # Requires OpenAI API key in .env
+```
+
+### **For Audio Transcription:**
+```bash
+cd whisperer_internal
+./launch_flask_on5000_whisperer_internal.sh
+```
+
+### **For Browser Overlay:**
+```bash
+cd apps/overlay
+python browser-overlay.py
+```
 
 ## 🤝 Contributing
 
@@ -453,7 +527,3 @@ For issues or improvements, please reference the specific application directory 
 2. LLVM version (`llvm-config --version`)
 3. Error messages from logs
 4. Steps to reproduce
-
-## 📜 License
-
-MIT License - see LICENSE file for details.
