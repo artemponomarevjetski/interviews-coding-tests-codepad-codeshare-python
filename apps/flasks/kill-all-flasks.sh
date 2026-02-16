@@ -1,5 +1,6 @@
 #!/bin/bash
-# kill-all-flasks.sh - Interactive kill script for all Flask apps
+# kill-all-repo-apps.sh - Ultimate kill script for ALL apps in this repository
+# Location: apps/flasks/kill-all-repo-apps.sh
 
 # Color codes for better UX
 RED='\033[0;31m'
@@ -11,31 +12,46 @@ PURPLE='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
+# Get repository root directory (3 levels up from script location)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # ASCII Art for header
 echo -e "${CYAN}"
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║           WHISPERER CONTROL PANEL                    ║"
+echo "║         🚨 REPOSITORY APP KILLER v3.0 🚨            ║"
+echo "║      Kills ALL apps from this repository            ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${NC}"
+echo -e "${BOLD}Repository root:${NC} $REPO_ROOT"
+echo -e "${BOLD}Script location:${NC} $(dirname "${BASH_SOURCE[0]}")"
+echo ""
 
 # Function to display process info
 show_processes() {
-    echo -e "\n${YELLOW}🔍 Scanning for running processes...${NC}"
+    echo -e "\n${YELLOW}🔍 Scanning for running processes from this repository...${NC}"
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
     
-    # Check PID file
-    if [ -f "whisperer.pid" ]; then
-        PID=$(cat whisperer.pid)
-        echo -e "${BOLD}📄 Found PID file:${NC} whisperer.pid (PID: $PID)"
-        ps -p $PID >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo -e "   Status: ${GREEN}✅ RUNNING${NC}"
-            ps -o pid,user,%cpu,%mem,start,command -p $PID | tail -1
-        else
-            echo -e "   Status: ${RED}❌ NOT RUNNING (stale PID file)${NC}"
+    # Check all possible PID files in all app directories
+    local pid_files_found=0
+    for app_dir in whisperer-external whisperer-internal avatar solver; do
+        if [ -f "$app_dir/whisperer.pid" ] || [ -f "$app_dir/avatar.pid" ] || [ -f "$app_dir/solver.pid" ]; then
+            pid_files_found=1
+            for pidfile in "$app_dir"/*.pid; do
+                if [ -f "$pidfile" ]; then
+                    PID=$(cat "$pidfile" 2>/dev/null)
+                    echo -e "${BOLD}📄 Found PID file:${NC} $pidfile (PID: $PID)"
+                    if ps -p $PID >/dev/null 2>&1; then
+                        echo -e "   Status: ${GREEN}✅ RUNNING${NC}"
+                        ps -o pid,user,%cpu,%mem,start,command -p $PID | tail -1
+                    else
+                        echo -e "   Status: ${RED}❌ NOT RUNNING (stale PID file)${NC}"
+                    fi
+                fi
+            done
         fi
-    else
-        echo -e "${YELLOW}📄 No whisperer.pid file found${NC}"
+    done
+    if [ $pid_files_found -eq 0 ]; then
+        echo -e "${YELLOW}📄 No PID files found${NC}"
     fi
     
     echo -e "\n${BOLD}🔌 Checking ports 5000-5010:${NC}"
@@ -46,7 +62,7 @@ show_processes() {
             port_found=1
             echo -e "   Port ${CYAN}$PORT${NC}: ${RED}IN USE${NC} by PIDs: $PIDS"
             for pid in $PIDS; do
-                echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null | head -c 50)"
+                echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null | head -c 60)"
             done
         fi
     done
@@ -54,11 +70,11 @@ show_processes() {
         echo -e "   ${GREEN}✅ All ports 5000-5010 are free${NC}"
     fi
     
-    echo -e "\n${BOLD}👤 Checking process names:${NC}"
+    echo -e "\n${BOLD}👤 Checking process names from repository:${NC}"
     local processes_found=0
     
     # Check for whisperer processes
-    whisperer_pids=$(pgrep -f "python.*whisperer")
+    whisperer_pids=$(pgrep -f "python.*whisperer" 2>/dev/null)
     if [ ! -z "$whisperer_pids" ]; then
         processes_found=1
         echo -e "   ${YELLOW}Whisperer processes:${NC} $whisperer_pids"
@@ -67,8 +83,38 @@ show_processes() {
         done
     fi
     
+    # Check for avatar processes
+    avatar_pids=$(pgrep -f "python.*avatar" 2>/dev/null)
+    if [ ! -z "$avatar_pids" ]; then
+        processes_found=1
+        echo -e "   ${YELLOW}Avatar processes:${NC} $avatar_pids"
+        for pid in $avatar_pids; do
+            echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null)"
+        done
+    fi
+    
+    # Check for solver processes
+    solver_pids=$(pgrep -f "python.*solver" 2>/dev/null)
+    if [ ! -z "$solver_pids" ]; then
+        processes_found=1
+        echo -e "   ${YELLOW}Solver processes:${NC} $solver_pids"
+        for pid in $solver_pids; do
+            echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null)"
+        done
+    fi
+    
+    # Check for snapshot processes (root-level flask app)
+    snapshot_pids=$(pgrep -f "python.*snapshot" 2>/dev/null)
+    if [ ! -z "$snapshot_pids" ]; then
+        processes_found=1
+        echo -e "   ${YELLOW}Snapshot processes:${NC} $snapshot_pids"
+        for pid in $snapshot_pids; do
+            echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null)"
+        done
+    fi
+    
     # Check for Flask processes
-    flask_pids=$(pgrep -f "flask")
+    flask_pids=$(pgrep -f "flask" 2>/dev/null)
     if [ ! -z "$flask_pids" ]; then
         processes_found=1
         echo -e "   ${YELLOW}Flask processes:${NC} $flask_pids"
@@ -77,138 +123,100 @@ show_processes() {
         done
     fi
     
-    # Check for Python app processes
-    python_pids=$(pgrep -f "python.*app")
-    if [ ! -z "$python_pids" ]; then
+    # Check for any Python app from this repo
+    repo_python_pids=$(pgrep -f "python.*$REPO_ROOT" 2>/dev/null)
+    if [ ! -z "$repo_python_pids" ]; then
         processes_found=1
-        echo -e "   ${YELLOW}Python app processes:${NC} $python_pids"
-        for pid in $python_pids; do
+        echo -e "   ${YELLOW}Python processes from repo:${NC} $repo_python_pids"
+        for pid in $repo_python_pids; do
             echo -e "   └── PID $pid: $(ps -o command= -p $pid 2>/dev/null | head -c 60)"
         done
     fi
     
     if [ $processes_found -eq 0 ]; then
-        echo -e "   ${GREEN}✅ No running whisperer/Flask/Python app processes found${NC}"
+        echo -e "   ${GREEN}✅ No running repository app processes found${NC}"
     fi
     
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
 
-# Function to check whisperer status
+# Function to check app status
 check_status() {
-    echo -e "\n${PURPLE}📊 WHISPERER STATUS CHECK${NC}"
+    echo -e "\n${PURPLE}📊 REPOSITORY APP STATUS CHECK${NC}"
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
     
-    # Check PID file
-    if [ -f "whisperer.pid" ]; then
-        PID=$(cat whisperer.pid)
-        echo -e "${BOLD}📄 PID File:${NC} whisperer.pid (PID: ${CYAN}$PID${NC})"
-        
-        if ps -p $PID >/dev/null 2>&1; then
-            echo -e "   Status: ${GREEN}✅ RUNNING${NC}"
-            
-            # Show process details
-            echo -e "   ${BOLD}📈 Resource Usage:${NC}"
-            ps -o pid,user,%cpu,%mem,etime,command -p $PID | tail -1 | while read line; do
-                echo "   $line" | awk '{printf "   CPU: %s%%  MEM: %s%%  UPTIME: %s\n   CMD: %s %s %s\n", $3, $4, $5, $6, $7, $8}'
-            done
-            
-            # Check if it's using audio
-            echo -e "\n   ${BOLD}🎤 Audio Status:${NC}"
-            if lsof -p $PID 2>/dev/null | grep -q -i "sounddevice\|portaudio\|coreaudio"; then
-                echo -e "   ${GREEN}✅ Audio device is active${NC}"
-            else
-                echo -e "   ${YELLOW}⚠️  Audio device may not be active${NC}"
-            fi
-        else
-            echo -e "   Status: ${RED}❌ NOT RUNNING (stale PID file)${NC}"
-        fi
-    else
-        echo -e "${YELLOW}📄 No PID file found${NC}"
-    fi
+    # Check all possible web interfaces
+    echo -e "${BOLD}🌐 Web Interfaces:${NC}"
+    local any_responding=0
     
-    # Check web interface
-    echo -e "\n${BOLD}🌐 Web Interface:${NC}"
+    # Check localhost:5000
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/ 2>/dev/null || echo "000")
-    
     if [ "$HTTP_CODE" = "200" ]; then
+        any_responding=1
         echo -e "   ${GREEN}✅ http://localhost:5000 is responding${NC}"
-        
-        # Try to get recent transcriptions
-        echo -e "   ${BOLD}📝 Recent Transcriptions:${NC}"
-        curl -s http://localhost:5000/ 2>/dev/null | grep -o '>[^<]*<' | sed 's/[<>]//g' | grep -v 'Live Number' | head -5 | while read line; do
-            if [ -n "$line" ]; then
-                echo -e "   📄 $line"
-            fi
-        done
-        
-        if [ $? -ne 0 ]; then
-            echo -e "   ${YELLOW}No transcriptions displayed on page${NC}"
-        fi
     elif [ "$HTTP_CODE" = "000" ]; then
-        echo -e "   ${RED}❌ http://localhost:5000 is not responding (connection refused)${NC}"
+        echo -e "   ${RED}❌ http://localhost:5000 is not responding${NC}"
     else
         echo -e "   ${YELLOW}⚠️  http://localhost:5000 returned HTTP $HTTP_CODE${NC}"
     fi
     
-    # Check log file
-    echo -e "\n${BOLD}📋 Recent Logs:${NC}"
-    if [ -f "logs/flask_app.log" ]; then
-        LOG_SIZE=$(stat -f%z "logs/flask_app.log" 2>/dev/null || echo "0")
-        if [ "$LOG_SIZE" -gt 1000 ]; then
-            echo -e "   Last 3 log entries:"
-            tail -3 "logs/flask_app.log" | while read line; do
-                # Truncate long lines
-                if [ ${#line} -gt 80 ]; then
-                    echo -e "   📄 ${line:0:77}..."
-                else
-                    echo -e "   📄 $line"
-                fi
-            done
-        else
-            echo -e "   ${YELLOW}Log file exists but is small or empty${NC}"
-        fi
+    # Check localhost:5001
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/ 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" = "200" ]; then
+        any_responding=1
+        echo -e "   ${GREEN}✅ http://localhost:5001 is responding${NC}"
+    elif [ "$HTTP_CODE" = "000" ]; then
+        echo -e "   ${RED}❌ http://localhost:5001 is not responding${NC}"
     else
-        echo -e "   ${YELLOW}No log file found at logs/flask_app.log${NC}"
+        echo -e "   ${YELLOW}⚠️  http://localhost:5001 returned HTTP $HTTP_CODE${NC}"
+    fi
+    
+    # Check for log files
+    echo -e "\n${BOLD}📋 Recent Logs:${NC}"
+    local logs_found=0
+    
+    for logdir in whisperer-external/logs whisperer-internal/logs avatar/logs solver/logs ../../flask/log; do
+        if [ -f "$logdir/flask_app.log" ] || [ -f "$logdir/flask.log" ]; then
+            logs_found=1
+            echo -e "   ${CYAN}$logdir${NC}:"
+            if [ -f "$logdir/flask_app.log" ]; then
+                tail -2 "$logdir/flask_app.log" 2>/dev/null | while read line; do
+                    echo -e "   📄 ${line:0:77}..."
+                done
+            elif [ -f "$logdir/flask.log" ]; then
+                tail -2 "$logdir/flask.log" 2>/dev/null | while read line; do
+                    echo -e "   📄 ${line:0:77}..."
+                done
+            fi
+        fi
+    done
+    
+    if [ $logs_found -eq 0 ]; then
+        echo -e "   ${YELLOW}No recent log files found${NC}"
     fi
     
     # Quick system check
     echo -e "\n${BOLD}⚙️  System Check:${NC}"
     
-    # Check if port 5000 is in use
-    if lsof -ti:5000 >/dev/null 2>&1; then
-        PORT_PIDS=$(lsof -ti:5000 | tr '\n' ' ')
-        echo -e "   ${YELLOW}Port 5000: IN USE by PIDs: $PORT_PIDS${NC}"
-    else
-        echo -e "   ${GREEN}Port 5000: FREE${NC}"
-    fi
-    
-    # Check Python environment
-    if [ -d "venv" ]; then
-        echo -e "   ${GREEN}Virtual environment: EXISTS${NC}"
-    else
-        echo -e "   ${YELLOW}Virtual environment: NOT FOUND${NC}"
-    fi
-    
-    echo -e "\n${BOLD}🎯 Recommended Action:${NC}"
-    if [ -f "whisperer.pid" ] && ps -p $(cat whisperer.pid 2>/dev/null) >/dev/null 2>&1; then
-        echo -e "   💡 App appears to be running."
-        echo -e "   💡 To stop gracefully: ${CYAN}Choose option 3${NC}"
-        echo -e "   💡 To force stop: ${CYAN}Choose option 4${NC}"
-        echo -e "   💡 To view live logs: ${CYAN}tail -f logs/flask_app.log${NC}"
-    else
-        echo -e "   💡 App does not appear to be running."
-        echo -e "   💡 To start: ${CYAN}./set-up-and-launch-whisperer-internal.sh${NC}"
-    fi
+    # Check if common ports are in use
+    for PORT in 5000 5001 5002; do
+        if lsof -ti:$PORT >/dev/null 2>&1; then
+            PORT_PIDS=$(lsof -ti:$PORT | tr '\n' ' ')
+            echo -e "   ${YELLOW}Port $PORT: IN USE by PIDs: $PORT_PIDS${NC}"
+        else
+            echo -e "   ${GREEN}Port $PORT: FREE${NC}"
+        fi
+    done
     
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
 
-# Function to kill processes
-kill_processes() {
+# Function to kill all repository processes
+kill_all_repo_processes() {
     local kill_mode=$1
     
-    echo -e "\n${RED}⚠️  WARNING: This will kill processes!${NC}"
+    echo -e "\n${RED}⚠️  WARNING: This will kill ALL processes from the repository!${NC}"
+    echo -e "${RED}   Including: whisperer, avatar, solver, snapshot, flask apps${NC}"
     
     if [ "$kill_mode" != "force" ]; then
         read -p "Are you sure you want to proceed? (y/N): " -n 1 -r
@@ -219,23 +227,23 @@ kill_processes() {
         fi
     fi
     
-    echo -e "\n${RED}🛑 Killing processes...${NC}"
+    echo -e "\n${RED}🛑 Killing ALL repository processes...${NC}"
     
-    # Kill by PID file
-    if [ -f "whisperer.pid" ]; then
-        PID=$(cat whisperer.pid)
-        echo -e "${YELLOW}📄 Killing PID from file: $PID${NC}"
-        kill -9 $PID 2>/dev/null
-        if [ $? -eq 0 ]; then
-            echo -e "   ${GREEN}✅ Successfully killed PID $PID${NC}"
-        else
-            echo -e "   ${YELLOW}⚠️  Process $PID not found or already terminated${NC}"
-        fi
-        rm -f whisperer.pid
-    fi
+    # Kill by all possible PID files in all app directories
+    echo -e "${YELLOW}📄 Killing processes from PID files...${NC}"
+    for app_dir in whisperer-external whisperer-internal avatar solver ../../flask; do
+        for pidfile in "$app_dir"/*.pid; do
+            if [ -f "$pidfile" ]; then
+                PID=$(cat "$pidfile" 2>/dev/null)
+                echo -e "   Killing PID from $pidfile: $PID"
+                kill -9 $PID 2>/dev/null
+                rm -f "$pidfile"
+            fi
+        done
+    done
     
-    # Kill by port
-    echo -e "\n${YELLOW}🔌 Clearing ports 5000-5010...${NC}"
+    # Kill by port (aggressive)
+    echo -e "\n${YELLOW}🔌 Clearing common ports (5000-5010)...${NC}"
     for PORT in {5000..5010}; do
         PIDS=$(lsof -ti:$PORT 2>/dev/null)
         if [ ! -z "$PIDS" ]; then
@@ -244,49 +252,97 @@ kill_processes() {
         fi
     done
     
-    # Kill by name
-    echo -e "\n${YELLOW}👤 Killing by process name...${NC}"
+    # Kill by process name patterns
+    echo -e "\n${YELLOW}👤 Killing by process name patterns...${NC}"
     
-    # Whisperer processes
-    whisperer_pids=$(pgrep -f "python.*whisperer")
+    # Kill whisperer processes
+    whisperer_pids=$(pgrep -f "python.*whisperer" 2>/dev/null)
     if [ ! -z "$whisperer_pids" ]; then
         echo -e "   Killing whisperer processes: $whisperer_pids"
         kill -9 $whisperer_pids 2>/dev/null
     fi
     
-    # Flask processes
-    flask_pids=$(pgrep -f "flask")
+    # Kill avatar processes
+    avatar_pids=$(pgrep -f "python.*avatar" 2>/dev/null)
+    if [ ! -z "$avatar_pids" ]; then
+        echo -e "   Killing avatar processes: $avatar_pids"
+        kill -9 $avatar_pids 2>/dev/null
+    fi
+    
+    # Kill solver processes
+    solver_pids=$(pgrep -f "python.*solver" 2>/dev/null)
+    if [ ! -z "$solver_pids" ]; then
+        echo -e "   Killing solver processes: $solver_pids"
+        kill -9 $solver_pids 2>/dev/null
+    fi
+    
+    # Kill snapshot processes (root-level flask app)
+    snapshot_pids=$(pgrep -f "python.*snapshot" 2>/dev/null)
+    if [ ! -z "$snapshot_pids" ]; then
+        echo -e "   Killing snapshot processes: $snapshot_pids"
+        kill -9 $snapshot_pids 2>/dev/null
+    fi
+    
+    # Kill Flask processes
+    flask_pids=$(pgrep -f "flask" 2>/dev/null)
     if [ ! -z "$flask_pids" ]; then
         echo -e "   Killing Flask processes: $flask_pids"
         kill -9 $flask_pids 2>/dev/null
     fi
     
-    # Python app processes
-    python_pids=$(pgrep -f "python.*app")
-    if [ ! -z "$python_pids" ]; then
-        echo -e "   Killing Python app processes: $python_pids"
-        kill -9 $python_pids 2>/dev/null
+    # Kill any Python process from this repo
+    repo_python_pids=$(pgrep -f "python.*$REPO_ROOT" 2>/dev/null)
+    if [ ! -z "$repo_python_pids" ]; then
+        echo -e "   Killing Python processes from repo: $repo_python_pids"
+        kill -9 $repo_python_pids 2>/dev/null
     fi
     
-    echo -e "\n${GREEN}✅ All whisperer processes killed${NC}"
-    echo -e "${GREEN}✅ Ports 5000-5010 cleared${NC}"
+    echo -e "\n${GREEN}✅ All repository processes killed${NC}"
+    echo -e "${GREEN}✅ All common ports cleared${NC}"
     
     # Verify cleanup
     echo -e "\n${YELLOW}🔍 Verifying cleanup...${NC}"
-    sleep 1
-    show_processes | tail -20
+    sleep 2
+    
+    # Check if anything remains
+    remaining_pids=$(pgrep -f "python.*($REPO_ROOT|whisperer|avatar|solver|snapshot|flask)" 2>/dev/null)
+    if [ ! -z "$remaining_pids" ]; then
+        echo -e "${RED}⚠️  Some processes still running: $remaining_pids${NC}"
+        echo -e "${YELLOW}   Attempting final force kill...${NC}"
+        kill -9 $remaining_pids 2>/dev/null
+    else
+        echo -e "${GREEN}✅ No remaining processes found${NC}"
+    fi
+    
+    # Check ports again
+    remaining_ports=""
+    for PORT in 5000 5001 5002; do
+        if lsof -ti:$PORT >/dev/null 2>&1; then
+            remaining_ports="$remaining_ports $PORT"
+        fi
+    done
+    
+    if [ ! -z "$remaining_ports" ]; then
+        echo -e "${RED}⚠️  Ports still in use:$remaining_ports${NC}"
+        echo -e "${YELLOW}   You may need to kill them manually:${NC}"
+        for PORT in $remaining_ports; do
+            echo -e "   sudo lsof -ti:$PORT | xargs sudo kill -9"
+        done
+    else
+        echo -e "${GREEN}✅ All ports are free${NC}"
+    fi
 }
 
 # Function to display menu
 show_menu() {
     echo -e "\n${CYAN}╔══════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║                    MAIN MENU                         ║${NC}"
+    echo -e "${CYAN}║                 MAIN MENU                            ║${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════╝${NC}"
     echo -e ""
-    echo -e "${BOLD}1.${NC} 🔍 Scan & Show running processes"
-    echo -e "${BOLD}2.${NC} 📊 Check whisperer status (web, logs, audio)"
-    echo -e "${BOLD}3.${NC} 🛑 Kill all whisperer/Flask processes (with confirmation)"
-    echo -e "${BOLD}4.${NC} 💀 Force kill all processes (no confirmation)"
+    echo -e "${BOLD}1.${NC} 🔍 Scan & Show running processes from repo"
+    echo -e "${BOLD}2.${NC} 📊 Check status of all apps (web, logs)"
+    echo -e "${BOLD}3.${NC} 🛑 Kill ALL repo apps (with confirmation)"
+    echo -e "${BOLD}4.${NC} 💀 Force kill ALL repo apps (no confirmation)"
     echo -e "${BOLD}5.${NC} 🎯 Kill specific process by PID"
     echo -e "${BOLD}6.${NC} 🚪 Exit"
     echo -e ""
@@ -339,11 +395,11 @@ while true; do
             ;;
         3)
             show_processes
-            kill_processes "interactive"
+            kill_all_repo_processes "interactive"
             ;;
         4)
             show_processes
-            kill_processes "force"
+            kill_all_repo_processes "force"
             ;;
         5)
             kill_specific_pid

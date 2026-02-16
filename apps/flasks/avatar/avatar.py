@@ -1,43 +1,163 @@
+#!/usr/bin/env python3
 """
-🎭 AI Avatar System
+🎭 AI Avatar System - Final Version with Mode Selection and Enhanced Microphone Support
+=======================================================================================
 
 A real-time AI avatar that can temporarily take over conversations on your behalf.
+This version features a mode selector for text-only or voice responses and prioritizes
+external/headset microphones for optimal audio quality.
 
 WORKFLOW:
-1. You begin a conversation naturally
-2. Activate the avatar to handle the discussion  
-3. The AI responds using your voice and conversational style
-4. Seamlessly take back control when ready
+---------
+1. 👤 You begin a conversation naturally
+2. 🎭 Activate the avatar to handle the discussion (Ctrl+Shift+D or web button)
+3. 🤖 The AI responds (text only or text+voice based on selected mode)
+4. 👤 Seamlessly take back control when ready (Ctrl+Shift+T)
+
+MODES:
+------
+📝 Mode 1 (Text Only):
+   - Avatar transcribes your speech
+   - Sends to GPT API
+   - Displays response as text only
+   - No voice output
+
+🎤 Mode 2 (Text + Voice):
+   - Avatar transcribes your speech
+   - Sends to GPT API
+   - Displays response as text
+   - Speaks response through your earphones (system TTS placeholder)
+   - Ready for ElevenLabs voice cloning integration
+
+MICROPHONE PRIORITY:
+-------------------
+The system automatically selects the best available microphone in this order:
+1. 🎧 External USB microphones (Blue, Shure, Rode, Focusrite, etc.)
+2. 🎧 Headset microphones
+3. 🎧 Built-in MacBook microphone (fallback)
 
 CORE CAPABILITIES:
-• Real-time speech recognition via built-in microphone
-• Intelligent conversation handling using GPT-4
-• Voice cloning through ElevenLabs API
-• System text-to-speech fallback
-• Web-based monitoring and control interface
-• Global hotkey support for delegation/takeover
+-----------------
+• 🎤 Real-time speech recognition via optimized microphone selection (OpenAI Whisper)
+• 🧠 Intelligent conversation handling using GPT-4
+• 🔊 System text-to-speech fallback (macOS 'say', Linux 'espeak', Windows SAPI)
+• 🎯 Optional voice cloning through ElevenLabs API (if configured)
+• 🌐 Web-based monitoring and control interface (Flask)
+• ⌨️ Global hotkey support for delegation/takeover
+• 🔄 Real-time transcription display showing what the avatar "heard"
+• 🎮 Mode selector radio buttons for text-only or voice responses
+• 📜 Conversation display with 10-minute history and 1000-line limit (newest at top)
 
 TECHNICAL ARCHITECTURE:
-- Audio Processing: Real-time microphone input with silence detection
-- AI Integration: OpenAI Whisper (STT) + GPT-4 (reasoning) 
-- Voice Synthesis: ElevenLabs (cloned voice) + System TTS (fallback)
-- Web Interface: Flask-based real-time monitoring dashboard
-- Control System: Hotkey-driven state management with graceful fallbacks
+----------------------
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Microphone  │────▶│    Whisper   │────▶│     GPT-4    │
+│   (Priority  │     │     (STT)    │     │  (Reasoning) │
+│    External) │     └──────────────┘     └───────┬──────┘
+└──────────────┘                                   ▼
+              ┌─────────────────────────────┐
+              │     Conversation Display    │
+              │  ┌───────────────────────┐  │
+              │  │ Newest at TOP         │  │
+              │  │ 👤 You (blue)         │  │
+              │  │ 🎭 Avatar (purple)    │  │
+              │  │ 10-min history        │  │
+              │  │ 1000-line limit       │  │
+              │  └───────────────────────┘  │
+              └─────────────────────────────┘
+                           │
+                           ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Speaker    │◀────│  System TTS  │◀────│   Response   │
+│   Output     │     │   (Fallback) │     │  Generation  │
+└──────────────┘     └──────────────┘     └──────────────┘
+                    (ElevenLabs if configured)
+                           │
+                           ▼
+              ┌───────────────────────┐
+              │   Mode Selector       │
+              │  ┌─────────────────┐  │
+              │  │ 📝 Mode 1: Text │  │
+              │  │ 🎤 Mode 2: Voice│  │
+              │  └─────────────────┘  │
+              └───────────────────────┘
 
-USAGE:
-1. Configure API keys in .env file
-2. Run: ./launch-avatar.sh
-3. Access web interface: http://localhost:5000
-4. Use hotkeys: 
-   - Ctrl+Shift+D: Delegate to avatar
-   - Ctrl+Shift+T: Take over conversation  
-   - Ctrl+Shift+Q: Quit system
+REQUIREMENTS:
+------------
+• Python 3.8+
+• OpenAI API key (required for Whisper + GPT)
+• Microphone access (System Settings → Privacy → Microphone)
+• For hotkeys: Accessibility permissions (System Settings → Privacy → Accessibility)
 
-SECURITY NOTE:
-- API keys are loaded from .env (excluded from version control)
-- No conversation data is persisted long-term
-- All audio processing happens locally until API calls
+QUICK START:
+-----------
+1. Create .env file with:
+   OPENAI_API_KEY="sk-your-key-here"
+   PORT=5000
+   GPT_MODEL=gpt-4
+
+2. Install dependencies:
+   pip install -r requirements.txt
+
+3. Run the launcher:
+   ./set-up-and-run.sh
+
+4. Open http://localhost:5000 in your browser
+5. Select your preferred mode (Text Only or Text + Voice)
+6. Click "Start Voice Conversation" or press Ctrl+Shift+D
+7. Start speaking!
+
+HOTKEYS:
+--------
+• Ctrl+Shift+D - Delegate conversation to avatar
+• Ctrl+Shift+T - Take back control from avatar
+• Ctrl+Shift+Q - Quit the entire system
+
+TROUBLESHOOTING:
+----------------
+• No microphone detected: Check System Settings → Privacy → Microphone
+• Hotkeys not working: Add Terminal to Accessibility permissions
+• Slow responses: Check internet connection or try gpt-3.5-turbo
+• No audio output: Check system volume and output device
+• Transcription not showing: Check microphone levels and permissions
+• Wrong microphone selected: Check System Settings → Sound → Input
+
+FILE STRUCTURE:
+--------------
+• avatar.py           - Main application (this file) with mode selector
+• set-up-and-run.sh   - Launcher script with cleanup
+• requirements.txt    - Python dependencies
+• .env               - API keys configuration
+• voice-clone.py     - Optional ElevenLabs voice cloning setup
+• logs/              - Application logs directory
+
+MODE DETAILS:
+------------
+Mode 1 (Text Only):
+   - Perfect for quiet environments
+   - No voice output, just text responses
+   - Saves API costs (no TTS)
+
+Mode 2 (Text + Voice):
+   - Full conversational experience
+   - Avatar speaks responses through your earphones
+   - Uses system TTS as placeholder (macOS 'say' command)
+   - Ready for ElevenLabs voice cloning integration
+
+CONVERSATION DISPLAY FEATURES:
+-----------------------------
+• ⏱️ 10-minute cutoff - Only shows recent conversation
+• 📊 1000-line limit - Maintains performance
+• 📅 Date separators - Shows when conversation spans multiple days
+• 🎯 Message alignment - User right, avatar left
+• 🔝 Newest messages at top - Easy to see latest exchange first
+• 📍 Conversation appears right below Quick Tips
+
+AUTHOR: Artem Ponomarev
+VERSION: 5.0.0 (Final - Newest at Top)
+LICENSE: MIT
 """
+
 import os
 import sys
 import json
@@ -47,7 +167,7 @@ import time
 import tempfile
 import subprocess
 import platform
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from enum import Enum
 
@@ -59,7 +179,7 @@ try:
     from openai import OpenAI
     import requests
     import keyboard
-    from flask import Flask, render_template_string, jsonify
+    from flask import Flask, render_template_string, jsonify, request
     import speech_recognition as sr
     from dotenv import load_dotenv
 except ImportError as e:
@@ -80,6 +200,9 @@ class ConversationDelegator:
         self.state = ConversationState.HUMAN_LEAD
         self.is_running = True
         self.avatar_active = False
+        
+        # Mode selection (default: text-only)
+        self.mode = 'text'  # 'text' or 'voice'
         
         # Configuration
         self.config = self.load_config()
@@ -152,11 +275,18 @@ class ConversationDelegator:
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
     
     def setup_audio(self):
-        """Setup audio system"""
+        """Setup audio system and log available devices"""
         try:
             devices = sd.query_devices()
             input_devices = [d for d in devices if d['max_input_channels'] > 0]
             self.log(f"✅ Audio system ready - {len(input_devices)} input devices")
+            
+            # Log all input devices for debugging
+            self.log("📋 Available input devices:")
+            for i, dev in enumerate(devices):
+                if dev['max_input_channels'] > 0:
+                    self.log(f"   [{i}] {dev['name']}")
+                    
         except Exception as e:
             self.log(f"❌ Audio setup error: {e}")
     
@@ -176,7 +306,7 @@ class ConversationDelegator:
             self.log("💡 Use web interface buttons for delegation control")
     
     def setup_flask(self):
-        """Setup Flask web interface"""
+        """Setup Flask web interface with mode switching"""
         self.app = Flask(__name__)
         
         @self.app.route('/')
@@ -196,15 +326,26 @@ class ConversationDelegator:
         def api_takeover():
             self.takeover_conversation()
             return jsonify({"success": True, "state": self.state.value})
+        
+        @self.app.route('/api/set_mode', methods=['POST'])
+        def api_set_mode():
+            """API endpoint to switch between text and voice modes"""
+            data = request.get_json()
+            if data and 'mode' in data:
+                self.mode = data['mode']
+                self.log(f"🔄 Mode changed to: {self.mode}")
+                return jsonify({"success": True, "mode": self.mode})
+            return jsonify({"success": False}), 400
     
     def get_system_state(self):
-        """Get current system state"""
+        """Get current system state including mode"""
         return {
             "state": self.state.value,
             "transcriptions": self.transcriptions[-10:],
             "responses": self.responses[-10:],
             "conversation_length": len(self.conversation_history),
             "hotkeys_enabled": self.hotkeys_enabled,
+            "mode": self.mode,
             "timestamp": datetime.now().isoformat()
         }
     
@@ -218,8 +359,9 @@ class ConversationDelegator:
             self._stop_avatar_loop.clear()
             self.avatar_active = True
             
-            # Announce delegation
-            self.speak_message("I'll take it from here", use_cloned_voice=False)
+            # Announce delegation only in voice mode
+            if self.mode == 'voice':
+                self.system_tts("I'll take it from here")
             
             # Transition to avatar active
             self.state = ConversationState.AVATAR_ACTIVE
@@ -238,8 +380,9 @@ class ConversationDelegator:
             self._stop_avatar_loop.set()
             self.avatar_active = False
             
-            # Announce takeover
-            self.speak_message("I'll take over now", use_cloned_voice=False)
+            # Announce takeover only in voice mode
+            if self.mode == 'voice':
+                self.system_tts("I'll take over now")
             
             # Wait for avatar thread to finish
             if self.avatar_thread and self.avatar_thread.is_alive():
@@ -249,17 +392,54 @@ class ConversationDelegator:
             self.state = ConversationState.HUMAN_LEAD
     
     def get_microphone_device(self):
-        """Find the best microphone device"""
+        """
+        Find the best microphone device with priority:
+        1. External USB microphones (Blue, Shure, Rode, Focusrite, etc.)
+        2. Headset microphones
+        3. Built-in MacBook microphone
+        """
         try:
             devices = sd.query_devices()
+            
+            # Keywords to identify external/headset microphones
+            external_keywords = ['usb', 'external', 'blue', 'shure', 'rode', 'focusrite', 
+                                'headset', 'headphone', 'earphone', 'logitech', 'snowball',
+                                'yet', 'mic', 'microphone', 'audio', 'interface']
+            
+            # First pass: Look for external USB microphones
             for i, dev in enumerate(devices):
                 if dev['max_input_channels'] > 0:
-                    if 'macbook' in dev['name'].lower():
-                        return i
+                    dev_name_lower = dev['name'].lower()
+                    # Check if it's an external microphone
+                    if any(keyword in dev_name_lower for keyword in external_keywords):
+                        # Avoid BlackHole (virtual audio device)
+                        if 'blackhole' not in dev_name_lower:
+                            self.log(f"🎧 Selected external microphone: {dev['name']} (ID: {i})")
+                            return i
+            
+            # Second pass: Look for built-in microphone (MacBook)
             for i, dev in enumerate(devices):
                 if dev['max_input_channels'] > 0:
+                    dev_name_lower = dev['name'].lower()
+                    if 'macbook' in dev_name_lower or 'built-in' in dev_name_lower:
+                        if 'blackhole' not in dev_name_lower:
+                            self.log(f"🎤 Selected built-in microphone: {dev['name']} (ID: {i})")
+                            return i
+            
+            # Third pass: Any non-BlackHole input device
+            for i, dev in enumerate(devices):
+                if dev['max_input_channels'] > 0 and 'blackhole' not in dev['name'].lower():
+                    self.log(f"⚠️ Selected fallback microphone: {dev['name']} (ID: {i})")
                     return i
+            
+            # Last resort: First available input device
+            for i, dev in enumerate(devices):
+                if dev['max_input_channels'] > 0:
+                    self.log(f"⚠️ Selected last resort microphone: {dev['name']} (ID: {i})")
+                    return i
+                    
             return None
+            
         except Exception as e:
             self.log(f"❌ Microphone detection error: {e}")
             return None
@@ -292,17 +472,16 @@ class ConversationDelegator:
         try:
             # Build system prompt
             system_prompt = """
-            You are an AI avatar temporarily handling a conversation for someone.
+            You are an AI avatar having a voice conversation with a user.
             
             CONVERSATION RULES:
             - Keep responses natural and conversational
-            - Be helpful and professional
-            - If the topic becomes too complex or personal, suggest handing back to the human
-            - Maintain the flow of conversation naturally
-            - Responses should be concise (1-2 sentences) for smooth voice delivery
+            - Be helpful, friendly, and engaging
+            - Responses should be concise (1-3 sentences) for smooth voice delivery
+            - Ask follow-up questions to keep the conversation flowing
+            - If you don't understand something, ask for clarification
             
-            When you think the human should take over, include a gentle handoff cue like:
-            "This might be better handled by my colleague" or "Let me hand this back"
+            Remember: This is a voice conversation, so keep responses natural and easy to speak.
             """
             
             messages = [
@@ -335,7 +514,7 @@ class ConversationDelegator:
             return "I apologize, but I'm having trouble responding right now."
     
     def text_to_speech(self, text):
-        """Convert text to speech using ElevenLabs"""
+        """Convert text to speech using ElevenLabs (if configured)"""
         if not self.config["elevenlabs_api_key"] or not self.config["elevenlabs_voice_id"]:
             return None
         
@@ -369,19 +548,6 @@ class ConversationDelegator:
             self.log(f"❌ ElevenLabs TTS error: {e}")
             return None
     
-    def speak_message(self, text, use_cloned_voice=True):
-        """Speak a message aloud"""
-        if not text.strip():
-            return False
-        
-        if use_cloned_voice and self.config["elevenlabs_api_key"]:
-            audio_data = self.text_to_speech(text)
-            if audio_data:
-                return self.play_audio_data(audio_data)
-        
-        # Fallback to system TTS
-        return self.system_tts(text)
-    
     def play_audio_data(self, audio_data):
         """Play audio data from ElevenLabs"""
         try:
@@ -407,6 +573,9 @@ class ConversationDelegator:
     
     def system_tts(self, text):
         """Use system text-to-speech"""
+        if not text.strip():
+            return False
+            
         try:
             system = platform.system()
             if system == "Darwin":  # macOS
@@ -424,6 +593,23 @@ class ConversationDelegator:
         except Exception as e:
             self.log(f"❌ System TTS error: {e}")
             return False
+    
+    def speak_message(self, text, use_cloned_voice=True):
+        """Speak a message aloud only if in voice mode"""
+        if not text.strip() or self.mode != 'voice':
+            # In text mode, just log that we're not speaking
+            if self.mode == 'text':
+                self.log(f"📝 (text mode) Response: {text}")
+            return True
+        
+        # Try ElevenLabs if configured
+        if use_cloned_voice and self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]:
+            audio_data = self.text_to_speech(text)
+            if audio_data:
+                return self.play_audio_data(audio_data)
+        
+        # Fallback to system TTS
+        return self.system_tts(text)
     
     def avatar_conversation_loop(self):
         """Main loop when avatar is active"""
@@ -488,8 +674,8 @@ class ConversationDelegator:
                                         'type': 'response'
                                     })
                                     
-                                    # Speak response
-                                    self.speak_message(ai_response, use_cloned_voice=True)
+                                    # Speak response (respects mode setting)
+                                    self.speak_message(ai_response)
                                 
                                 # Reset buffer
                                 audio_buffer = np.array([], dtype=np.float32)
@@ -504,13 +690,28 @@ class ConversationDelegator:
         self.log("🔄 Avatar conversation loop ended")
     
     def web_interface(self):
-        """Web interface for monitoring"""
-        recent_activity = self.transcriptions[-10:] + self.responses[-10:]
-        recent_activity.sort(key=lambda x: x['time'], reverse=True)
+        """Web interface with conversation displayed below tips (newest at top)"""
+        # Filter to last 10 minutes only
+        cutoff_time = datetime.now() - timedelta(minutes=10)
+        
+        # Filter transcriptions and responses
+        recent_transcriptions = [t for t in self.transcriptions if t['time'] > cutoff_time]
+        recent_responses = [r for r in self.responses if r['time'] > cutoff_time]
+        
+        # Combine and sort with newest first (reverse chronological)
+        recent_activity = recent_transcriptions + recent_responses
+        recent_activity.sort(key=lambda x: x['time'], reverse=True)  # Newest first
+        
+        # Limit to last 1000 items total
+        if len(recent_activity) > 1000:
+            recent_activity = recent_activity[:1000]
+        
+        # Get the last transcription for display
+        last_transcription = recent_transcriptions[-1]['text'] if recent_transcriptions else "Waiting for speech..."
         
         status_info = {
-            ConversationState.HUMAN_LEAD: {"text": "👤 HUMAN LEADING", "color": "#27ae60"},
-            ConversationState.AVATAR_ACTIVE: {"text": "🎭 AVATAR ACTIVE", "color": "#e74c3c"},
+            ConversationState.HUMAN_LEAD: {"text": "👤 YOU ARE SPEAKING", "color": "#27ae60"},
+            ConversationState.AVATAR_ACTIVE: {"text": "🎭 AVATAR IS SPEAKING", "color": "#e74c3c"},
             ConversationState.TRANSITIONING: {"text": "🔄 TRANSITIONING", "color": "#f39c12"}
         }
         
@@ -521,81 +722,474 @@ class ConversationDelegator:
 <html>
 <head>
     <title>🎭 AI Avatar System</title>
-    <meta http-equiv="refresh" content="3">
+    <meta http-equiv="refresh" content="2">
     <style>
-        body { font-family: -apple-system, sans-serif; margin: 20px; background: #f5f5f7; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
-        .status { display: inline-block; padding: 12px 24px; border-radius: 25px; font-weight: bold; color: white; font-size: 1.2em; margin: 15px 0; }
-        .workflow { display: flex; justify-content: space-between; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-        .step { text-align: center; flex: 1; padding: 15px; }
-        .step-number { background: #3498db; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
-        .controls { display: flex; gap: 15px; justify-content: center; margin: 25px 0; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .btn-delegate { background: #e74c3c; color: white; }
-        .btn-takeover { background: #27ae60; color: white; }
-        .message { padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid; }
-        .input { background: #e3f2fd; border-left-color: #2196f3; }
-        .response { background: #f3e5f5; border-left-color: #9c27b0; }
-        .timestamp { font-size: 0.8em; color: #666; margin-bottom: 5px; }
-        .hotkeys { background: #fff3cd; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; }
-        .permission-warning { background: #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; border-left: 4px solid #fdcb6e; }
-        .success-message { background: #d4edda; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; border-left: 4px solid #28a745; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            padding: 30px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+        }
+        .header h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin: 0;
+        }
+        .header p {
+            color: #666;
+            margin-top: 10px;
+        }
+        .status-badge { 
+            display: inline-block;
+            padding: 15px 30px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            color: white; 
+            font-size: 1.3em; 
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Earphone tip */
+        .earphone-tip {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .earphone-tip .icon {
+            font-size: 2em;
+        }
+        .earphone-tip .text {
+            flex: 1;
+        }
+        .earphone-tip .text strong {
+            color: #2b6cb0;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* Mode selector */
+        .mode-selector {
+            background: #f0f4f8;
+            border-radius: 50px;
+            padding: 5px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border: 2px solid #e2e8f0;
+        }
+        .mode-option {
+            flex: 1;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .mode-option input[type="radio"] {
+            display: none;
+        }
+        .mode-option.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+        .mode-option.inactive {
+            background: white;
+            color: #4a5568;
+        }
+        .mode-option.inactive:hover {
+            background: #edf2f7;
+        }
+        .mode-badge {
+            font-size: 0.8em;
+            margin-left: 8px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Button styles */
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 250px;
+        }
+        .btn-start {
+            background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+            color: white;
+        }
+        .btn-stop {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* Status indicator */
+        .status-panel {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #48bb78;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Voice wave animation */
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 30px;
+            margin: 10px 0;
+        }
+        .voice-wave span {
+            width: 3px;
+            height: 15px;
+            background: #48bb78;
+            border-radius: 3px;
+            animation: wave 1s infinite ease-in-out;
+        }
+        .voice-wave span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-wave span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-wave span:nth-child(4) { animation-delay: 0.3s; }
+        .voice-wave span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave {
+            0%, 100% { height: 15px; }
+            50% { height: 30px; }
+        }
+        
+        /* Transcription display */
+        .transcription-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .transcription-label {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .transcription-text {
+            font-size: 1.4em;
+            font-weight: 500;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .transcription-empty {
+            font-style: italic;
+            opacity: 0.7;
+        }
+        
+        /* Quick tips */
+        .tips {
+            background: #fefcbf;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 30px 0 20px 0;
+            font-size: 0.9em;
+        }
+        .tips h4 {
+            margin: 0 0 10px 0;
+            color: #975a16;
+        }
+        .tips ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #744210;
+        }
+        
+        /* Conversation display - simple stacking, no scroll window */
+        .conversation {
+            margin-top: 10px;
+        }
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 15px;
+        }
+        .user-message {
+            background: #e3f2fd;
+            margin-left: 20%;
+            border-bottom-left-radius: 5px;
+        }
+        .avatar-message {
+            background: #f3e5f5;
+            margin-right: 20%;
+            border-bottom-right-radius: 5px;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.8em;
+            color: #666;
+        }
+        .message-content {
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+        .date-separator {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #e2e8f0;
+            line-height: 0.1em;
+        }
+        .date-separator span {
+            background: white;
+            padding: 0 10px;
+        }
+        
+        /* Hotkey info */
+        .hotkey-info {
+            background: #e9d8fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .hotkey-badge {
+            background: #805ad5;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1.1em;
+            margin: 0 5px;
+        }
+        
+        /* Mode indicator */
+        .mode-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .mode-text-only {
+            background: #cbd5e0;
+            color: #2d3748;
+        }
+        .mode-voice {
+            background: #9f7aea;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎭 AI Avatar System</h1>
-            <div class="status" style="background-color: {{ status_color }};">{{ status_text }}</div>
+            <h1>🎭 AI Avatar</h1>
+            <p>Have a natural voice conversation with GPT</p>
+            <p><small>Showing last 10 minutes of conversation (newest at top)</small></p>
         </div>
-
-        <div class="workflow">
-            <div class="step"><div class="step-number">1</div><strong>You Start</strong><p>Begin conversation naturally</p></div>
-            <div class="step"><div class="step-number">2</div><strong>Delegate</strong><p>Press Ctrl+Shift+D</p></div>
-            <div class="step"><div class="step-number">3</div><strong>Observe</strong><p>Avatar handles conversation</p></div>
-            <div class="step"><div class="step-number">4</div><strong>Take Over</strong><p>Press Ctrl+Shift+T anytime</p></div>
+        
+        <div class="earphone-tip">
+            <div class="icon">🎧</div>
+            <div class="text">
+                <strong>Using your earphones!</strong>
+                Speak naturally into your microphone. The avatar will respond after a short pause.
+            </div>
         </div>
-
-        <div class="hotkeys">
-            <strong>Control Hotkeys:</strong> {{ hotkey_delegate }} - Delegate | {{ hotkey_takeover }} - Take Over | {{ hotkey_quit }} - Quit
+        
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <label class="mode-option {% if mode == 'text' %}active{% else %}inactive{% endif %}">
+                <input type="radio" name="mode" value="text" {% if mode == 'text' %}checked{% endif %} onchange="changeMode('text')">
+                📝 Mode 1: Text Only
+                <span class="mode-badge">No voice</span>
+            </label>
+            <label class="mode-option {% if mode == 'voice' %}active{% else %}inactive{% endif %}">
+                <input type="radio" name="mode" value="voice" {% if mode == 'voice' %}checked{% endif %} onchange="changeMode('voice')">
+                🎤 Mode 2: Text + Voice
+                <span class="mode-badge">Speaks back</span>
+            </label>
         </div>
-
-        {% if not hotkeys_enabled %}
-        <div class="permission-warning">
-            <strong>⚠️ Hotkeys Disabled:</strong> On macOS, grant Accessibility permissions to your terminal app for hotkeys to work.
-            <br><strong>💡 Solution:</strong> System Settings → Privacy & Security → Accessibility → Add your terminal app
-            <br><strong>🎮 Alternative:</strong> Use the web interface buttons below
+        
+        <div style="text-align: center;">
+            <div class="status-badge" style="background-color: {{ status_color }};">
+                {{ status_text }}
+                <span class="mode-indicator {% if mode == 'text' %}mode-text-only{% else %}mode-voice{% endif %}">
+                    {% if mode == 'text' %}📝 Text Only{% else %}🎤 Voice Mode{% endif %}
+                </span>
+            </div>
         </div>
-        {% else %}
-        <div class="success-message">
-            <strong>✅ Hotkeys Enabled:</strong> You can use Ctrl+Shift+D to delegate and Ctrl+Shift+T to take over!
+        
+        <div class="hotkey-info">
+            <strong>🎮 Hotkeys:</strong>
+            <span class="hotkey-badge">Ctrl+Shift+D</span> Start Conversation
+            <span class="hotkey-badge">Ctrl+Shift+T</span> Stop Conversation
+            <span class="hotkey-badge">Ctrl+Shift+Q</span> Quit
         </div>
-        {% endif %}
-
-        <div class="controls">
+        
+        <div class="button-container">
             {% if state != 'avatar_active' %}
-                <button class="btn btn-delegate" onclick="delegateToAvatar()">Delegate to Avatar</button>
+                <button class="btn btn-start" onclick="startConversation()">
+                    🎤 Start Voice Conversation
+                </button>
             {% else %}
-                <button class="btn btn-takeover" onclick="takeoverConversation()">Take Over Conversation</button>
+                <button class="btn btn-stop" onclick="stopConversation()">
+                    ⏹️ Stop Conversation
+                </button>
             {% endif %}
         </div>
-
-        <div style="margin-top: 30px; max-height: 500px; overflow-y: auto;">
-            <h3>Recent Conversation Activity</h3>
-            {% for entry in recent_activity %}
-                <div class="message {{ entry.type }}">
-                    <div class="timestamp">{{ entry.time.strftime('%H:%M:%S') }}</div>
-                    <div><strong>{{ '🎤 Input' if entry.type == 'input' else '🤖 Avatar Response' }}:</strong> {{ entry.text }}</div>
-                </div>
+        
+        <div class="status-panel">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>
+                    {% if state == 'avatar_active' %}
+                        🎤 Listening... Speak now
+                    {% elif state == 'human_lead' %}
+                        👤 Click "Start" to begin
+                    {% else %}
+                        🤔 Processing...
+                    {% endif %}
+                </span>
+            </div>
+            {% if state == 'avatar_active' %}
+            <div class="voice-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- What I Heard Section -->
+        <div class="transcription-box">
+            <div class="transcription-label">
+                <span>🎤 WHAT I HEARD</span>
+                <span>(sent to GPT as prompt)</span>
+            </div>
+            <div class="transcription-text {% if not last_transcription or last_transcription == 'Waiting for speech...' %}transcription-empty{% endif %}">
+                "{{ last_transcription }}"
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="tips">
+            <h4>💡 Quick Tips:</h4>
+            <ul>
+                <li><strong>Mode 1 (Text Only):</strong> Avatar types responses only</li>
+                <li><strong>Mode 2 (Text + Voice):</strong> Avatar types AND speaks responses (placeholder voice)</li>
+                <li>Speak naturally - the avatar will respond after you pause</li>
+                <li>Each conversation turn takes 2-3 seconds</li>
+                <li>Click "Stop Conversation" anytime to end</li>
+                <li>Showing last 10 minutes of conversation (newest at top)</li>
+            </ul>
+        </div>
+        
+        <!-- Conversation - appended right below tips, newest at top -->
+        <div class="conversation">
+            {% if recent_activity %}
+                {% set ns = namespace(last_date='') %}
+                {% for entry in recent_activity %}
+                    {% set entry_date = entry.time.strftime('%Y-%m-%d') %}
+                    {% if entry_date != ns.last_date %}
+                        {% set ns.last_date = entry_date %}
+                        <div class="date-separator"><span>{{ entry.time.strftime('%B %d, %Y') }}</span></div>
+                    {% endif %}
+                    
+                    <div class="message {% if entry.type == 'input' %}user-message{% else %}avatar-message{% endif %}">
+                        <div class="message-header">
+                            <span>{% if entry.type == 'input' %}👤 You{% else %}🎭 Avatar{% endif %}</span>
+                            <span>{{ entry.time.strftime('%H:%M:%S') }}</span>
+                        </div>
+                        <div class="message-content">{{ entry.text }}</div>
+                    </div>
+                {% endfor %}
             {% else %}
-                <p style="text-align: center; color: #666;">No conversation activity yet</p>
-            {% endfor %}
+                <p style="text-align: center; color: #999; padding: 40px;">
+                    No conversation yet. Click "Start Voice Conversation" and begin speaking!
+                </p>
+            {% endif %}
         </div>
     </div>
-
+    
     <script>
-        function delegateToAvatar() { 
+        function changeMode(mode) {
+            fetch('/api/set_mode', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mode: mode})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setTimeout(() => location.reload(), 500);
+                }
+            });
+        }
+        
+        function startConversation() {
             fetch('/api/delegate', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
@@ -605,7 +1199,7 @@ class ConversationDelegator:
                 });
         }
         
-        function takeoverConversation() { 
+        function stopConversation() {
             fetch('/api/takeover', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
@@ -622,6 +1216,8 @@ class ConversationDelegator:
         status_color=current_status["color"],
         state=self.state.value,
         recent_activity=recent_activity,
+        last_transcription=last_transcription,
+        mode=self.mode,
         hotkey_delegate=self.config["hotkey_delegate"].upper(),
         hotkey_takeover=self.config["hotkey_takeover"].upper(),
         hotkey_quit=self.config["hotkey_quit"].upper(),
@@ -633,45 +1229,37 @@ class ConversationDelegator:
         self.log("\n" + "="*60)
         self.log("🎭 AI AVATAR SYSTEM")
         self.log("="*60)
-        self.log("📋 Workflow: You Start → Delegate → Observe → Take Over")
+        self.log("📋 Workflow: Select Mode → Click Start → Speak → Avatar responds")
+        self.log(f"🎮 Current Mode: {self.mode.upper()}")
         
         if self.hotkeys_enabled:
             self.log("🔥 Hotkeys:")
-            self.log(f"   {self.config['hotkey_delegate']} - Delegate to Avatar")
-            self.log(f"   {self.config['hotkey_takeover']} - Take Over from Avatar")
-            self.log(f"   {self.config['hotkey_quit']} - Quit System")
+            self.log(f"   {self.config['hotkey_delegate']} - Start conversation")
+            self.log(f"   {self.config['hotkey_takeover']} - Stop conversation")
+            self.log(f"   {self.config['hotkey_quit']} - Quit system")
         else:
-            self.log("⚠️ Hotkeys: Disabled (requires Accessibility permissions)")
-            self.log("💡 Use web interface buttons for delegation control")
+            self.log("⚠️ Hotkeys: Disabled - use web interface buttons")
         
         self.log("="*60)
         self.log(f"🌐 Web Interface: http://localhost:{self.config['port']}")
         self.log("="*60)
         
         if not self.config["openai_api_key"]:
-            self.log("❌ WARNING: OpenAI API key not configured")
-        if not self.config["elevenlabs_api_key"]:
-            self.log("❌ WARNING: ElevenLabs API key not configured")
+            self.log("❌ CRITICAL: OpenAI API key not configured")
+            self.log("   Please add OPENAI_API_KEY to your .env file")
+            return
         
         self.log(f"👤 Current state: {self.state.value}")
-        self.log("💡 Start speaking naturally, then delegate when ready")
+        self.log("💡 Open the web interface, select a mode, and click 'Start Voice Conversation'")
         
         try:
-            # Start Flask in background
-            flask_thread = threading.Thread(
-                target=lambda: self.app.run(
-                    host='0.0.0.0',
-                    port=self.config["port"],
-                    debug=False,
-                    use_reloader=False
-                ),
-                daemon=True
+            # Start Flask
+            self.app.run(
+                host='0.0.0.0',
+                port=self.config["port"],
+                debug=False,
+                use_reloader=False
             )
-            flask_thread.start()
-            
-            # Main loop
-            while self.is_running:
-                time.sleep(0.5)
                 
         except KeyboardInterrupt:
             self.shutdown()
@@ -695,11 +1283,23 @@ class ConversationDelegator:
 
 def main():
     """Main entry point"""
+    print("\n" + "="*60)
+    print("🎭 AI AVATAR SYSTEM")
+    print("="*60)
+    print("Version: 5.0.0 (Final - Newest at Top)")
+    print("="*60)
+    
     # Check for required API keys
     if not os.getenv('OPENAI_API_KEY'):
-        print("❌ Error: OPENAI_API_KEY environment variable not set!")
-        print("💡 Set it with: export OPENAI_API_KEY='your_api_key'")
+        print("❌ Error: OPENAI_API_KEY not found in .env file!")
+        print("💡 Create a .env file with:")
+        print('   OPENAI_API_KEY="sk-your-key-here"')
+        print("   PORT=5000")
+        print("   GPT_MODEL=gpt-4")
         return
+    
+    print("✅ OpenAI API key found")
+    print("🚀 Starting avatar system...\n")
     
     # Create and run the system
     delegator = ConversationDelegator()
