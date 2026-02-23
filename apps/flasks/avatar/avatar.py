@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-🎭 AI Avatar System - Final Version with Mode Selection and Enhanced Microphone Support
+🎭 AI Avatar System - FINAL VERSION with THREE Response Modes
 =======================================================================================
 
 A real-time AI avatar that can temporarily take over conversations on your behalf.
-This version features a mode selector for text-only or voice responses and prioritizes
-external/headset microphones for optimal audio quality.
+This version features THREE distinct response modes and prioritizes external/headset
+microphones for optimal audio quality.
 
 WORKFLOW:
 ---------
 1. 👤 You begin a conversation naturally
 2. 🎭 Activate the avatar to handle the discussion (Ctrl+Shift+D or web button)
-3. 🤖 The AI responds (text only or text+voice based on selected mode)
+3. 🤖 The AI responds based on selected mode
 4. 👤 Seamlessly take back control when ready (Ctrl+Shift+T)
 
 MODES:
@@ -22,12 +22,19 @@ MODES:
    - Displays response as text only
    - No voice output
 
-🎤 Mode 2 (Text + Voice):
+🔊 Mode 2 (System Voice):
    - Avatar transcribes your speech
    - Sends to GPT API
    - Displays response as text
-   - Speaks response through your earphones (system TTS placeholder)
-   - Ready for ElevenLabs voice cloning integration
+   - Speaks response using system TTS (macOS 'say', Linux 'espeak', Windows SAPI)
+
+🎤 Mode 3 (Cloned Voice):
+   - Avatar transcribes your speech
+   - Sends to GPT API
+   - Displays response as text
+   - Speaks response using your cloned ElevenLabs voice
+   - Requires ElevenLabs API key and voice ID in .env file
+   - Automatically falls back to system voice if ElevenLabs fails
 
 MICROPHONE PRIORITY:
 -------------------
@@ -41,11 +48,11 @@ CORE CAPABILITIES:
 • 🎤 Real-time speech recognition via optimized microphone selection (OpenAI Whisper)
 • 🧠 Intelligent conversation handling using GPT-4
 • 🔊 System text-to-speech fallback (macOS 'say', Linux 'espeak', Windows SAPI)
-• 🎯 Optional voice cloning through ElevenLabs API (if configured)
+• 🎯 Voice cloning through ElevenLabs API (Mode 3)
 • 🌐 Web-based monitoring and control interface (Flask)
 • ⌨️ Global hotkey support for delegation/takeover
 • 🔄 Real-time transcription display showing what the avatar "heard"
-• 🎮 Mode selector radio buttons for text-only or voice responses
+• 🎮 THREE MODE selector radio buttons
 • 📜 Conversation display with 10-minute history and 1000-line limit (newest at top)
 
 TECHNICAL ARCHITECTURE:
@@ -67,32 +74,37 @@ TECHNICAL ARCHITECTURE:
               └─────────────────────────────┘
                            │
                            ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Speaker    │◀────│  System TTS  │◀────│   Response   │
-│   Output     │     │   (Fallback) │     │  Generation  │
-└──────────────┘     └──────────────┘     └──────────────┘
-                    (ElevenLabs if configured)
-                           │
-                           ▼
               ┌───────────────────────┐
-              │   Mode Selector       │
-              │  ┌─────────────────┐  │
-              │  │ 📝 Mode 1: Text │  │
-              │  │ 🎤 Mode 2: Voice│  │
-              │  └─────────────────┘  │
-              └───────────────────────┘
+              │   Response Router      │
+        ┌─────┴─────┬─────────┬───────┴─────┐
+        ↓           ↓         ↓               ↓
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   Mode 1     │ │   Mode 2     │ │   Mode 3     │
+│  Text Only   │ │ System Voice │ │Cloned Voice  │
+│  (No audio)  │ │ (macOS 'say')│ │ (ElevenLabs) │
+└──────────────┘ └──────────────┘ └──────────────┘
+                           │               │
+                           └───────┬───────┘
+                                   ↓
+                          ┌─────────────────┐
+                          │   Speaker       │
+                          │   Output        │
+                          └─────────────────┘
 
 REQUIREMENTS:
 ------------
 • Python 3.8+
 • OpenAI API key (required for Whisper + GPT)
+• ElevenLabs API key (optional - for Mode 3)
 • Microphone access (System Settings → Privacy → Microphone)
 • For hotkeys: Accessibility permissions (System Settings → Privacy → Accessibility)
 
 QUICK START:
 -----------
-1. Create .env file with:
+1. Create .env file (in current or parent directory):
    OPENAI_API_KEY="sk-your-key-here"
+   ELEVENLABS_API_KEY="your-key-here"      # Optional for Mode 3
+   ELEVENLABS_VOICE_ID="your-voice-id"     # Optional for Mode 3
    PORT=5000
    GPT_MODEL=gpt-4
 
@@ -103,7 +115,7 @@ QUICK START:
    ./set-up-and-run.sh
 
 4. Open http://localhost:5000 in your browser
-5. Select your preferred mode (Text Only or Text + Voice)
+5. Select your preferred mode (Text, System Voice, or Cloned Voice)
 6. Click "Start Voice Conversation" or press Ctrl+Shift+D
 7. Start speaking!
 
@@ -113,36 +125,23 @@ HOTKEYS:
 • Ctrl+Shift+T - Take back control from avatar
 • Ctrl+Shift+Q - Quit the entire system
 
-TROUBLESHOOTING:
-----------------
-• No microphone detected: Check System Settings → Privacy → Microphone
-• Hotkeys not working: Add Terminal to Accessibility permissions
-• Slow responses: Check internet connection or try gpt-3.5-turbo
-• No audio output: Check system volume and output device
-• Transcription not showing: Check microphone levels and permissions
-• Wrong microphone selected: Check System Settings → Sound → Input
-
-FILE STRUCTURE:
---------------
-• avatar.py           - Main application (this file) with mode selector
-• set-up-and-run.sh   - Launcher script with cleanup
-• requirements.txt    - Python dependencies
-• .env               - API keys configuration
-• voice-clone.py     - Optional ElevenLabs voice cloning setup
-• logs/              - Application logs directory
-
 MODE DETAILS:
 ------------
-Mode 1 (Text Only):
+📝 Mode 1 (Text Only):
    - Perfect for quiet environments
    - No voice output, just text responses
    - Saves API costs (no TTS)
 
-Mode 2 (Text + Voice):
-   - Full conversational experience
-   - Avatar speaks responses through your earphones
-   - Uses system TTS as placeholder (macOS 'say' command)
-   - Ready for ElevenLabs voice cloning integration
+🔊 Mode 2 (System Voice):
+   - Full conversational experience with system voice
+   - Uses macOS 'say', Linux 'espeak', or Windows PowerShell TTS
+   - No additional configuration needed
+
+🎤 Mode 3 (Cloned Voice):
+   - Premium experience with your own voice
+   - Requires ElevenLabs API key and cloned voice ID
+   - Automatically falls back to system voice if ElevenLabs fails
+   - Adjustable voice settings (stability, similarity, style)
 
 CONVERSATION DISPLAY FEATURES:
 -----------------------------
@@ -154,7 +153,7 @@ CONVERSATION DISPLAY FEATURES:
 • 📍 Conversation appears right below Quick Tips
 
 AUTHOR: Artem Ponomarev
-VERSION: 5.0.0 (Final - Newest at Top)
+VERSION: 6.0.0 (Three Response Modes)
 LICENSE: MIT
 """
 
@@ -187,13 +186,26 @@ except ImportError as e:
     print("📦 Install with: pip install sounddevice soundfile numpy openai requests keyboard flask speechrecognition python-dotenv")
     sys.exit(1)
 
-# Load environment variables
-load_dotenv()
+# Load environment variables - check multiple locations
+load_dotenv()  # Try current directory first
+# Also try the parent flasks directory (for shared config)
+parent_env = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(parent_env):
+    load_dotenv(dotenv_path=parent_env)
+    print(f"✅ Loaded .env from: {parent_env}")
+
 
 class ConversationState(Enum):
     HUMAN_LEAD = "human_lead"
     AVATAR_ACTIVE = "avatar_active"
     TRANSITIONING = "transitioning"
+
+
+class ResponseMode(Enum):
+    TEXT_ONLY = "text"        # Mode 1: Text only
+    SYSTEM_VOICE = "system"    # Mode 2: System TTS (say/espeak)
+    CLONED_VOICE = "cloned"    # Mode 3: ElevenLabs cloned voice
+
 
 class ConversationDelegator:
     def __init__(self):
@@ -201,8 +213,8 @@ class ConversationDelegator:
         self.is_running = True
         self.avatar_active = False
         
-        # Mode selection (default: text-only)
-        self.mode = 'text'  # 'text' or 'voice'
+        # Response mode (default: text-only)
+        self.mode = ResponseMode.TEXT_ONLY
         
         # Configuration
         self.config = self.load_config()
@@ -306,7 +318,7 @@ class ConversationDelegator:
             self.log("💡 Use web interface buttons for delegation control")
     
     def setup_flask(self):
-        """Setup Flask web interface with mode switching"""
+        """Setup Flask web interface with 3-mode switching"""
         self.app = Flask(__name__)
         
         @self.app.route('/')
@@ -329,12 +341,27 @@ class ConversationDelegator:
         
         @self.app.route('/api/set_mode', methods=['POST'])
         def api_set_mode():
-            """API endpoint to switch between text and voice modes"""
+            """API endpoint to switch between text, system voice, and cloned voice modes"""
             data = request.get_json()
             if data and 'mode' in data:
-                self.mode = data['mode']
-                self.log(f"🔄 Mode changed to: {self.mode}")
-                return jsonify({"success": True, "mode": self.mode})
+                mode_str = data['mode']
+                if mode_str == 'text':
+                    self.mode = ResponseMode.TEXT_ONLY
+                    self.log("🔄 Mode changed to: 📝 Text Only")
+                elif mode_str == 'system':
+                    self.mode = ResponseMode.SYSTEM_VOICE
+                    self.log("🔄 Mode changed to: 🔊 System Voice")
+                elif mode_str == 'cloned':
+                    # Check if ElevenLabs is configured
+                    if self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]:
+                        self.mode = ResponseMode.CLONED_VOICE
+                        self.log("🔄 Mode changed to: 🎤 Cloned Voice")
+                    else:
+                        self.log("⚠️ ElevenLabs not configured, falling back to system voice")
+                        self.mode = ResponseMode.SYSTEM_VOICE
+                        return jsonify({"success": False, "error": "ElevenLabs not configured", "fallback": "system"}), 400
+                
+                return jsonify({"success": True, "mode": self.mode.value})
             return jsonify({"success": False}), 400
     
     def get_system_state(self):
@@ -345,7 +372,8 @@ class ConversationDelegator:
             "responses": self.responses[-10:],
             "conversation_length": len(self.conversation_history),
             "hotkeys_enabled": self.hotkeys_enabled,
-            "mode": self.mode,
+            "mode": self.mode.value,
+            "elevenlabs_configured": bool(self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]),
             "timestamp": datetime.now().isoformat()
         }
     
@@ -359,9 +387,11 @@ class ConversationDelegator:
             self._stop_avatar_loop.clear()
             self.avatar_active = True
             
-            # Announce delegation only in voice mode
-            if self.mode == 'voice':
+            # Announce delegation based on mode
+            if self.mode == ResponseMode.SYSTEM_VOICE:
                 self.system_tts("I'll take it from here")
+            elif self.mode == ResponseMode.CLONED_VOICE:
+                self.text_to_speech("I'll take it from here")
             
             # Transition to avatar active
             self.state = ConversationState.AVATAR_ACTIVE
@@ -380,9 +410,11 @@ class ConversationDelegator:
             self._stop_avatar_loop.set()
             self.avatar_active = False
             
-            # Announce takeover only in voice mode
-            if self.mode == 'voice':
+            # Announce takeover based on mode
+            if self.mode == ResponseMode.SYSTEM_VOICE:
                 self.system_tts("I'll take over now")
+            elif self.mode == ResponseMode.CLONED_VOICE:
+                self.text_to_speech("I'll take over now")
             
             # Wait for avatar thread to finish
             if self.avatar_thread and self.avatar_thread.is_alive():
@@ -514,10 +546,11 @@ class ConversationDelegator:
             return "I apologize, but I'm having trouble responding right now."
     
     def text_to_speech(self, text):
-        """Convert text to speech using ElevenLabs (if configured)"""
+        """Convert text to speech using ElevenLabs with your cloned voice"""
         if not self.config["elevenlabs_api_key"] or not self.config["elevenlabs_voice_id"]:
+            self.log("⚠️ ElevenLabs not configured")
             return None
-        
+    
         try:
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{self.config['elevenlabs_voice_id']}"
             
@@ -527,23 +560,29 @@ class ConversationDelegator:
                 "xi-api-key": self.config['elevenlabs_api_key']
             }
             
+            # Voice settings - adjust these to match your cloned voice
             data = {
                 "text": text,
-                "model_id": "eleven_multilingual_v2",
+                "model_id": "eleven_multilingual_v2",  # or "eleven_monolingual_v1"
                 "voice_settings": {
-                    "stability": 0.4,
-                    "similarity_boost": 0.8
+                    "stability": 0.5,           # 0-1: Higher = more consistent
+                    "similarity_boost": 0.75,    # 0-1: Higher = more like original
+                    "style": 0.0,                # 0-1: Higher = more expressive
+                    "use_speaker_boost": True     # Enhance voice clarity
                 }
             }
             
+            self.log(f"📡 Calling ElevenLabs API for voice {self.config['elevenlabs_voice_id']}...")
             response = requests.post(url, json=data, headers=headers, timeout=30)
             
             if response.status_code == 200:
+                self.log(f"✅ ElevenLabs API success ({len(response.content)} bytes)")
                 return response.content
             else:
                 self.log(f"❌ ElevenLabs API error: {response.status_code}")
+                self.log(f"   Response: {response.text[:200]}")
                 return None
-                
+                    
         except Exception as e:
             self.log(f"❌ ElevenLabs TTS error: {e}")
             return None
@@ -579,38 +618,47 @@ class ConversationDelegator:
         try:
             system = platform.system()
             if system == "Darwin":  # macOS
-                subprocess.run(['say', text], check=True)
+                print(f"\n🔊 System voice speaking: {text[:50]}...\n")
+                import os
+                os.system(f'say "{text}"')
+                return True
             elif system == "Linux":
-                subprocess.run(['espeak', text], check=True)
+                os.system(f'espeak "{text}"')
+                return True
             elif system == "Windows":
-                ps_script = f'''
-                Add-Type -AssemblyName System.Speech
-                $speech = New-Object System.Speech.Synthesis.SpeechSynthesizer
-                $speech.Speak("{text.replace('"', '""')}")
-                '''
-                subprocess.run(['powershell', '-Command', ps_script], check=True)
-            return True
+                os.system(f'powershell -Command "Add-Type -AssemblyName System.Speech; $speech = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speech.Speak(\'{text}\')"')
+                return True
         except Exception as e:
             self.log(f"❌ System TTS error: {e}")
             return False
-    
-    def speak_message(self, text, use_cloned_voice=True):
-        """Speak a message aloud only if in voice mode"""
-        if not text.strip() or self.mode != 'voice':
-            # In text mode, just log that we're not speaking
-            if self.mode == 'text':
-                self.log(f"📝 (text mode) Response: {text}")
+
+    def speak_message(self, text):
+        """Speak a message based on the selected mode"""
+        if not text.strip():
+            return False
+        
+        # Mode 1: Text Only
+        if self.mode == ResponseMode.TEXT_ONLY:
+            self.log(f"📝 (text mode) Response: {text}")
             return True
         
-        # Try ElevenLabs if configured
-        if use_cloned_voice and self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]:
+        # Mode 2: System Voice
+        elif self.mode == ResponseMode.SYSTEM_VOICE:
+            self.log(f"🔊 System voice response: {text[:50]}...")
+            return self.system_tts(text)
+        
+        # Mode 3: Cloned Voice (ElevenLabs)
+        elif self.mode == ResponseMode.CLONED_VOICE:
+            self.log(f"🎤 Cloned voice response: {text[:50]}...")
             audio_data = self.text_to_speech(text)
             if audio_data:
                 return self.play_audio_data(audio_data)
+            else:
+                self.log("⚠️ Cloned voice failed, falling back to system voice")
+                return self.system_tts(text)
         
-        # Fallback to system TTS
-        return self.system_tts(text)
-    
+        return False
+
     def avatar_conversation_loop(self):
         """Main loop when avatar is active"""
         self.log("🔄 Starting avatar conversation loop")
@@ -674,7 +722,7 @@ class ConversationDelegator:
                                         'type': 'response'
                                     })
                                     
-                                    # Speak response (respects mode setting)
+                                    # Speak response based on selected mode
                                     self.speak_message(ai_response)
                                 
                                 # Reset buffer
@@ -690,7 +738,7 @@ class ConversationDelegator:
         self.log("🔄 Avatar conversation loop ended")
     
     def web_interface(self):
-        """Web interface with conversation displayed below tips (newest at top)"""
+        """Web interface with 3-mode selector"""
         # Filter to last 10 minutes only
         cutoff_time = datetime.now() - timedelta(minutes=10)
         
@@ -721,7 +769,7 @@ class ConversationDelegator:
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🎭 AI Avatar System</title>
+    <title>🎭 AI Avatar System - 3 Modes</title>
     <meta http-equiv="refresh" content="2">
     <style>
         body { 
@@ -786,7 +834,7 @@ class ConversationDelegator:
             margin-bottom: 5px;
         }
         
-        /* Mode selector */
+        /* Mode selector - 3 modes */
         .mode-selector {
             background: #f0f4f8;
             border-radius: 50px;
@@ -827,6 +875,12 @@ class ConversationDelegator:
             padding: 3px 8px;
             border-radius: 20px;
             background: rgba(255,255,255,0.2);
+        }
+        .elevenlabs-warning {
+            color: #e53e3e;
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: center;
         }
         
         /* Button styles */
@@ -963,7 +1017,7 @@ class ConversationDelegator:
             color: #744210;
         }
         
-        /* Conversation display - simple stacking, no scroll window */
+        /* Conversation display */
         .conversation {
             margin-top: 10px;
         }
@@ -1039,8 +1093,12 @@ class ConversationDelegator:
             background: #cbd5e0;
             color: #2d3748;
         }
-        .mode-voice {
+        .mode-system-voice {
             background: #9f7aea;
+            color: white;
+        }
+        .mode-cloned-voice {
+            background: #ed64a6;
             color: white;
         }
     </style>
@@ -1048,7 +1106,7 @@ class ConversationDelegator:
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎭 AI Avatar</h1>
+            <h1>🎭 AI Avatar - 3 Modes</h1>
             <p>Have a natural voice conversation with GPT</p>
             <p><small>Showing last 10 minutes of conversation (newest at top)</small></p>
         </div>
@@ -1061,25 +1119,34 @@ class ConversationDelegator:
             </div>
         </div>
         
-        <!-- Mode Selector -->
+        <!-- Mode Selector - 3 Modes -->
         <div class="mode-selector">
             <label class="mode-option {% if mode == 'text' %}active{% else %}inactive{% endif %}">
                 <input type="radio" name="mode" value="text" {% if mode == 'text' %}checked{% endif %} onchange="changeMode('text')">
                 📝 Mode 1: Text Only
                 <span class="mode-badge">No voice</span>
             </label>
-            <label class="mode-option {% if mode == 'voice' %}active{% else %}inactive{% endif %}">
-                <input type="radio" name="mode" value="voice" {% if mode == 'voice' %}checked{% endif %} onchange="changeMode('voice')">
-                🎤 Mode 2: Text + Voice
-                <span class="mode-badge">Speaks back</span>
+            <label class="mode-option {% if mode == 'system' %}active{% else %}inactive{% endif %}">
+                <input type="radio" name="mode" value="system" {% if mode == 'system' %}checked{% endif %} onchange="changeMode('system')">
+                🔊 Mode 2: System Voice
+                <span class="mode-badge">macOS 'say'</span>
+            </label>
+            <label class="mode-option {% if mode == 'cloned' %}active{% else %}inactive{% endif %}">
+                <input type="radio" name="mode" value="cloned" {% if mode == 'cloned' %}checked{% endif %} onchange="changeMode('cloned')">
+                🎤 Mode 3: Cloned Voice
+                <span class="mode-badge">ElevenLabs</span>
             </label>
         </div>
+        {% if mode == 'cloned' and not elevenlabs_configured %}
+        <div class="elevenlabs-warning">⚠️ ElevenLabs not configured. Add API key and voice ID to .env file for cloned voice</div>
+        {% endif %}
         
         <div style="text-align: center;">
             <div class="status-badge" style="background-color: {{ status_color }};">
                 {{ status_text }}
-                <span class="mode-indicator {% if mode == 'text' %}mode-text-only{% else %}mode-voice{% endif %}">
-                    {% if mode == 'text' %}📝 Text Only{% else %}🎤 Voice Mode{% endif %}
+                <span class="mode-indicator 
+                    {% if mode == 'text' %}mode-text-only{% elif mode == 'system' %}mode-system-voice{% else %}mode-cloned-voice{% endif %}">
+                    {% if mode == 'text' %}📝 Text Only{% elif mode == 'system' %}🔊 System Voice{% else %}🎤 Cloned Voice{% endif %}
                 </span>
             </div>
         </div>
@@ -1139,7 +1206,8 @@ class ConversationDelegator:
             <h4>💡 Quick Tips:</h4>
             <ul>
                 <li><strong>Mode 1 (Text Only):</strong> Avatar types responses only</li>
-                <li><strong>Mode 2 (Text + Voice):</strong> Avatar types AND speaks responses (placeholder voice)</li>
+                <li><strong>Mode 2 (System Voice):</strong> Avatar speaks with macOS system voice</li>
+                <li><strong>Mode 3 (Cloned Voice):</strong> Avatar speaks with your ElevenLabs cloned voice</li>
                 <li>Speak naturally - the avatar will respond after you pause</li>
                 <li>Each conversation turn takes 2-3 seconds</li>
                 <li>Click "Stop Conversation" anytime to end</li>
@@ -1147,7 +1215,7 @@ class ConversationDelegator:
             </ul>
         </div>
         
-        <!-- Conversation - appended right below tips, newest at top -->
+        <!-- Conversation -->
         <div class="conversation">
             {% if recent_activity %}
                 {% set ns = namespace(last_date='') %}
@@ -1185,6 +1253,9 @@ class ConversationDelegator:
             .then(data => {
                 if (data.success) {
                     setTimeout(() => location.reload(), 500);
+                } else if (data.error) {
+                    alert(data.error + '. Falling back to system voice.');
+                    setTimeout(() => location.reload(), 500);
                 }
             });
         }
@@ -1217,7 +1288,8 @@ class ConversationDelegator:
         state=self.state.value,
         recent_activity=recent_activity,
         last_transcription=last_transcription,
-        mode=self.mode,
+        mode=self.mode.value,
+        elevenlabs_configured=bool(self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]),
         hotkey_delegate=self.config["hotkey_delegate"].upper(),
         hotkey_takeover=self.config["hotkey_takeover"].upper(),
         hotkey_quit=self.config["hotkey_quit"].upper(),
@@ -1227,10 +1299,10 @@ class ConversationDelegator:
     def run(self):
         """Main system loop"""
         self.log("\n" + "="*60)
-        self.log("🎭 AI AVATAR SYSTEM")
+        self.log("🎭 AI AVATAR SYSTEM - 3 MODES")
         self.log("="*60)
         self.log("📋 Workflow: Select Mode → Click Start → Speak → Avatar responds")
-        self.log(f"🎮 Current Mode: {self.mode.upper()}")
+        self.log(f"🎮 Current Mode: {self.mode.value.upper()}")
         
         if self.hotkeys_enabled:
             self.log("🔥 Hotkeys:")
@@ -1248,6 +1320,11 @@ class ConversationDelegator:
             self.log("❌ CRITICAL: OpenAI API key not configured")
             self.log("   Please add OPENAI_API_KEY to your .env file")
             return
+        
+        if self.config["elevenlabs_api_key"] and self.config["elevenlabs_voice_id"]:
+            self.log("✅ ElevenLabs configured - Mode 3 (Cloned Voice) available")
+        else:
+            self.log("ℹ️  ElevenLabs not configured - Mode 3 will fall back to system voice")
         
         self.log(f"👤 Current state: {self.state.value}")
         self.log("💡 Open the web interface, select a mode, and click 'Start Voice Conversation'")
@@ -1281,12 +1358,18 @@ class ConversationDelegator:
         
         self.log("✅ System shutdown complete")
 
+
 def main():
     """Main entry point"""
     print("\n" + "="*60)
-    print("🎭 AI AVATAR SYSTEM")
+    print("🎭 AI AVATAR SYSTEM - 3 MODES")
     print("="*60)
-    print("Version: 5.0.0 (Final - Newest at Top)")
+    print("Version: 6.0.0 (Three Response Modes)")
+    print("="*60)
+    print("Modes:")
+    print("  📝 1. Text Only")
+    print("  🔊 2. System Voice (macOS 'say')")
+    print("  🎤 3. Cloned Voice (ElevenLabs)")
     print("="*60)
     
     # Check for required API keys
@@ -1296,14 +1379,26 @@ def main():
         print('   OPENAI_API_KEY="sk-your-key-here"')
         print("   PORT=5000")
         print("   GPT_MODEL=gpt-4")
+        print("\nOptional for Mode 3:")
+        print('   ELEVENLABS_API_KEY="your-key-here"')
+        print('   ELEVENLABS_VOICE_ID="your-voice-id"')
         return
     
     print("✅ OpenAI API key found")
+    
+    # Check for ElevenLabs (optional)
+    if os.getenv('ELEVENLABS_API_KEY') and os.getenv('ELEVENLABS_VOICE_ID'):
+        print("✅ ElevenLabs configured - Mode 3 (Cloned Voice) available")
+    else:
+        print("ℹ️  ElevenLabs not configured - Mode 3 will fall back to system voice")
+        print("   Add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID to .env for cloned voice")
+    
     print("🚀 Starting avatar system...\n")
     
     # Create and run the system
     delegator = ConversationDelegator()
     delegator.run()
+
 
 if __name__ == "__main__":
     main()
