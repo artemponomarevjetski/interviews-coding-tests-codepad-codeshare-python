@@ -1,0 +1,31 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Python and scripts
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Virtual environments (binary)
+**/phi4_env/** binary
+**/venv/** binary
+**/env/** binary
+**/__pycache__/** binary
+**/*.pyc binary
+
+# Databases (binary)
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Images (binary)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
