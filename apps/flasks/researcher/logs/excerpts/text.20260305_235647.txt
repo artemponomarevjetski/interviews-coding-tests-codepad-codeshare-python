@@ -1,0 +1,231 @@
+--- PASTE SAVER ---
+Saved: 2026-03-05 23:56:47
+Type: Text
+---
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # SRCDP11-773 — Parameterized Orchestration Job Notebook
+# MAGIC
+# MAGIC **Purpose**
+# MAGIC - Run the orchestration/sync function from `data_governance_library` for a single UC object.
+# MAGIC - Designed to be used as a **Databricks Job** (widgets = job parameters), but also runnable interactively.
+# MAGIC
+# MAGIC **Required parameters**: `domain`, `catalog`, `schema`, `object_name`
+# MAGIC
+# MAGIC **Optional parameters**: `tags_csv`, `classifications_json`, `is_starburst`, `dry_run`
+# MAGIC
+# MAGIC > **Important:** Update the `%run` path in the **Import Library** cell below to match where your shared notebook lives.
+
+# COMMAND ----------
+# Widgets / parameters
+
+import json
+import re
+import time
+import traceback
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+def _ensure_text_widget(name: str, default: str, label: str) -> None:
+    try:
+        dbutils.widgets.get(name)
+    except Exception:
+        dbutils.widgets.text(name, default, label)
+
+def _ensure_dropdown_widget(name: str, default: str, choices: List[str], label: str) -> None:
+    try:
+        dbutils.widgets.get(name)
+        return
+    except Exception:
+        pass
+
+    # Databricks can throw if default not in choices
+    if default not in choices:
+        choices = [default] + [c for c in choices if c != default]
+
+    try:
+        dbutils.widgets.dropdown(name, default, choices, label)
+    except Exception:
+        # Fallback to text if dropdown isn't supported in this context
+        dbutils.widgets.text(name, default, label)
+
+# Required
+_ensure_text_widget("domain", "", "domain (required)")
+_ensure_text_widget("catalog", "", "catalog (required)")
+_ensure_text_widget("schema", "", "schema (required)")
+_ensure_text_widget("object_name", "", "table/view name (required)")
+
+# Optional
+_ensure_text_widget("tags_csv", "", "tags_csv (optional; comma/newline-separated)")
+_ensure_text_widget("classifications_json", "", "classifications_json (optional; JSON object)")
+_ensure_dropdown_widget("is_starburst", "false", ["false", "true"], "is_starburst (optional)")
+_ensure_dropdown_widget("dry_run", "false", ["false", "true"], "dry_run (optional)")
+
+def _as_bool(s: str) -> bool:
+    return str(s).strip().lower() in {"1", "true", "t", "yes", "y"}
+
+def _parse_tags(tags_csv: str) -> Set[str]:
+    if not tags_csv or not tags_csv.strip():
+        return set()
+    # split by comma OR newline
+    raw = re.split(r"[\n,]+", tags_csv)
+    return {t.strip() for t in raw if t and t.strip()}
+
+def _parse_classifications(classifications_json: str) -> Dict[str, Any]:
+    if not classifications_json or not classifications_json.strip():
+        return {}
+    try:
+        parsed = json.loads(classifications_json)
+    except Exception as e:
+        raise ValueError(
+            "classifications_json must be valid JSON (e.g. {"Information Classification": "RESTRICTED FR"}). "
+            f"Got error: {e}"
+        )
+    if not isinstance(parsed, dict):
+        raise ValueError("classifications_json must decode to a JSON object/dict.")
+    return parsed
+
+domain = dbutils.widgets.get("domain").strip()
+catalog = dbutils.widgets.get("catalog").strip()
+schema = dbutils.widgets.get("schema").strip()
+object_name = dbutils.widgets.get("object_name").strip()
+
+tags_csv = dbutils.widgets.get("tags_csv")
+classifications_json = dbutils.widgets.get("classifications_json")
+is_starburst = _as_bool(dbutils.widgets.get("is_starburst"))
+dry_run = _as_bool(dbutils.widgets.get("dry_run"))
+
+tags = _parse_tags(tags_csv)
+classifications = _parse_classifications(classifications_json)
+
+required_missing = [k for k, v in {
+    "domain": domain,
+    "catalog": catalog,
+    "schema": schema,
+    "object_name": object_name
+}.items() if not v]
+
+if required_missing:
+    raise ValueError(f"Missing required parameters: {', '.join(required_missing)}")
+
+print("=== SRCDP11-773 parameters ===")
+print(json.dumps({
+    "domain": domain,
+    "catalog": catalog,
+    "schema": schema,
+    "object_name": object_name,
+    "tags_count": len(tags),
+    "classifications_keys": list(classifications.keys()),
+    "is_starburst": is_starburst,
+    "dry_run": dry_run
+}, indent=2))
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## Import Library
+# MAGIC Update this `%run` path to the **actual** workspace path of the shared notebook.
+# MAGIC
+# MAGIC Examples:
+# MAGIC - `%run /Workspace/library/data_governance_library`
+# MAGIC - `%run /Workspace/Shared/library/data_governance_library`
+# MAGIC - `%run /Workspace/Users/<you>/library/data_governance_library`
+
+# COMMAND ----------
+# MAGIC %run /Workspace/library/data_governance_library
+
+# COMMAND ----------
+# Call orchestration function
+
+import types
+
+def _try_call_patterns(sync_fn, domain: str, catalog: str, schema: str, obj: str,
+                       tags: Set[str], classifications: Dict[str, Any], is_starburst: bool):
+    """Try multiple call signatures to be robust against minor API differences."""
+    patterns = [
+        ("domain,catalog,schema,obj,tags,cls,isStarburst=..",
+         lambda: sync_fn(domain, catalog, schema, obj, tags, classifications, isStarburst=is_starburst)),
+        ("domain,catalog,schema,obj,tags,cls,is_starburst=..",
+         lambda: sync_fn(domain, catalog, schema, obj, tags, classifications, is_starburst=is_starburst)),
+        ("domain,catalog,schema,obj,tags,cls",
+         lambda: sync_fn(domain, catalog, schema, obj, tags, classifications)),
+        ("domain,catalog,schema,obj,isStarburst=..",
+         lambda: sync_fn(domain, catalog, schema, obj, isStarburst=is_starburst)),
+        ("domain,catalog,schema,obj,is_starburst=..",
+         lambda: sync_fn(domain, catalog, schema, obj, is_starburst=is_starburst)),
+        ("domain,catalog,schema,obj",
+         lambda: sync_fn(domain, catalog, schema, obj)),
+    ]
+
+    last_err = None
+    for label, fn in patterns:
+        try:
+            res = fn()
+            print(f"✅ sync_platform.sync succeeded using pattern: {label}")
+            return res
+        except TypeError as e:
+            last_err = e
+            # keep trying
+        except Exception:
+            # non-TypeError likely means the call signature was accepted but the function failed internally;
+            # re-raise to surface the true issue.
+            raise
+
+    raise TypeError(f"Unable to call sync_platform.sync with any known signature. Last TypeError: {last_err}")
+
+if dry_run:
+    print("DRY RUN: skipping sync_platform.sync execution.")
+    dbutils.notebook.exit(json.dumps({
+        "status": "DRY_RUN",
+        "domain": domain,
+        "catalog": catalog,
+        "schema": schema,
+        "object_name": object_name,
+        "tags": sorted(list(tags)),
+        "classifications": classifications,
+        "is_starburst": is_starburst
+    }))
+
+if "sync_platform" not in globals():
+    raise NameError(
+        "sync_platform was not found after importing data_governance_library. "
+        "Verify that the library notebook defines `sync_platform`."
+    )
+
+if not hasattr(sync_platform, "sync"):
+    raise AttributeError(
+        "sync_platform.sync was not found. Verify that the library notebook defines a `sync` method."
+    )
+
+start_ts = time.time()
+try:
+    result = _try_call_patterns(sync_platform.sync, domain, catalog, schema, object_name, tags, classifications, is_starburst)
+    elapsed_s = round(time.time() - start_ts, 3)
+
+    print(f"✅ Completed orchestration call in {elapsed_s}s")
+    dbutils.notebook.exit(json.dumps({
+        "status": "SUCCESS",
+        "elapsed_s": elapsed_s,
+        "domain": domain,
+        "catalog": catalog,
+        "schema": schema,
+        "object_name": object_name,
+        "is_starburst": is_starburst,
+        "result_repr": None if result is None else str(result)[:5000]
+    }))
+except Exception as e:
+    elapsed_s = round(time.time() - start_ts, 3)
+    err = {
+        "status": "FAILED",
+        "elapsed_s": elapsed_s,
+        "domain": domain,
+        "catalog": catalog,
+        "schema": schema,
+        "object_name": object_name,
+        "is_starburst": is_starburst,
+        "error_type": type(e).__name__,
+        "error_message": str(e),
+        "traceback": traceback.format_exc()[:15000],
+    }
+    print("❌ Orchestration call failed")
+    print(json.dumps(err, indent=2))
+    raise
+

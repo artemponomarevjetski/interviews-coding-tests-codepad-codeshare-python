@@ -3,6 +3,7 @@ import base64
 from datetime import datetime
 from flask import Flask, request, render_template_string, jsonify
 import socket
+import glob
 
 app = Flask(__name__)
 
@@ -10,54 +11,138 @@ app = Flask(__name__)
 os.makedirs('logs/excerpts', exist_ok=True)
 os.makedirs('logs/images', exist_ok=True)
 
+def get_last_saved_text():
+    """Get the content of the most recently saved text file"""
+    text_files = glob.glob('logs/excerpts/text.*.txt')
+    if not text_files:
+        return ""
+    
+    # Get the most recent file by timestamp
+    latest_file = sorted(text_files)[-1]
+    
+    try:
+        with open(latest_file, 'r') as f:
+            content = f.read()
+            # Extract just the text part after the metadata header
+            if '---' in content:
+                parts = content.split('---')
+                if len(parts) >= 4:
+                    return parts[3].strip()
+            return content
+    except:
+        return ""
+
 HTML = '''
 <!DOCTYPE html>
 <html>
 <head>
     <title>Paste Saver</title>
     <style>
-        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; margin-top: 0; }
-        textarea { width: 100%; height: 200px; margin: 15px 0; padding: 15px; font-family: monospace; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        textarea:focus { outline: none; border-color: #4CAF50; }
-        button { padding: 12px 30px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #45a049; }
-        .message { padding: 10px; margin: 10px 0; border-radius: 5px; display: none; }
-        .success { background: #d4edda; color: #155724; display: block; }
-        .error { background: #f8d7da; color: #721c24; display: block; }
-        .paste-area { border: 3px dashed #aaa; padding: 30px; text-align: center; margin: 20px 0; border-radius: 10px; background: #fafafa; }
-        .paste-area.dragover { border-color: #4CAF50; background: #e8f5e9; }
-        .preview { max-width: 100%; max-height: 300px; margin: 15px 0; display: none; border: 1px solid #ddd; border-radius: 5px; }
-        .hint { color: #666; font-size: 0.9em; margin-top: 5px; }
-        .stats { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; font-size: 0.9em; }
-        .footer { margin-top: 20px; text-align: center; color: #777; font-size: 0.8em; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+            background: #f5f5f5; 
+            line-height: 1.6;
+            overflow-y: auto;  /* Page level scrollbar only */
+        }
+        h1 { 
+            color: #333; 
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+        }
+        textarea { 
+            width: 100%; 
+            height: 300px; 
+            margin: 20px 0; 
+            padding: 20px; 
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            resize: vertical;
+            background: #fafafa;
+        }
+        textarea:focus { 
+            outline: none; 
+            border-color: #4CAF50; 
+            background: white;
+        }
+        button { 
+            padding: 14px 32px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+        button:hover { 
+            background: #45a049; 
+        }
+        .message { 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            display: none; 
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            display: block; 
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            display: block; 
+        }
+        .saved-text { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: #fafafa; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            /* Removed all overflow and height restrictions */
+        }
+        .footer { 
+            margin-top: 30px; 
+            text-align: center; 
+            color: #777; 
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📋 Paste Saver</h1>
-        <p>Paste <strong>text</strong> or an <strong>image</strong> (Ctrl+V) below, then click <strong>Save</strong></p>
+        <h1>Paste Saver</h1>
         
         <div id="message" class="message"></div>
         
-        <div class="paste-area" id="pasteArea">
-            <div style="font-size: 48px; margin-bottom: 10px;">📋</div>
-            <p><strong>Paste here (Ctrl+V)</strong></p>
-            <p class="hint">Works with text or images</p>
+        <textarea id="textInput" placeholder="Paste or type anything here... (Ctrl+V for text or images)"></textarea>
+        
+        <div style="text-align: left;">
+            <button onclick="saveContent()">Save</button>
         </div>
         
-        <textarea id="textInput" placeholder="Or type/paste text here..."></textarea>
-        
-        <img id="imagePreview" class="preview" />
-        
-        <div style="text-align: center;">
-            <button onclick="saveContent()">💾 Save</button>
-        </div>
-        
-        <div class="stats" id="stats">
-            Loading stats...
-        </div>
+        <div id="savedText" class="saved-text"></div>
         
         <div class="footer">
             Saved in: logs/excerpts/ (text) | logs/images/ (images)
@@ -67,23 +152,32 @@ HTML = '''
     <script>
         let currentImageData = null;
         
-        // Handle paste anywhere in the paste area
-        document.getElementById('pasteArea').addEventListener('paste', function(e) {
-            e.preventDefault();
-            
+        // Load the last saved text when page loads
+        window.addEventListener('load', function() {
+            fetch('/last-text')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.text) {
+                        document.getElementById('savedText').textContent = data.text;
+                    } else {
+                        document.getElementById('savedText').textContent = 'No saved text yet.';
+                    }
+                });
+        });
+        
+        // Handle paste events
+        document.getElementById('textInput').addEventListener('paste', function(e) {
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
             
             for (let item of items) {
                 if (item.type.indexOf('image') === 0) {
+                    e.preventDefault();
                     // Handle image paste
                     const blob = item.getAsFile();
                     const reader = new FileReader();
                     
                     reader.onload = function(e) {
                         currentImageData = e.target.result;
-                        document.getElementById('imagePreview').src = e.target.result;
-                        document.getElementById('imagePreview').style.display = 'block';
-                        document.getElementById('textInput').style.display = 'none';
                         showMessage('✅ Image ready to save', 'success');
                     };
                     
@@ -91,13 +185,6 @@ HTML = '''
                     break;
                 }
             }
-        });
-        
-        // Handle text paste/typing
-        document.getElementById('textInput').addEventListener('input', function() {
-            currentImageData = null;
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('textInput').style.display = 'block';
         });
         
         function saveContent() {
@@ -114,8 +201,6 @@ HTML = '''
                 .then(data => {
                     showMessage('✅ Image saved: ' + data.filename, 'success');
                     currentImageData = null;
-                    document.getElementById('imagePreview').style.display = 'none';
-                    updateStats();
                 });
             } else if (textContent.trim()) {
                 // Save text
@@ -127,8 +212,8 @@ HTML = '''
                 .then(res => res.json())
                 .then(data => {
                     showMessage('✅ Text saved: ' + data.filename, 'success');
-                    document.getElementById('textInput').value = '';
-                    updateStats();
+                    // Update the display with the newly saved text
+                    document.getElementById('savedText').textContent = textContent;
                 });
             } else {
                 showMessage('❌ Nothing to save!', 'error');
@@ -143,22 +228,6 @@ HTML = '''
                 msgDiv.className = 'message';
             }, 3000);
         }
-        
-        function updateStats() {
-            fetch('/stats')
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('stats').innerHTML = `
-                        <strong>📊 Stats:</strong> 
-                        ${data.text_count} text excerpts · 
-                        ${data.image_count} images · 
-                        Latest: ${data.latest || 'just now'}
-                    `;
-                });
-        }
-        
-        // Load stats on page load
-        updateStats();
     </script>
 </body>
 </html>
@@ -167,6 +236,12 @@ HTML = '''
 @app.route('/')
 def index():
     return render_template_string(HTML)
+
+@app.route('/last-text')
+def last_text():
+    """Return the most recently saved text"""
+    text = get_last_saved_text()
+    return jsonify({'text': text})
 
 @app.route('/save-text', methods=['POST'])
 def save_text():
@@ -198,7 +273,7 @@ def save_image():
     # Parse data URL
     if ',' in image_data:
         header, encoded = image_data.split(',', 1)
-        ext = header.split(';')[0].split('/')[-1]  # png, jpeg, etc.
+        ext = header.split(';')[0].split('/')[-1]
     else:
         encoded = image_data
         ext = 'png'
@@ -222,24 +297,6 @@ File: {filename}
 """)
     
     return jsonify({'status': 'ok', 'filename': filename})
-
-@app.route('/stats')
-def stats():
-    text_files = os.listdir('logs/excerpts') if os.path.exists('logs/excerpts') else []
-    image_files = os.listdir('logs/images') if os.path.exists('logs/images') else []
-    
-    # Get latest file
-    all_files = text_files + image_files
-    latest = sorted(all_files)[-1] if all_files else None
-    
-    # Filter out metadata files for count
-    image_count = len([f for f in image_files if not f.endswith('.txt')])
-    
-    return jsonify({
-        'text_count': len(text_files),
-        'image_count': image_count,
-        'latest': latest
-    })
 
 def find_free_port(start=5000):
     port = start

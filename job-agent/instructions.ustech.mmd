@@ -1,0 +1,32 @@
+flowchart TD
+    A[US Tech lead arrives by Gmail / phone / portal] --> B[Capture in jobs.db]
+    B --> C{Duplicate risk?}
+    C -- Same client or req ID --> C1[Hold / ask recruiter to confirm ownership]
+    C -- No duplicate --> D{Priority}
+    D -- P1 strong AI/ML + Bay Area/remote + W2 --> E[Call recruiter same day]
+    D -- P2/P3 --> F[Targeted email follow-up]
+    D -- P4/P5 --> G[Archive or low-touch]
+
+    E --> H[Ask: direct access, RTR, rate, timeline, submission confirmation]
+    F --> H
+
+    H --> I{Portal required?}
+    I -- Yes --> J[Open US Tech portal manually]
+    J --> K[Manual login / forgot password]
+    K --> L[Search Job ID 15565 first]
+    L --> M[Upload resume only]
+    M --> N[Stop before final submit unless Art confirms]
+    N --> O[Record application confirmation in jobs.db]
+
+    I -- No --> P[Recruiter submits by email/RTR]
+    P --> O
+
+    O --> Q[Follow up by phone/email]
+    Q --> R{Response?}
+    R -- Yes --> S[Advance: RTR / submitted / interview]
+    R -- No after 24h --> T[Short follow-up + alternate contact]
+
+    T --> U[Use Amit / Shubham / Karan route]
+    U --> H
+
+    X[Sensitive docs: passport, W-2, background check, references] -.-> Y[Do not upload until onboarding/compliance confirmed]

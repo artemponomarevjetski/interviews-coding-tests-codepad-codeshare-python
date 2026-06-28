@@ -1,0 +1,14 @@
+--- PASTE SAVER ---
+Saved: 2026-03-09 07:54:06
+Type: Text
+---
+%md
+# SRCDP11-774 — Transfer Table/View Owner to Service Principal
+**Purpose**: Parameterized Databricks utility notebook to transfer ownership of a Unity Catalog **TABLE** or **VIEW**.
+It:
+1) Reads parameters via widgets (catalog/schema/object + new owner)
+2) Builds a fully-qualified name (**FQN**) and `ALTER TABLE|VIEW ... OWNER TO ...` statement
+3) Executes (unless `dry_run=true`)
+4) Verifies the new owner via `system.information_schema.tables`
+
+## 1) Widgets

@@ -1,0 +1,61 @@
+--- PASTE SAVER ---
+Saved: 2026-03-06 00:47:48
+Type: Text
+---
+
+CATALOG = _w("catalog")
+SCHEMA = _w("schema")
+OBJECT_NAME = _w("object_name")
+OBJECT_KIND = _w("object_kind")
+NEW_OWNER = _w("new_owner")
+DRY_RUN = _is_true(_w("dry_run"))
+
+missing = [k for k, v in {
+    "schema": SCHEMA,
+    "object_name": OBJECT_NAME,
+    "new_owner": NEW_OWNER,
+}.items() if not v]
+
+if missing:
+    raise ValueError(
+        "Missing required widget(s): " + ", ".join(missing) + ". "
+        "Fill them at the top of the notebook / in the Job parameters and rerun."
+    )
+
+FQN_SQL = build_fqn_sql(CATALOG, SCHEMA, OBJECT_NAME)
+ALTER_SQL = build_alter_owner_sql(OBJECT_KIND, FQN_SQL, NEW_OWNER)
+
+print("=== SRCDP11-774 Parameters ===")
+print(f"catalog      = {CATALOG}")
+print(f"schema       = {SCHEMA}")
+print(f"object_name  = {OBJECT_NAME}")
+print(f"object_kind  = {OBJECT_KIND}")
+print(f"new_owner    = {NEW_OWNER}")
+print(f"dry_run      = {DRY_RUN}")
+print(f"FQN (SQL)    = {FQN_SQL}")
+print(f"ALTER SQL    = {ALTER_SQL}")
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 4) Execute (or Dry Run) + Verify
+
+# COMMAND ----------
+current_owner_before = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (before): {current_owner_before}")
+
+if DRY_RUN:
+    print("\nDRY RUN ONLY — not executing ALTER statement.")
+else:
+    print("\nExecuting ownership transfer...")
+    spark.sql(ALTER_SQL)
+
+current_owner_after = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (after):  {current_owner_after}")
+
+if not DRY_RUN:
+    if current_owner_after != NEW_OWNER:
+        raise RuntimeError(
+            f"Ownership verification failed. Expected '{NEW_OWNER}', got '{current_owner_after}'."
+        )
+    print("✅ Ownership transfer verified.")
+

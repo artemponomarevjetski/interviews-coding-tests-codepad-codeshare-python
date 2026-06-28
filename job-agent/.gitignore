@@ -1,0 +1,11 @@
+.env
+*.db
+*.db-shm
+*.db-wal
+portal_sessions/
+outputs/
+emails/
+documents/
+__pycache__/
+*.pyc
+.DS_Store

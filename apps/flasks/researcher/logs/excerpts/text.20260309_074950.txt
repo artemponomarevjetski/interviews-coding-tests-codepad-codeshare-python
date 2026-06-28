@@ -1,0 +1,53 @@
+--- PASTE SAVER ---
+Saved: 2026-03-09 07:49:50
+Type: Text
+---
+class DatabricksClient:
+    def get_job_id_by_name(job_name):
+        """
+        Retrieves the job ID for a given job name.
+        
+        Args:
+            job_name (str): The name of the Databricks job.
+        
+        Returns:
+            int: The job ID if found, otherwise None.
+        """
+        # The jobs/list endpoint supports a 'name' filter for exact matches
+        jobs_list = w.jobs.list(name=job_name)
+    
+        for job in jobs_list:
+            # The API filter is case-insensitive, but you can add further checks if needed
+            if job.settings.name == job_name:
+                return job.job_id
+            
+        logger.info(f"Job with name '{job_name}' not found.")
+        return None
+
+    def trigger_workFlow_By_JobID(job_id):
+        # Initialize the WorkspaceClient (automatically picks up credentials from environment variables)
+        w = WorkspaceClient()
+ 
+        # Triger the Job Run
+        run = w.jobs.run_now(job_id)
+        run_id = run.run_id
+        print(f"Job run triggered. Run ID: {run_id}")
+ 
+        try:
+            # Wait indefinitely or specify a timeout, e.g., datetime.timedelta(minutes=30)
+            final_status = run.result()
+           
+            # Check the final status of the run
+            # The .result() method will raise an exception if the job fails or times out.
+            print(f"Job finished successfully. Final state: {final_status.state.result_state}")
+ 
+        except Exception as e:
+            print(f"Job run {run_id} failed or timed out.")
+            print(f"Error details: {e}")
+            # You can retrieve further details about the run failure if needed
+            failed_run_details = w.jobs.get_run(run_id=run_id)
+            print(f"Final state: {failed_run_details.state.life_cycle_state}")
+            print(f"State message: {failed_run_details.state.state_message}")
+            exit(1) # Exit with an error code if the job fails
+
+        print("Workflow Run Completed.")

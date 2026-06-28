@@ -1,0 +1,24 @@
+--- PASTE SAVER ---
+Saved: 2026-03-09 07:56:38
+Type: Text
+---
+%md
+## 4) Execute or dry run with no impact on ownership to verify
+current_owner_before = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (before): {current_owner_before}")
+
+if DRY_RUN:
+    print("\nDRY RUN ONLY — not executing ALTER statement.")
+else:
+    print("\nExecuting ownership transfer...")
+    spark.sql(ALTER_SQL)
+
+current_owner_after = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (after):  {current_owner_after}")
+
+if not DRY_RUN:
+    if current_owner_after != NEW_OWNER:
+        raise RuntimeError(
+            f"Ownership verification failed. Expected '{NEW_OWNER}', got '{current_owner_after}'."
+        )
+    print("✅ Ownership transfer verified.")

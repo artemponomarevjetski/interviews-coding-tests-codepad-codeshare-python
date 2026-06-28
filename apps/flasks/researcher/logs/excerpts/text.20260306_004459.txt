@@ -1,0 +1,149 @@
+--- PASTE SAVER ---
+Saved: 2026-03-06 00:44:59
+Type: Text
+---
+
+# MAGIC %md
+# MAGIC ## 1) Widgets
+
+# COMMAND ----------
+try:
+    dbutils.widgets.removeAll()
+except Exception:
+    pass
+
+DEFAULTS = {
+    "catalog": "cdp_derived",
+    "schema": "",
+    "object_name": "",
+    "object_kind": "TABLE",  # TABLE or VIEW
+    "new_owner": "",          # service principal
+    "dry_run": "true",
+}
+
+dbutils.widgets.text("catalog", DEFAULTS["catalog"])
+dbutils.widgets.text("schema", DEFAULTS["schema"])
+dbutils.widgets.text("object_name", DEFAULTS["object_name"])
+dbutils.widgets.dropdown("object_kind", DEFAULTS["object_kind"], ["TABLE", "VIEW"])
+dbutils.widgets.text("new_owner", DEFAULTS["new_owner"])
+dbutils.widgets.dropdown("dry_run", DEFAULTS["dry_run"], ["true", "false"])
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 2) Helpers
+
+# COMMAND ----------
+from typing import Optional
+
+
+def _w(name: str) -> str:
+    return (dbutils.widgets.get(name) or "").strip()
+
+
+def _is_true(s: str) -> bool:
+    return (s or "").strip().lower() in {"1", "true", "t", "yes", "y"}
+
+
+def quote_ident(identifier: str) -> str:
+    """Backtick-quote a Unity Catalog identifier component."""
+    if identifier is None:
+        identifier = ""
+    identifier = identifier.strip()
+    if not identifier:
+        raise ValueError("Empty identifier")
+    # Escape embedded backticks by doubling them.
+    identifier = identifier.replace("`", "``")
+    return f"`{identifier}`"
+
+
+def build_fqn_sql(catalog: str, schema: str, name: str) -> str:
+    """Return a SQL-safe fully qualified name: `catalog`.`schema`.`name`."""
+    return f"{quote_ident(catalog)}.{quote_ident(schema)}.{quote_ident(name)}"
+
+
+def build_alter_owner_sql(object_kind: str, fqn_sql: str, new_owner: str) -> str:
+    object_kind = (object_kind or "").strip().upper()
+    if object_kind not in {"TABLE", "VIEW"}:
+        raise ValueError("object_kind must be TABLE or VIEW")
+
+    return f"ALTER {object_kind} {fqn_sql} OWNER TO {quote_ident(new_owner)}"
+
+
+def get_current_owner(catalog: str, schema: str, name: str) -> Optional[str]:
+    """Return current owner from UC information schema (works for tables and views)."""
+    df = spark.sql(
+        f"""
+        SELECT table_owner
+        FROM system.information_schema.tables
+        WHERE table_catalog = '{catalog}'
+          AND table_schema  = '{schema}'
+          AND table_name    = '{name}'
+        """
+    )
+    rows = df.collect()
+    if not rows:
+        return None
+    return rows[0]["table_owner"]
+
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 3) Read + Validate Inputs
+
+# COMMAND ----------
+CATALOG = _w("catalog")
+SCHEMA = _w("schema")
+OBJECT_NAME = _w("object_name")
+OBJECT_KIND = _w("object_kind")
+NEW_OWNER = _w("new_owner")
+DRY_RUN = _is_true(_w("dry_run"))
+
+missing = [k for k, v in {
+    "schema": SCHEMA,
+    "object_name": OBJECT_NAME,
+    "new_owner": NEW_OWNER,
+}.items() if not v]
+
+if missing:
+    raise ValueError(
+        "Missing required widget(s): " + ", ".join(missing) + ". "
+        "Fill them at the top of the notebook / in the Job parameters and rerun."
+    )
+
+FQN_SQL = build_fqn_sql(CATALOG, SCHEMA, OBJECT_NAME)
+ALTER_SQL = build_alter_owner_sql(OBJECT_KIND, FQN_SQL, NEW_OWNER)
+
+print("=== SRCDP11-774 Parameters ===")
+print(f"catalog      = {CATALOG}")
+print(f"schema       = {SCHEMA}")
+print(f"object_name  = {OBJECT_NAME}")
+print(f"object_kind  = {OBJECT_KIND}")
+print(f"new_owner    = {NEW_OWNER}")
+print(f"dry_run      = {DRY_RUN}")
+print(f"FQN (SQL)    = {FQN_SQL}")
+print(f"ALTER SQL    = {ALTER_SQL}")
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 4) Execute (or Dry Run) + Verify
+
+# COMMAND ----------
+current_owner_before = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (before): {current_owner_before}")
+
+if DRY_RUN:
+    print("\nDRY RUN ONLY — not executing ALTER statement.")
+else:
+    print("\nExecuting ownership transfer...")
+    spark.sql(ALTER_SQL)
+
+current_owner_after = get_current_owner(CATALOG, SCHEMA, OBJECT_NAME)
+print(f"Current owner (after):  {current_owner_after}")
+
+if not DRY_RUN:
+    if current_owner_after != NEW_OWNER:
+        raise RuntimeError(
+            f"Ownership verification failed. Expected '{NEW_OWNER}', got '{current_owner_after}'."
+        )
+    print("✅ Ownership transfer verified.")
+

@@ -1,0 +1,34 @@
+--- PASTE SAVER ---
+Saved: 2026-03-09 07:54:42
+Type: Text
+---
+dbutils.widgets.text("domain", "CDP Databricks Derived")
+dbutils.widgets.text("catalog", "cdp_derived")
+dbutils.widgets.text("schema", "lscc_test")
+dbutils.widgets.text("table", "lscc_fory_test189")
+
+dbutils.widgets.text("tags_json", '["Shareble_to_dips", "Non-Licensed", "Status.Candidate"]')
+dbutils.widgets.text("classification_json", '{"Information Classification": "RESTRICTED FR", "CSI Indicator": "Contains CSI"}')
+
+dbutils.widgets.text("catalog", DEFAULTS["catalog"])
+dbutils.widgets.text("schema", DEFAULTS["schema"])
+dbutils.widgets.text("object_name", DEFAULTS["object_name"])
+dbutils.widgets.dropdown("object_kind", DEFAULTS["object_kind"], ["TABLE", "VIEW"])
+dbutils.widgets.text("new_owner", DEFAULTS["new_owner"])
+dbutils.widgets.dropdown("dry_run", DEFAULTS["dry_run"], ["true", "false"])
+
+catalog = dbutils.widgets.get("catalog").strip()
+schema = dbutils.widgets.get("schema").strip()
+domain = dbutils.widgets.get("domain").strip()
+table = dbutils.widgets.get("table").strip()
+
+missing = [k for k, v in {
+    "catalog": catalog,
+    "schema": schema, 
+    "domain": domain,
+    "table": table
+}.items() if not v]
+
+if missing:
+    raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
