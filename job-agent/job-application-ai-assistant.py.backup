@@ -33,9 +33,6 @@ import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
-from batch_import_skill import batch_import_jobs_from_text
-from export_json_skill import export_jobs_json
-from auto_draft_skill import auto_draft_all_p1_jobs
 
 try:
     from openai import OpenAI
@@ -955,7 +952,8 @@ Core:
   /help
   /exit
   /db-init
-  /db-summary  /list-jobs [filter]
+  /db-summary
+  /list-jobs [filter]
   /status <job_db_id> <status> [notes...]
   /export-csv [path]
 
@@ -1072,18 +1070,6 @@ def command_loop() -> None:
                     )
                 continue
 
-            if raw == "/list-remote":
-                rows = list_jobs("Remote", limit=100)
-                if not rows:
-                    print("No remote jobs found.")
-                for r in rows:
-                    print(
-                        f"#{r['id']:>3} P{r['priority']} {r['status']:<16} "
-                        f"{r['company'][:20]:<20} | {r['title'][:45]:<45} | "
-                        f"job_id={r['job_id']:<10} | {r['location']}"
-                    )
-                continue
-
             if raw.startswith("/status "):
                 parts = shlex.split(raw)
                 if len(parts) < 3:
@@ -1104,28 +1090,8 @@ def command_loop() -> None:
                 export_jobs_csv(path)
                 continue
 
-            if raw.startswith("/export-json"):
-                parts = shlex.split(raw)
-                path = Path(parts[1]) if len(parts) > 1 else OUTPUT_DIR / f"jobs_export_{today()}.json"
-                export_jobs_json(path, list_jobs, init_db)
-                continue
-
             if raw == "/add-job":
                 interactive_add_job()
-                continue
-
-            if raw == "/batch-import":
-                print("Paste job data (JSON, SQL INSERT, CSV, or key:value blocks).")
-                print("Enter END on a new line to finish:")
-                lines = []
-                while True:
-                    line = input()
-                    if line.strip() == "END":
-                        break
-                    lines.append(line)
-                text = "\n".join(lines)
-                count = batch_import_jobs_from_text(text)
-                print(f"✅ Batch import complete. Inserted {count} jobs.")
                 continue
 
             if raw.startswith("/ingest-email "):
@@ -1184,10 +1150,6 @@ def command_loop() -> None:
                     job_db_id=jid,
                 )
                 print_box(last_response)
-                continue
-
-            if raw == "/draft-all":
-                auto_draft_all_p1_jobs(ask_llm, list_jobs)
                 continue
 
             if raw.startswith("/followup "):
