@@ -9,3 +9,14 @@ documents/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Job Agent specific ignores
+*.backup
+*.db.backup
+*.db-shm
+*.db-wal
+outputs/
+portal_sessions/
+*.db
+*.sqlite
+*.sqlite3
