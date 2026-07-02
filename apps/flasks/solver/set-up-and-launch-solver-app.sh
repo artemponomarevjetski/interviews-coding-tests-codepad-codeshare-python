@@ -3,7 +3,7 @@
 # Launch the screen-OCR Flask dashboard on port 5000 with proper environment setup
 # Supports both GPT and no-GPT modes (default: no-gpt)
 # RUNS IN BACKGROUND AUTOMATICALLY - you can close terminal!
-# Usage: ./launch-flask-on5000.sh [no-gpt|gpt]
+# Usage: ./set-up-and-launch-solver-app.sh [no-gpt|gpt]
 # ------------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -127,57 +127,78 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Clean the .env file for GPT mode (WITHOUT BACKUP)
+# ENV FILE HANDLING - Connect to root .env
 # ---------------------------------------------------------------------------
 if [[ "$MODE" == "gpt" ]]; then
     echo -e "\n\033[1;34m🔑 Checking OpenAI API key...\033[0m"
     
-    if [[ -f "$FLASK_DIR/.env" ]]; then
-        echo "Checking .env file..."
+    # Define the root .env location
+    ROOT_ENV="$HOME/interviews-coding-tests-codepad-codeshare-python/.env"
+    TARGET_ENV="$FLASK_DIR/.env"
+    
+    # Check if root .env exists
+    if [[ -f "$ROOT_ENV" ]]; then
+        echo "✅ Found root .env at: $ROOT_ENV"
         
-        # Clean the file in-place WITHOUT creating backup
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # Save original modification time
-            ORIG_MOD_TIME=$(stat -f "%m" "$FLASK_DIR/.env" 2>/dev/null || true)
-            
-            # Clean the file
-            sed -i '' 's/%//g' "$FLASK_DIR/.env" 2>/dev/null
-            sed -i '' 's/[[:space:]]*$//' "$FLASK_DIR/.env" 2>/dev/null
-            
-            # Restore original modification time if possible
-            if [[ -n "$ORIG_MOD_TIME" ]]; then
-                touch -m -t "$(date -r "$ORIG_MOD_TIME" +"%Y%m%d%H%M.%S" 2>/dev/null || echo "")" "$FLASK_DIR/.env" 2>/dev/null || true
-            fi
+        # Create symlink if not already linked
+        if [[ ! -L "$TARGET_ENV" ]] || [[ ! -f "$TARGET_ENV" ]]; then
+            echo "   🔗 Creating symlink: $TARGET_ENV -> $ROOT_ENV"
+            ln -sf "$ROOT_ENV" "$TARGET_ENV"
         else
-            # Linux version - clean without backup
-            sed -i 's/%//g' "$FLASK_DIR/.env" 2>/dev/null
-            sed -i 's/[[:space:]]*$//' "$FLASK_DIR/.env" 2>/dev/null
+            echo "   🔗 Symlink already exists: $TARGET_ENV"
         fi
         
-        # Check API key
-        API_KEY=$(grep 'OPENAI_API_KEY=' "$FLASK_DIR/.env" | cut -d'=' -f2- | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+        # Verify the symlink works
+        if [[ ! -f "$TARGET_ENV" ]]; then
+            echo -e "\033[1;31m❌ Symlink failed - $TARGET_ENV not accessible\033[0m"
+            exit 1
+        fi
+        
+        echo "   ✅ Connected to root .env"
+        
+    else
+        echo -e "\033[1;33m⚠️  Root .env not found at: $ROOT_ENV\033[0m"
+        echo "Creating .env template..."
+        
+        cat > "$TARGET_ENV" << 'EOF'
+# OpenAI API Key
+# Get yours from: https://platform.openai.com/api-keys
+OPENAI_API_KEY="your-api-key-here"
+EOF
+        echo -e "\033[1;31m❌ Please add a valid OpenAI API key to:\033[0m"
+        echo -e "   $ROOT_ENV"
+        echo -e "\033[1;36m💡 Get API key: https://platform.openai.com/api-keys\033[0m"
+        exit 1
+    fi
+    
+    # Check the API key in the linked/copied .env
+    if [[ -f "$TARGET_ENV" ]]; then
+        echo "Checking API key in $TARGET_ENV..."
+        
+        # Get the API key
+        API_KEY=$(grep 'OPENAI_API_KEY=' "$TARGET_ENV" | cut -d'=' -f2- | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+        
         if [[ -n "$API_KEY" ]]; then
             echo "✅ API key found: ${API_KEY:0:20}..."
             echo "   Key length: ${#API_KEY} characters"
             
             if [[ "$API_KEY" == "your-api-key-here" ]] || [[ ${#API_KEY} -lt 20 ]]; then
-                echo -e "\033[1;31m❌ Please add a valid OpenAI API key to $FLASK_DIR/.env\033[0m"
+                echo -e "\033[1;31m❌ Invalid API key in $TARGET_ENV\033[0m"
+                echo -e "\033[1;33m💡 Please add your actual OpenAI API key to:\033[0m"
+                echo "   $ROOT_ENV"
+                echo -e "\033[1;36m   Format: OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\033[0m"
                 exit 1
             fi
+            
+            echo -e "\033[1;32m✅ API key validated successfully!\033[0m"
         else
-            echo -e "\033[1;31m❌ No API key found in .env file\033[0m"
+            echo -e "\033[1;31m❌ No API key found in $TARGET_ENV\033[0m"
+            echo -e "\033[1;33m💡 Add this line to $ROOT_ENV:\033[0m"
+            echo "   OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
             exit 1
         fi
     else
-        echo -e "\033[1;33m⚠️  No .env file found\033[0m"
-        echo "Creating .env template..."
-        cat > "$FLASK_DIR/.env" << 'EOF'
-# OpenAI API Key
-# Get yours from: https://platform.openai.com/api-keys
-OPENAI_API_KEY="your-api-key-here"
-EOF
-        echo -e "\033[1;31m❌ Please edit $FLASK_DIR/.env and add your OpenAI API key\033[0m"
-        echo -e "\033[1;36m💡 Get API key: https://platform.openai.com/api-keys\033[0m"
+        echo -e "\033[1;31m❌ .env file not found at $TARGET_ENV\033[0m"
         exit 1
     fi
 fi
