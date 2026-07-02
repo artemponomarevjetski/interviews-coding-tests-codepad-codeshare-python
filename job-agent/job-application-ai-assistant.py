@@ -973,6 +973,9 @@ Generation:
   /profile-summary [job_db_id]    5-6 sentence profile summary
   free text                       ask the assistant using instructions + DB
 
+Email:
+  /email <job_db_id> <to_email>   generate and send application email with resume
+
 Browser helpers:
   /gmail
   /gmail-search <query>
@@ -1238,6 +1241,66 @@ def command_loop() -> None:
                     job_db_id=jid,
                 )
                 print_box(last_response)
+                continue
+
+            # NEW: /email command - Send application email
+            if raw.startswith("/email "):
+                parts = shlex.split(raw)
+                if len(parts) < 3:
+                    print("Usage: /email <job_db_id> <to_email>")
+                    continue
+                jid = parse_job_id_arg(parts[1])
+                if jid is None:
+                    continue
+                to_email = parts[2]
+                
+                job = get_job(jid)
+                if not job:
+                    print(f"❌ Job #{jid} not found")
+                    continue
+                
+                print(f"📧 Generating application for '{job['title']}' at {job['company']}")
+                print(f"📧 Sending to: {to_email}")
+                
+                # Generate draft
+                draft = ask_llm(
+                    f"Generate a concise, professional application email for job #{jid}: {job['title']} at {job['company']}. "
+                    "Include: confirmation of interest, strongest skills match, availability, "
+                    "and a clear next-step ask. Make it recruiter-ready.",
+                    job_db_id=jid,
+                )
+                
+                print("\n" + "-" * 80)
+                print(f"Subject: Application: {job['title']} at {job['company']}")
+                print("\n" + draft)
+                print("-" * 80 + "\n")
+                
+                confirm = input("Send this email with resume attached? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    try:
+                        from email_skill import send_email_with_resume
+                        from pathlib import Path
+                        resume_path = Path('documents/art_ponomarev_resume_final_2025_10_12.docx.pdf')
+                        
+                        if resume_path.exists():
+                            send_email_with_resume(
+                                to_email, 
+                                f"Application: {job['title']} at {job['company']}", 
+                                draft, 
+                                resume_path
+                            )
+                            update_job_status(jid, "applied-email", f"Application sent to {to_email}")
+                            print(f"✅ Application sent and status updated for job #{jid}")
+                        else:
+                            print(f"⚠️ Resume not found: {resume_path}")
+                            print("   Please check the path: documents/art_ponomarev_resume_final_2025_10_12.docx.pdf")
+                    except ImportError:
+                        print("❌ email_skill.py not found. Please create it first.")
+                        print("   Run: cat > email_skill.py ... (see documentation)")
+                    except Exception as e:
+                        print(f"❌ Error sending email: {e}")
+                else:
+                    print("❌ Email not sent.")
                 continue
 
             if raw.startswith("/save "):
