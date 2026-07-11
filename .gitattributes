@@ -29,3 +29,45 @@
 *.gif binary
 *.ico binary
 *.pdf binary
+
+# Archives and compression (binary)
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.xz binary
+*.7z binary
+*.rar binary
+
+# Compiled binaries (binary)
+*.so binary
+*.dylib binary
+*.dll binary
+*.exe binary
+*.o binary
+*.a binary
+
+# Model files (binary)
+*.model binary
+*.bin binary
+*.pt binary
+*.pth binary
+*.pkl binary
+*.pickle binary
+*.joblib binary
+
+# Audio/Video (binary)
+*.wav binary
+*.mp3 binary
+*.mp4 binary
+*.m4a binary
+*.mov binary
+*.avi binary
+
+# Office documents (binary)
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.doc binary
+*.xls binary
+*.ppt binary

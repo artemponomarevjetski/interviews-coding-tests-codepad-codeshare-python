@@ -9,6 +9,11 @@ temp/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.coverage/
+htmlcov/
+dist/
+build/
+*.dist-info/
 
 # Whisperer subdirectory environments
 whisperer_*/venv/
@@ -16,45 +21,84 @@ whisperer_*/logs/
 whisperer_*/whisperer.pid
 whisperer_*/*.pid
 
-# File extensions
+# Python
 *.py[cod]
+*.pyo
+*.pyd
 *.so
+*.dylib
+*.dll
+*.exe
+
+# Logs and temporary files
 *.log
 *.out
 *.pid
 *.tmp
 *.bak
 *.swp
+*.swo
 *~
+nohup.out
+
+# Notebooks and documents
 *.nbconvert.ipynb
 *.pdf
 *.pages
 *.docx
+*.xlsx
+*.pptx
+
+# Environment and secrets
+.env
 *.env
 *.secrets
-nohup.out
+*.key
+*.pem
+*.crt
+
+# Data files
 *.csv
 *.data
+*.tsv
+*.parquet
+*.feather
+
+# Model files
 *.model
 *.pickle
 *.pkl
 *.joblib
+*.h5
+*.hdf5
+*.pb
+*.onnx
 
-# Audio/Model files (common in transcription projects)
+# Audio/Video
 *.wav
 *.mp3
 *.mp4
 *.m4a
-*.model
+*.mov
+*.avi
+*.flac
+*.ogg
+
+# ML/AI model files
 *.bin
 *.pt
 *.pth
+*.ckpt
+*.safetensors
 
 # Jupyter
 .ipynb_checkpoints/
+*.ipynb
 
 # IDE
 .idea/
+*.iml
+.vscode/
 *.swp
 *.swo
 
@@ -63,20 +107,44 @@ nohup.out
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+._*
 
-# Database
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
-# Compression
+# Archives
 *.gz
 *.tar
+*.bz2
+*.xz
 *.zip
 *.7z
+*.rar
 
 # Documentation
 _site/
 .sass-cache/
 .jekyll-cache/
+docs/_build/
+
+# Specific project exclusions
 phi-4/phi4_env/
+
+# Node (if used)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Docker
+*.dockerignore
+Dockerfile.*
+.dockerignore
+
+# Terraform (if used)
+*.tfstate
+*.tfstate.*
+.terraform/

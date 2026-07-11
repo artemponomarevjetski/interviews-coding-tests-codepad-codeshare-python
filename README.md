@@ -38,19 +38,26 @@ interviews-coding-tests-codepad-codeshare-python/
 │   ├── dedupe_suffixes.py    # File deduplication with suffix management
 │   ├── move_up.sh           # File organization automation
 │   ├── compare_folders.sh   # Folder comparison utilities
-│   ├── launch_flask_on5000_whisperer_internal.sh  # ✅ Fixed deployment script
+│   ├── compare_folders_as_sets.sh # Set-based folder comparison
+│   ├── folder-sizes.sh      # Directory size analysis
+│   ├── apply_sync.sh        # Apply synchronization rules
+│   ├── sim_sync.sh          # Simulation sync utility
+│   ├── arithmetics.py       # Mathematical utilities
+│   ├── email-campaign.md    # Email campaign documentation
 │   └── sync_toolkit.tar     # Complete synchronization toolkit
 │
 ├── 📚 Learning & Practice
+│   ├── MCP/                 # Model Context Protocol examples
+│   ├── png/                 # Screenshot and image assets
 │   ├── coding challenges and interview preparation
-│   ├── Python exercises and algorithm implementations
-│   └── Notebook explorations (moved to external repository)
+│   └── Python exercises and algorithm implementations
 │
 └── 🛠️ Infrastructure
-    ├── env-setup.sh         # Environment setup automation
-    ├── venv/                # Virtual environment
+    ├── .gitattributes       # Git line ending and binary file configuration
     ├── .gitignore          # Comprehensive git ignore rules
-    └── requirements.txt     # Python dependencies
+    ├── .env                # Environment variables
+    ├── env-setup.sh        # Environment setup automation
+    └── README.md           # This documentation
 ```
 
 ## 🎯 Featured Projects
@@ -197,7 +204,7 @@ python web_dashboard.py  # Launches visualization interface
 # Projects Included:
 # • flask-exercise/ - Basic Flask learning exercises
 # • flask-test/     - Testing framework with demo image server
-# • solver/         - OCR Dashboard application (formerly flask/)
+# • solver/         - OCR Dashboard application
 # • whisperer_internal/ - ✅ Fixed internal audio transcription
 # • whisperer_external/ - External audio transcription
 # • avatar/ - Voice cloning systems
@@ -399,9 +406,8 @@ def deduplicate_files(directory):
     Maintains file relationships
     """
     
-# heart.csv - Data analysis examples
-# Sample datasets for analysis practice
-# CSV manipulation patterns
+# arithmetics.py - Mathematical utilities
+# Common mathematical operations and helpers
 # Statistical analysis examples
 ```
 
@@ -477,6 +483,8 @@ This repository also serves as a learning portfolio:
 2. **Deployment Script Improvements** - Added LLVM version management
 3. **Fallback Mechanisms** - Automatic switch to faster-whisper if needed
 4. **Environment Variable Handling** - Proper LLVM_CONFIG settings
+5. **Git Configuration** - Improved `.gitattributes` and `.gitignore` rules
+6. **Repository Cleanup** - Removed `phi-4/` directory and virtual environment from tracking
 
 ### **🆕 New Features:**
 1. **Improved OCR Dashboard Launcher** - Better background operation
@@ -484,6 +492,7 @@ This repository also serves as a learning portfolio:
 3. **Enhanced Error Recovery** - Graceful degradation options
 4. **Better Logging** - Structured log files in `logs/` directory
 5. **PID Management** - Proper process tracking and cleanup
+6. **LLVM Auto-Management** - Automated version detection and installation
 
 ### **📋 Known Issues & Solutions:**
 - **Issue**: `llvmlite` fails with LLVM 21
@@ -512,6 +521,19 @@ cd whisperer_internal
 ```bash
 cd apps/overlay
 python browser-overlay.py
+```
+
+### **For Folder Comparison:**
+```bash
+./compare_folders.sh /path/to/folder1 /path/to/folder2
+./compare_folders_as_sets.sh /path/to/folder1 /path/to/folder2
+```
+
+### **For File Sync:**
+```bash
+python sync_by_rules.py --source /path/to/source --dest /path/to/dest
+./apply_sync.sh  # Apply sync rules
+./sim_sync.sh    # Simulation mode
 ```
 
 ## 🤝 Contributing
