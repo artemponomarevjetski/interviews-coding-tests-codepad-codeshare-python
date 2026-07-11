@@ -22,12 +22,11 @@ Security:
 - In GPT mode: Secure API key handling with cost tracking
 
 Directory Structure:
-~/interviews-coding-tests-codepad-codeshare-python/
-├── flask/
-│   ├── temp/           # ALL files: screenshots, OCR text, GPT analysis, logs
-│   ├── snapshot.py     # This application
-│   ├── requirements.txt
-│   └── .env            # API keys (GPT mode only)
+apps/flasks/solver/
+├── temp/           # ALL files: screenshots, OCR text, GPT analysis, logs
+├── snapshot.py     # This application
+├── requirements.txt
+└── .env            # API keys (GPT mode only)
 """
 
 import os
@@ -52,8 +51,8 @@ import requests
 # CONFIGURATION
 # =============================================================================
 
-# Base directory for the entire project
-BASE = os.path.expanduser("~/interviews-coding-tests-codepad-codeshare-python")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # ⭐ MODEL SELECTION - Change this to switch models
 # Available models: "gpt-4o", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo", "o1-preview", "o1-mini"
@@ -73,9 +72,9 @@ if len(sys.argv) > 2:
         print(f"⚠️ Invalid model '{cmd_model}', using {OPENAI_MODEL}")
 
 CONFIG = {
-    # Storage directories - ALL in flask/temp
-    "save_dir": f"{BASE}/flask/temp",
-    "log_dir": f"{BASE}/flask/temp",
+    # Storage directories - use local temp directory
+    "save_dir": os.path.join(script_dir, "temp"),
+    "log_dir": os.path.join(script_dir, "temp"),
     
     # File names
     "log_file": "snapshot.log",
@@ -603,13 +602,13 @@ def kill_python_process():
 # FLASK WEB APPLICATION
 # =============================================================================
 
-# Flask UI template with LARGER buttons
+# Flask UI template with LARGER buttons and expanded solution box
 TPL = """
 <!doctype html>
 <title>Content Analyzer - {{ "GPT" if gpt_mode == "gpt" else "OCR-ONLY" }} Mode</title>
 <style>
 body{font-family:Inter,Arial,sans-serif;background:#f8f9fa;margin:20px}
-.container{max-width:1200px;background:#fff;border-radius:8px;padding:20px;margin:auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.container{max-width:1400px;background:#fff;border-radius:8px;padding:20px;margin:auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 h1{margin-top:0}
 .meta{color:#666;font-size:.9em;margin-bottom:15px}
 .status{display:inline-block;padding:4px 10px;border-radius:4px;font-weight:600;color:#fff;background:#4caf50}
@@ -624,7 +623,15 @@ h1{margin-top:0}
 .btn-billing{background:#6f42c1;color:#fff}
 .btn:disabled{opacity:0.6;cursor:not-allowed}
 .btn:hover:not(:disabled){opacity:0.9;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2)}
-pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid #ddd;font-family:monospace}
+
+/* ⭐ SOLUTION BOX - Expanded to fit content, no scroll */
+.solution-box{background:#f8f9fa;padding:20px;border-radius:8px;border:2px solid #28a745;margin:15px 0;width:100%;overflow:visible}
+.solution-box pre{background:transparent;padding:0;margin:0;white-space:pre-wrap;word-wrap:break-word;font-family:monospace;font-size:14px;line-height:1.6;max-height:none;overflow:visible}
+
+/* ⭐ OCR TEXT BOX - Also expanded */
+.ocr-box{background:#f5f5f5;padding:20px;border-radius:8px;border:1px solid #ddd;margin:15px 0;width:100%;overflow:visible}
+.ocr-box pre{background:transparent;padding:0;margin:0;white-space:pre-wrap;word-wrap:break-word;font-family:monospace;font-size:14px;line-height:1.6;max-height:none;overflow:visible}
+
 .imgwrap{text-align:center;margin-top:20px}
 .imgwrap img{max-width:100%;border:1px solid #ddd;border-radius:4px}
 .balance-info{background:#d4edda;border-left:4px solid #28a745;color:#155724;padding:15px;border-radius:6px;margin:15px 0}
@@ -676,12 +683,12 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
     {% if "error" in gpt_analysis.lower() or "429" in gpt_analysis %}
     <div class="error">
       <h3>❌ Analysis Failed</h3>
-      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
+      <div class="solution-box"><pre id="gptAnalysis">{{gpt_analysis}}</pre></div>
     </div>
     {% else %}
     <div class="success">
       <h3>✅ GPT-4 Analysis Result:</h3>
-      <pre id="gptAnalysis">{{gpt_analysis}}</pre>
+      <div class="solution-box"><pre id="gptAnalysis">{{gpt_analysis}}</pre></div>
     </div>
     {% endif %}
   {% endif %}
@@ -696,7 +703,7 @@ pre{background:#f5f5f5;padding:15px;border-radius:6px;white-space:pre-wrap;max-h
   {% if text %}
   <div class="system-info">
     <h3>📄 Raw OCR Text:</h3>
-    <pre id="ocrText">{{text|safe}}</pre>
+    <div class="ocr-box"><pre id="ocrText">{{text|safe}}</pre></div>
   </div>
   {% endif %}
 
