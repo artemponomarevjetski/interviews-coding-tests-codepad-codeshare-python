@@ -23,7 +23,7 @@ profile = QWebEngineProfile.defaultProfile()
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(data_dir, exist_ok=True)
 profile.setPersistentStoragePath(data_dir)
-profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookies)
+profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies)
 
 profile.setHttpUserAgent(
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "

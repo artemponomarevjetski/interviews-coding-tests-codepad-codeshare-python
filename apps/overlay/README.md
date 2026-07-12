@@ -26,4 +26,3 @@ python browser-overlay.py
 
 # Check if running
 pgrep -fl "python.*browser-overlay"
-eof
