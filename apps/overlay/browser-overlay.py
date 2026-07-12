@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebEngineCore import QWebEngineProfile
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
 
 def signal_handler(sig, frame):
     print("\n🛑 Ctrl+C pressed – shutting down...")
@@ -17,9 +17,26 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+# --- Permission handler ---
+class WebEnginePage(QWebEnginePage):
+    def __init__(self, profile, parent=None):
+        super().__init__(profile, parent)
+        self.featurePermissionRequested.connect(self.on_feature_permission_requested)
+
+    def on_feature_permission_requested(self, url, feature):
+        if feature in (QWebEnginePage.Feature.MediaAudioCapture,
+                       QWebEnginePage.Feature.MediaVideoCapture,
+                       QWebEnginePage.Feature.MediaAudioVideoCapture):
+            self.setFeaturePermission(url, feature, QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
+            print(f"✅ Microphone/Camera permission granted for {url.toString()}")
+        else:
+            self.setFeaturePermission(url, feature, QWebEnginePage.PermissionPolicy.PermissionDeniedByUser)
+            print(f"⛔ Permission denied for {url.toString()} - {feature}")
+# ---
+
 app = QApplication(sys.argv)
 
-profile = QWebEngineProfile.defaultProfile()
+profile = QWebEngineProfile("overlay", None)
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(data_dir, exist_ok=True)
 profile.setPersistentStoragePath(data_dir)
@@ -32,18 +49,14 @@ profile.setHttpUserAgent(
 )
 
 window = QMainWindow()
-
-try:
-    window.setWindowFlags(Qt.WindowType.FramelessWindowHint |
-                          Qt.WindowType.WindowStaysOnTopHint)
-except AttributeError:
-    window.setWindowFlags(Qt.FramelessWindowHint |
-                          Qt.WindowStaysOnTopHint)
-
+window.setWindowFlags(Qt.WindowType.FramelessWindowHint |
+                      Qt.WindowType.WindowStaysOnTopHint)
 window.setWindowOpacity(0.7)
 window.resize(800, 600)
 
 browser = QWebEngineView()
+page = WebEnginePage(profile, browser)
+browser.setPage(page)
 browser.setUrl(QUrl("https://chat.openai.com"))
 window.setCentralWidget(browser)
 
