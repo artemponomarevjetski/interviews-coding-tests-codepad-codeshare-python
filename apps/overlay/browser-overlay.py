@@ -4,9 +4,9 @@ Browser Overlay – Semi-transparent, always-on-top window
 import sys
 import os
 import signal
-from PyQt6.QtWidgets import QApplication, QMainWindow, QShortcut
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QKeySequence
+from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 
