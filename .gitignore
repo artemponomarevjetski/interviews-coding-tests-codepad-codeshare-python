@@ -148,3 +148,4 @@ Dockerfile.*
 *.tfstate
 *.tfstate.*
 .terraform/
+apps/overlay/data/
