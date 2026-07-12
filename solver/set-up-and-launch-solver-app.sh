@@ -5,15 +5,18 @@
 # RUNS IN BACKGROUND AUTOMATICALLY - you can close terminal!
 # ------------------------------------------------------------------------------
 
+
 set -Eeuo pipefail
 
 # Configuration
-BASE_DIR="${BASE_DIR:-$HOME/interviews-coding-tests-codepad-codeshare-python/apps/flasks/solver}"
+BASE_DIR="${BASE_DIR:-$HOME/interviews-coding-tests-codepad-codeshare-python/solver}"
 FLASK_DIR="$BASE_DIR"
 LOG_DIR="$FLASK_DIR/log"
 TEMP_DIR="$FLASK_DIR/temp"
 VENVDIR="$BASE_DIR/venv"
 REQUIREMENTS="$FLASK_DIR/requirements.txt"
+
+"$BASE_DIR/../overlay/stop-overlay.sh" 2>/dev/null || true
 
 # ALWAYS use gpt-4-turbo (most powerful accessible model)
 MODEL="gpt-4-turbo"
@@ -287,6 +290,11 @@ for ((i=1; i<=ATTEMPTS; i++)); do
     echo "└────────────────────────────────────────────────────────────────────────────┘"
     echo -e "\033[0m"
     echo ""
+
+    # --- Auto‑close terminal (macOS only) ---
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        osascript -e 'tell application "Terminal" to close (first window whose frontmost is true)' &
+    fi
     exit 0
   fi
   printf "."

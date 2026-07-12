@@ -1,0 +1,5 @@
+Flask==2.3.2
+Pillow==11.3.0
+pytesseract==0.3.13
+requests==2.31.0
+psutil==7.2.2
