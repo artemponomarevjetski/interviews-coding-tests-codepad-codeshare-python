@@ -1,6 +1,0 @@
-2026/07/12-15:38:50.187 8f07 Reusing MANIFEST /Users/artem.ponomarev/interviews-coding-tests-codepad-codeshare-python/overlay/data/Local Storage/leveldb/MANIFEST-000001
-2026/07/12-15:38:50.211 8f07 Recovering log #4
-2026/07/12-15:38:50.212 8f07 Reusing old log /Users/artem.ponomarev/interviews-coding-tests-codepad-codeshare-python/overlay/data/Local Storage/leveldb/000004.log 
-2026/07/12-15:41:38.995 9103 Level-0 table #8: started
-2026/07/12-15:41:39.021 9103 Level-0 table #8: 111971 bytes OK
-2026/07/12-15:41:39.063 9103 Delete type=0 #4

@@ -148,4 +148,12 @@ Dockerfile.*
 *.tfstate
 *.tfstate.*
 .terraform/
-apps/overlay/data/
+
+# -----------------------------------------
+# 🔥 Additional runtime directories (overlay, solver, keylogger)
+# -----------------------------------------
+apps/overlay/data/                 # overlay browser session (cookies, cache, etc.)
+apps/keylogger/keylogs/            # keylogger JSONL logs
+solver/temp/                       # solver screenshots & OCR temp files
+solver/log/                        # solver Flask logs
+solver/venv/                       # solver virtual environment
