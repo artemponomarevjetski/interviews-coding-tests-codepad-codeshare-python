@@ -1,15 +1,45 @@
 #!/usr/bin/env python3
 """
-Whisperer Troubleshooter
-- Verifies Python + packages
-- Checks PortAudio/sounddevice and lists input devices
-- Records a short sample and reports amplitude
-- Optionally checks if Whisper can import and run a tiny transcribe on silence
-- Optionally checks if a port (e.g., 5000) is occupied
-
-Exit codes:
- 0 OK, non-fatal warnings may be printed
- 1 Hard failure (missing package / device / record error)
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║     ██╗    ██╗██╗  ██╗██╗███████╗██████╗ ███████╗██████╗ ███████╗   ║
+║     ██║    ██║██║  ██║██║██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝   ║
+║     ██║ █╗ ██║███████║██║█████╗  ██████╔╝█████╗  ██████╔╝█████╗     ║
+║     ██║███╗██║██╔══██║██║██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══╝     ║
+║     ╚███╔███╔╝██║  ██║██║███████╗██║  ██║███████╗██║  ██║███████╗   ║
+║      ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ║
+║                                                                      ║
+║                 🔧  WHISPERER TROUBLESHOOTER                          ║
+║                                                                      ║
+║  A comprehensive audio diagnostic tool for the Whisperer suite.       ║
+║  Verifies your system is ready for real‑time transcription.          ║
+║                                                                      ║
+║  🔍 CHECKS PERFORMED:                                                ║
+║    • Python version and availability                                 ║
+║    • Required packages (numpy, sounddevice, whisper/faster‑whisper)  ║
+║    • Homebrew and PortAudio installation (macOS)                     ║
+║    • Audio input devices – lists all and highlights default          ║
+║    • Microphone capture – records a sample and reports amplitude     ║
+║    • Port availability – checks if port 5000 is free                 ║
+║    • Optional: Whisper model loading and a quick transcribe test     ║
+║    • Optional: Browser audio routing to BlackHole (for external)     ║
+║                                                                      ║
+║  🎯 USAGE:                                                           ║
+║    python troubleshooter.py                                          ║
+║    python troubleshooter.py --check-whisper                          ║
+║    python troubleshooter.py --check-browser                          ║
+║    python troubleshooter.py --device 2 --seconds 3                   ║
+║                                                                      ║
+║  📊 EXIT CODES:                                                      ║
+║    0 – All core checks passed (non‑fatal warnings may be printed)   ║
+║    1 – Hard failure (missing package, no microphone, record error)   ║
+║                                                                      ║
+║  💡 TIPS:                                                            ║
+║    • On macOS, grant microphone access in System Settings.           ║
+║    • If PortAudio errors appear, run: brew install portaudio         ║
+║    • For system audio (Teams), ensure BlackHole is installed.        ║
+║    • This tool works with both openai‑whisper and faster‑whisper.    ║
+╚══════════════════════════════════════════════════════════════════════╝
 """
 
 import sys
@@ -50,8 +80,18 @@ def check_imports(check_whisper: bool):
         try:
             import whisper  # noqa
             add_result(True, "Import whisper")
-        except Exception as e:
-            add_result(False, "Import whisper", str(e))
+        except ImportError:
+            try:
+                from faster_whisper import WhisperModel
+                add_result(True, "Import faster-whisper")
+                # Also test model load
+                try:
+                    model = WhisperModel("base", device="cpu", compute_type="int8")
+                    add_result(True, "faster-whisper model load", "base model loaded")
+                except Exception as e:
+                    add_result(False, "faster-whisper model load", str(e))
+            except Exception as e:
+                add_result(False, "Import whisper (or faster-whisper)", str(e))
 
 def list_input_devices():
     try:
@@ -144,28 +184,38 @@ def whisper_sanity(seconds: float = 0.5, rate: int = 16000, device=None):
     try:
         import numpy as np
         import sounddevice as sd
-        import whisper
-
-        print("\nWhisper sanity check (this may download a model the first time)…")
-        model = whisper.load_model("base")  # small enough for CPU
-        # Record a very short snippet
-        buf = sd.rec(int(seconds * rate), samplerate=rate, channels=1, device=device, dtype='float32')
-        sd.wait()
-
-        audio = buf.squeeze()
-        if audio.size == 0:
-            add_result(False, "Whisper sanity", "No audio recorded")
-            return False
-
-        # Normalize to avoid near-zero energies
-        peak = float(np.max(np.abs(audio)))
-        if peak > 0:
-            audio = audio / peak
-
-        result = model.transcribe(audio, fp16=False, language="en")
-        text = (result.get("text") or "").strip()
-        add_result(True, "Whisper transcribe() call", f'text="{text}"')
-        return True
+        # Try faster-whisper first, fallback to whisper
+        try:
+            from faster_whisper import WhisperModel
+            model = WhisperModel("base", device="cpu", compute_type="int8")
+            # Record a very short snippet
+            buf = sd.rec(int(seconds * rate), samplerate=rate, channels=1, device=device, dtype='float32')
+            sd.wait()
+            audio = buf.squeeze()
+            if audio.size == 0:
+                add_result(False, "Whisper sanity", "No audio recorded")
+                return False
+            segments, info = model.transcribe(audio, language="en")
+            text = " ".join(seg.text for seg in segments).strip()
+            add_result(True, "Whisper transcribe() call", f'text="{text}"')
+            return True
+        except ImportError:
+            import whisper
+            print("\nWhisper sanity check (this may download a model the first time)…")
+            model = whisper.load_model("base")  # small enough for CPU
+            buf = sd.rec(int(seconds * rate), samplerate=rate, channels=1, device=device, dtype='float32')
+            sd.wait()
+            audio = buf.squeeze()
+            if audio.size == 0:
+                add_result(False, "Whisper sanity", "No audio recorded")
+                return False
+            peak = float(np.max(np.abs(audio)))
+            if peak > 0:
+                audio = audio / peak
+            result = model.transcribe(audio, fp16=False, language="en")
+            text = (result.get("text") or "").strip()
+            add_result(True, "Whisper transcribe() call", f'text="{text}"')
+            return True
     except Exception as e:
         add_result(False, "Whisper transcribe() call", str(e))
         print("Tip: If this fails, verify torch/whisper versions match your CPU-only setup.")
@@ -188,20 +238,66 @@ def check_homebrew_and_portaudio():
     except Exception:
         add_result(False, "PortAudio (brew)", "Check manually: brew list --versions portaudio")
 
+def check_browser_audio_routing():
+    """Check if browser audio is reaching BlackHole (optional)"""
+    print("\n🔍 CHECKING BROWSER AUDIO ROUTING")
+    print("=" * 50)
+    try:
+        import sounddevice as sd
+        import numpy as np
+        devices = sd.query_devices()
+        blackhole_device = None
+        for i, dev in enumerate(devices):
+            if 'blackhole' in dev['name'].lower():
+                blackhole_device = i
+                break
+        if blackhole_device is None:
+            add_result(False, "BlackHole device", "Not found")
+            print("💡 Install BlackHole 2ch: brew install --cask blackhole")
+            return False
+        print(f"Found BlackHole: Device {blackhole_device}")
+        print("\n🎧 Testing BlackHole audio level...")
+        print("Please play YouTube video in a browser NOW")
+        print("Waiting 5 seconds for audio to start...")
+        time.sleep(5)
+        recording = sd.rec(3 * 16000, samplerate=16000, channels=1,
+                          device=blackhole_device, dtype='float32')
+        sd.wait()
+        max_level = float(np.max(np.abs(recording)))
+        print(f"📊 Max amplitude: {max_level:.6f}")
+        if max_level > 0.01:
+            add_result(True, "Browser audio routing", f"Good level ({max_level:.4f})")
+            return True
+        elif max_level > 0.001:
+            add_result(False, "Browser audio routing", f"Low level ({max_level:.4f})")
+            print("⚠️  Audio detected but very low – increase browser/YouTube volume.")
+            return False
+        else:
+            add_result(False, "Browser audio routing", "No audio detected")
+            print("❌ No audio detected from browser – check output device settings.")
+            return False
+    except Exception as e:
+        add_result(False, "Browser audio routing", str(e))
+        return False
+
 def main():
-    parser = argparse.ArgumentParser(description="Troubleshoot Whisperer audio & environment.")
+    parser = argparse.ArgumentParser(description="Whisperer Troubleshooter – Audio Diagnostic Tool")
     parser.add_argument("--seconds", type=float, default=5.0, help="Seconds to record for the mic test (default 5.0)")
     parser.add_argument("--rate", type=int, default=16000, help="Sample rate (default 16000)")
     parser.add_argument("--channels", type=int, default=1, help="Input channels (default 1)")
     parser.add_argument("--device", default="auto", help='Device id or name substring (default "auto")')
     parser.add_argument("--port", type=int, default=5000, help="Check if this port is free (default 5000)")
     parser.add_argument("--check-whisper", action="store_true", help="Also test whisper import and a quick transcribe()")
+    parser.add_argument("--check-browser", action="store_true", help="Check browser audio routing to BlackHole")
     args = parser.parse_args()
 
     print("\n=== Whisperer Troubleshooter ===\n")
     check_python()
     check_imports(args.check_whisper)
     check_homebrew_and_portaudio()
+
+    if args.check_browser:
+        check_browser_audio_routing()
 
     devices = list_input_devices()
     if not devices:
@@ -246,6 +342,7 @@ def main():
 
     if not port_free:
         print("\nResult: ⚠️  Mic path OK, but target port appears busy.")
+        print("        Run: ./kill-all-flasks.sh")
         sys.exit(0)
 
     if args.check_whisper and not ok_whisper:
@@ -253,6 +350,7 @@ def main():
         sys.exit(0)
 
     print("\nResult: ✅ All core checks passed.")
+    print("        Use Firefox for YouTube, Chrome may have audio sandboxing issues.")
 
 if __name__ == "__main__":
     # Small delay so terminal prints in order when run inside scripts

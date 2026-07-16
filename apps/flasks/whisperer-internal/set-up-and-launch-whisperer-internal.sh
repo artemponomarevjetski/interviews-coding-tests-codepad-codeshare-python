@@ -1,13 +1,39 @@
 #!/usr/bin/env bash
-set -euo pipefail
+#
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║                                                                      ║
+# ║     ██╗    ██╗██╗  ██╗██╗███████╗██████╗ ███████╗██████╗ ███████╗   ║
+# ║     ██║    ██║██║  ██║██║██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝   ║
+# ║     ██║ █╗ ██║███████║██║█████╗  ██████╔╝█████╗  ██████╔╝█████╗     ║
+# ║     ██║███╗██║██╔══██║██║██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══╝     ║
+# ║     ╚███╔███╔╝██║  ██║██║███████╗██║  ██║███████╗██║  ██║███████╗   ║
+# ║      ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ║
+# ║                                                                      ║
+# ║               🎤  WHISPERER‑INTERNAL  –  MICROPHONE                  ║
+# ║                                                                      ║
+# ║  • Uses faster‑whisper – no llvmlite/numba compilation headaches     ║
+# ║  • Listens to your built‑in microphone                              ║
+# ║  • Shows real‑time transcriptions on the web interface               ║
+# ║  • Kills all previous instances before starting                     ║
+# ║  • Runs in background, survives terminal closure                    ║
+# ║  • Includes a troubleshooter script for audio diagnostics           ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+#
+# =============================================================================
+#  LAUNCHER FOR WHISPERER‑INTERNAL (microphone transcription)
+#  Uses faster‑whisper to avoid llvmlite build errors.
+# =============================================================================
 
-# --- Configuration ---
+set -Eeuo pipefail
+
+# --- Configuration ------------------------------------------------------------
 PORT=5000
 VENV_DIR="venv"
 PID_FILE="whisperer.pid"
 LOG_RETENTION_DAYS=7
+APP_PY="whisperer-internal.py"
 
-# --- Log File Paths ---
+# --- Log File Paths -----------------------------------------------------------
 LOG_DIR="logs"
 SERVICE_LOG="$LOG_DIR/service.log"
 FLASK_LOG="$LOG_DIR/flask_app.log"
@@ -17,209 +43,200 @@ RECENT_TRANSCRIPT_LOG="$LOG_DIR/recent_transcriptions.log"
 mkdir -p "$LOG_DIR"
 touch "$SERVICE_LOG" "$FLASK_LOG" "$TRANSCRIPT_LOG" "$RECENT_TRANSCRIPT_LOG"
 
-# --- Functions ---
-purge_old_transcripts() {
-  if [ -s "$TRANSCRIPT_LOG" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Purging transcript logs older than $LOG_RETENTION_DAYS days" >> "$SERVICE_LOG"
-    temp_file=$(mktemp)
-    cutoff_date=$(date -v-"${LOG_RETENTION_DAYS}"d +%s)
+# --- Colour codes for better UX ----------------------------------------------
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Colour
 
-    while IFS= read -r line; do
-      if [[ "$line" =~ ^\[(.*)\].* ]]; then
-        log_date=$(date -j -f "%Y-%m-%d %H:%M:%S" "${BASH_REMATCH[1]}" +%s 2>/dev/null)
-        if [ -n "$log_date" ] && [ "$log_date" -gt "$cutoff_date" ]; then
-          echo "$line"
+# --- Functions ----------------------------------------------------------------
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG"
+}
+
+cleanup_previous_instances() {
+    log "${YELLOW}🧹 Cleaning up previous instances...${NC}"
+
+    # Kill by PID file
+    if [[ -f "$PID_FILE" ]]; then
+        OLD_PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        if [[ -n "$OLD_PID" ]] && ps -p "$OLD_PID" >/dev/null 2>&1; then
+            log "   Killing previous whisperer (PID $OLD_PID)"
+            kill -9 "$OLD_PID" 2>/dev/null || true
         fi
-      fi
-    done < "$TRANSCRIPT_LOG" > "$temp_file"
+        rm -f "$PID_FILE"
+    fi
 
-    mv "$temp_file" "$TRANSCRIPT_LOG"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Transcript log cleaned" >> "$SERVICE_LOG"
-  else
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] No existing transcript log entries to purge" >> "$SERVICE_LOG"
-  fi
+    # Kill any process using the port
+    log "   Checking port $PORT..."
+    PIDS=$(lsof -ti :"$PORT" 2>/dev/null || true)
+    if [[ -n "$PIDS" ]]; then
+        log "   Found processes on port $PORT: $PIDS"
+        for PID in $PIDS; do
+            if kill -0 "$PID" 2>/dev/null; then
+                kill -9 "$PID" 2>/dev/null || true
+            fi
+        done
+        sleep 1
+        # Verify port is free
+        if lsof -ti :"$PORT" >/dev/null 2>&1; then
+            log "${YELLOW}⚠️  Could not free port $PORT. Please kill manually.${NC}"
+            return 1
+        else
+            log "${GREEN}✅ Port $PORT is free.${NC}"
+        fi
+    else
+        log "${GREEN}✅ Port $PORT is already free.${NC}"
+    fi
+
+    # Kill any Python processes matching "whisperer" (previous instances)
+    pkill -f "python.*whisperer" 2>/dev/null || true
+    pkill -f "python.*$APP_PY" 2>/dev/null || true
+
+    log "${GREEN}✅ Cleanup complete.${NC}"
 }
 
-free_port() {
-  echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] Attempting to free port $PORT..." >> "$SERVICE_LOG"
-  local pids
-  pids=$(lsof -ti :$PORT || true)
-  if [ -n "${pids}" ]; then
-    echo "Found processes using port $PORT: $pids" >> "$SERVICE_LOG"
-    kill -9 $pids || true
-    sleep 1
-    if lsof -ti :$PORT >/dev/null 2>&1; then
-      echo "Failed to free port $PORT" >> "$SERVICE_LOG"
-      return 1
+purge_old_transcripts() {
+    if [[ -s "$TRANSCRIPT_LOG" ]]; then
+        log "Purging transcript logs older than $LOG_RETENTION_DAYS days..."
+        temp_file=$(mktemp)
+        cutoff_date=$(date -v-"${LOG_RETENTION_DAYS}"d +%s)
+
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^\[(.*)\].* ]]; then
+                log_date=$(date -j -f "%Y-%m-%d %H:%M:%S" "${BASH_REMATCH[1]}" +%s 2>/dev/null)
+                if [[ -n "$log_date" ]] && [[ "$log_date" -gt "$cutoff_date" ]]; then
+                    echo "$line"
+                fi
+            fi
+        done < "$TRANSCRIPT_LOG" > "$temp_file"
+
+        mv "$temp_file" "$TRANSCRIPT_LOG"
+        log "Transcript log cleaned."
     else
-      echo "Successfully freed port $PORT" >> "$SERVICE_LOG"
-      return 0
+        log "No existing transcript log entries to purge."
     fi
-  else
-    echo "No processes found using port $PORT" >> "$SERVICE_LOG"
-    return 0
-  fi
 }
 
-log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG" ; }
+# =============================================================================
+#  MAIN
+# =============================================================================
 
-# --- Main ---
-{
-  echo
-  log "Starting Whisper Service Launcher"
-  echo "=============================================="
+echo -e "${CYAN}"
+echo "╔══════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                      ║"
+echo "║     ██╗    ██╗██╗  ██╗██╗███████╗██████╗ ███████╗██████╗ ███████╗   ║"
+echo "║     ██║    ██║██║  ██║██║██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝   ║"
+echo "║     ██║ █╗ ██║███████║██║█████╗  ██████╔╝█████╗  ██████╔╝█████╗     ║"
+echo "║     ██║███╗██║██╔══██║██║██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══╝     ║"
+echo "║     ╚███╔███╔╝██║  ██║██║███████╗██║  ██║███████╗██║  ██║███████╗   ║"
+echo "║      ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ║"
+echo "║                                                                      ║"
+echo "║               🎤  WHISPERER‑INTERNAL  –  MICROPHONE                  ║"
+echo "║                                                                      ║"
+echo "║  • Uses faster‑whisper – no llvmlite/numba compilation headaches     ║"
+echo "║  • Listens to your built‑in microphone                              ║"
+echo "║  • Shows real‑time transcriptions on the web interface               ║"
+echo "║  • Kills all previous instances before starting                     ║"
+echo "║  • Runs in background, survives terminal closure                    ║"
+echo "║  • Includes a troubleshooter script for audio diagnostics           ║"
+echo "╚══════════════════════════════════════════════════════════════════════╝"
+echo -e "${NC}"
 
-  # Ensure Homebrew + deps
-  if ! command -v brew >/dev/null 2>&1; then
-    log "Homebrew not found. Install from https://brew.sh and rerun."
+log "Starting Whisperer‑INTERNAL Launcher"
+
+# -----------------------------------------------------------------------------
+# 1. Cleanup previous instances
+# -----------------------------------------------------------------------------
+cleanup_previous_instances || {
+    log "${RED}❌ Cleanup failed. Exiting.${NC}"
     exit 1
-  fi
-  brew list --versions python@3.11 >/dev/null 2>&1 || brew install python@3.11
-  brew list --versions portaudio   >/dev/null 2>&1 || brew install portaudio
+}
 
-  PY311="$(brew --prefix)/bin/python3.11"
-  if [ ! -x "$PY311" ]; then
-    log "python3.11 not found at $PY311"
+# -----------------------------------------------------------------------------
+# 2. Ensure Homebrew and required system packages
+# -----------------------------------------------------------------------------
+if ! command -v brew &> /dev/null; then
+    log "${RED}❌ Homebrew not found. Install from https://brew.sh and rerun.${NC}"
     exit 1
-  fi
+fi
 
-  # Port handling
-  echo
-  echo "Checking port $PORT..."
-  if lsof -i :$PORT >/dev/null 2>&1; then
-    echo "Port $PORT is in use - attempting to free it..."
-    if ! free_port; then
-      echo "Could not free port $PORT. Please close it manually."
-      exit 1
-    fi
-  fi
+brew list --versions python@3.11 >/dev/null 2>&1 || brew install python@3.11
+brew list --versions portaudio   >/dev/null 2>&1 || brew install portaudio
 
-  # Stop previous instance by PID if present
-  if [ -f "$PID_FILE" ]; then
-    if ps -p "$(cat "$PID_FILE")" >/dev/null 2>&1; then
-      echo "Stopping prior whisperer (PID $(cat "$PID_FILE"))..."
-      kill -9 "$(cat "$PID_FILE")" || true
-    fi
-    rm -f "$PID_FILE"
-  fi
+PY311="$(brew --prefix)/bin/python3.11"
+if [[ ! -x "$PY311" ]]; then
+    log "${RED}❌ python3.11 not found at $PY311${NC}"
+    exit 1
+fi
 
-  # Clean & recreate venv
-  echo
-  echo "Recreating virtual environment…"
-  rm -rf "$VENV_DIR"
-  "$PY311" -m venv "$VENV_DIR"
-  # shellcheck disable=SC1091
-  source "$VENV_DIR/bin/activate"
+# -----------------------------------------------------------------------------
+# 3. Virtual environment setup
+# -----------------------------------------------------------------------------
+log "Creating virtual environment…"
+rm -rf "$VENV_DIR"
+"$PY311" -m venv "$VENV_DIR"
+source "$VENV_DIR/bin/activate"
 
-  # Toolchain + pins
-  python -m pip install --upgrade pip setuptools wheel
+log "Upgrading pip and setuptools…"
+python -m pip install --upgrade pip setuptools wheel
 
-  # Requirements as requested
-  printf "Flask==2.3.2\nnumpy==1.26.4\nsounddevice==0.4.6\nopenai-whisper==20231117\n" > requirements.txt
+# -----------------------------------------------------------------------------
+# 4. Install dependencies (with faster‑whisper)
+# -----------------------------------------------------------------------------
+log "Installing core dependencies (Flask, numpy, sounddevice)…"
+pip install Flask==2.3.2 numpy==1.26.4 sounddevice==0.4.6
 
-  # Install Torch CPU first, then the rest
-  pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
-  
-  # CRITICAL FIX: Handle LLVM version conflicts for llvmlite
-  echo "Handling LLVM version for llvmlite compatibility..."
-  
-  # Check and uninstall LLVM 21 if it exists (this is the key fix)
-  if brew list --versions llvm >/dev/null 2>&1; then
-    LLVM_VERSION=$(brew info llvm | grep -o '^llvm: .*' | cut -d' ' -f2 | head -1)
-    if [[ "$LLVM_VERSION" == 21* ]]; then
-      echo "Found LLVM $LLVM_VERSION - uninstalling to avoid conflicts with llvmlite..."
-      brew uninstall llvm
-    fi
-  fi
-  
-  # Ensure LLVM 20 is installed
-  if ! brew list --versions llvm@20 >/dev/null 2>&1; then
-    echo "Installing LLVM 20 (required for llvmlite)..."
-    brew install llvm@20
-  fi
-  
-  # CRITICAL: Set environment variables BEFORE installing llvmlite
-  # This ensures CMake finds the right LLVM version
-  export LLVM_CONFIG="/usr/local/opt/llvm@20/bin/llvm-config"
-  export PATH="/usr/local/opt/llvm@20/bin:$PATH"
-  export LDFLAGS="-L/usr/local/opt/llvm@20/lib"
-  export CPPFLAGS="-I/usr/local/opt/llvm@20/include"
-  
-  # Clear any existing CMake cache variables that might point to wrong LLVM
-  unset CMAKE_PREFIX_PATH
-  unset LLVM_DIR
-  
-  # Install llvmlite with explicit LLVM_CONFIG (this was the key that worked)
-  echo "Installing llvmlite with LLVM 20..."
-  LLVM_CONFIG=/usr/local/opt/llvm@20/bin/llvm-config pip install llvmlite==0.46.0
-  
-  # Install numba (requires llvmlite)
-  echo "Installing numba..."
-  pip install numba==0.63.1
-  
-  # Now install Flask and audio dependencies
-  echo "Installing Flask and audio dependencies..."
-  pip install Flask==2.3.2 numpy==1.26.4 sounddevice==0.4.6
-  
-  # Install whisper without pulling in its dependencies (we already have them)
-  echo "Installing whisper..."
-  pip install --no-deps openai-whisper==20231117
-  
-  # Install whisper's additional dependencies
-  echo "Installing whisper dependencies..."
-  pip install tiktoken regex tqdm more-itertools
+log "Installing faster‑whisper (no llvmlite/numba needed)…"
+pip install faster-whisper
 
-  # Fallback option: if llvmlite installation fails, use faster-whisper
-  if ! python -c "import llvmlite" 2>/dev/null; then
-    echo "Warning: llvmlite installation may have failed, trying faster-whisper fallback..."
-    pip uninstall -y openai-whisper numba llvmlite 2>/dev/null || true
-    pip install faster-whisper
-    echo "Using faster-whisper instead of openai-whisper"
-  fi
-
-  # Comprehensive smoke test
-  echo "Running comprehensive smoke test..."
-  
-  # Test basic imports
-  if python -c "import flask, torch; print('✅ Flask and torch imports successful')"; then
-    # Test whisper import (original or faster-whisper)
-    if python -c "import whisper" 2>/dev/null; then
-      echo "✅ Original whisper import successful"
-      # Test actual model loading
-      if python -c "import whisper; model = whisper.load_model('base'); print('✅ Whisper model loaded successfully')"; then
-        echo "✅ Whisper setup complete"
-      else
-        echo "⚠️  Whisper model loading failed, but imports work"
-      fi
-    elif python -c "from faster_whisper import WhisperModel" 2>/dev/null; then
-      echo "✅ Faster-whisper import successful"
-      if python -c "from faster_whisper import WhisperModel; model = WhisperModel('base', device='cpu', compute_type='int8'); print('✅ Faster-whisper model loaded successfully')"; then
-        echo "✅ Faster-whisper setup complete"
-      else
-        echo "⚠️  Faster-whisper model loading failed, but imports work"
-      fi
+# -----------------------------------------------------------------------------
+# 5. Smoke test – verify imports
+# -----------------------------------------------------------------------------
+log "Running smoke test…"
+if python -c "import flask, numpy, sounddevice; print('✅ Core imports OK')"; then
+    if python -c "from faster_whisper import WhisperModel; print('✅ faster-whisper import OK')"; then
+        log "${GREEN}✅ All dependencies installed successfully.${NC}"
     else
-      echo "⚠️  Could not import any whisper package"
-      echo "⚠️  Transcription may not work, but web server will run"
+        log "${RED}❌ faster-whisper import failed.${NC}"
+        exit 1
     fi
-  else
-    echo "❌ Critical setup failed - Flask or torch not installed"
+else
+    log "${RED}❌ Core dependency import failed.${NC}"
     exit 1
-  fi
+fi
 
-  # Purge old transcripts
-  purge_old_transcripts
+# -----------------------------------------------------------------------------
+# 6. Purge old transcripts (log rotation)
+# -----------------------------------------------------------------------------
+purge_old_transcripts
 
-  # Launch app in the background (survives terminal close)
-  echo
-  echo "Starting Whisperer service on http://localhost:${PORT} …"
-  nohup bash -lc 'source venv/bin/activate; python -u whisperer-internal.py' \
-      >> "$FLASK_LOG" 2>&1 &
+# -----------------------------------------------------------------------------
+# 7. Launch the app in the background
+# -----------------------------------------------------------------------------
+log "Starting Whisperer service on http://localhost:${PORT} …"
+nohup bash -lc "source venv/bin/activate && python -u $APP_PY" \
+    >> "$FLASK_LOG" 2>&1 &
 
-  echo $! > "$PID_FILE"
-  echo "PID $(cat "$PID_FILE")"
-  echo "Logs: tail -f $FLASK_LOG"
-  echo
-  echo "✅ Setup complete! Open http://localhost:${PORT} in your browser"
-  echo "💡 Speak numbers like 'one two three' to test transcription"
-} 2>&1 | tee -a "$SERVICE_LOG"
+APP_PID=$!
+echo "$APP_PID" > "$PID_FILE"
+
+sleep 2
+if ps -p "$APP_PID" >/dev/null 2>&1; then
+    log "${GREEN}✅ Whisperer started (PID $APP_PID)${NC}"
+    echo -e "\n${GREEN}🎤✅ Setup complete! Open http://localhost:${PORT} in your browser${NC}"
+    echo -e "   Speak numbers like 'one two three' to test transcription."
+    echo -e "   📝 Logs: tail -f $FLASK_LOG"
+    echo -e "   🛑 Stop: pkill -f $APP_PY"
+    echo -e "   🔧 Troubleshoot: python troubleshooter.py"
+else
+    log "${RED}❌ Whisperer failed to start. Check $FLASK_LOG${NC}"
+    exit 1
+fi
+
+log "Launcher finished."
+exit 0

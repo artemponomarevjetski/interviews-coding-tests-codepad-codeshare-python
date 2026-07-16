@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+"""
+╔══════════════════════════════════════════════════════════════════════╗
+║  🎤  WHISPERER‑INTERNAL  –  Microphone Transcription                ║
+║                                                                      ║
+║  • Uses faster‑whisper (no llvmlite build issues)                   ║
+║  • Listens to your built‑in microphone                              ║
+║  • Shows real‑time transcriptions on web interface                  ║
+║  • Great for testing your own speech                                ║
+║                                                                      ║
+║  Usage:                                                              ║
+║    python whisperer-internal.py                                     ║
+║                                                                      ║
+║  Then open http://localhost:5000 in your browser.                    ║
+╚══════════════════════════════════════════════════════════════════════╝
+"""
+
 import os
 from datetime import datetime, timedelta
 from collections import deque
@@ -5,21 +22,30 @@ import logging
 from flask import Flask, render_template_string
 import sounddevice as sd
 import numpy as np
-import whisper
 
-# Initialize Flask app
+# faster‑whisper – no compilation headaches
+from faster_whisper import WhisperModel
+
+# ----------------------------------------------------------------------
+#  Configuration
+# ----------------------------------------------------------------------
+SAMPLING_RATE = 16000
+CHUNK_SIZE = 4096
+SILENCE_THRESHOLD = 0.02
+MIN_AUDIO_LENGTH = 1.0          # seconds
+MODEL_SIZE = "base"             # "tiny", "base", "small", "medium", "large"
+COMPUTE_TYPE = "int8"           # "int8", "float16", "float32"
+
+# ----------------------------------------------------------------------
+#  Load the model (CPU only)
+# ----------------------------------------------------------------------
+model = WhisperModel(MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
+
+# ----------------------------------------------------------------------
+#  Flask app setup
+# ----------------------------------------------------------------------
 app = Flask(__name__)
 
-# Audio configuration optimized for MacBook Pro
-sampling_rate = 16000
-chunk_size = 4096  # Larger buffer to prevent overflow
-silence_threshold = 0.02
-min_audio_length = 1.0  # Minimum seconds of audio to process
-
-# Load Whisper model
-model = whisper.load_model("base")
-
-# Configure logging
 os.makedirs("logs", exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
@@ -34,56 +60,60 @@ logging.basicConfig(
 transcriptions = deque(maxlen=20)
 
 def get_microphone():
-    """Find the built-in microphone"""
+    """Find the built‑in microphone (MacBook Pro) or fallback to first input."""
     devices = sd.query_devices()
     for i, dev in enumerate(devices):
         if 'MacBook Pro Microphone' in dev['name'] and dev['max_input_channels'] > 0:
             return i
+    # fallback: any non‑BlackHole input device
+    for i, dev in enumerate(devices):
+        if dev['max_input_channels'] > 0 and 'blackhole' not in dev['name'].lower():
+            return i
     return None
 
 def transcribe_audio():
+    """Capture microphone audio and transcribe with faster‑whisper."""
     try:
         device_id = get_microphone()
         if device_id is None:
-            raise RuntimeError("MacBook microphone not found!")
-            
+            raise RuntimeError("No microphone found! Check permissions.")
+
         logging.info(f"Using microphone: {sd.query_devices()[device_id]['name']}")
 
         with sd.InputStream(
-            samplerate=sampling_rate,
+            samplerate=SAMPLING_RATE,
             channels=1,
             dtype='float32',
             device=device_id,
-            blocksize=chunk_size,
+            blocksize=CHUNK_SIZE,
             latency='high'
         ) as stream:
-            logging.info("Audio stream active - speak naturally...")
-            
+            logging.info("Audio stream active – speak naturally...")
             audio_buffer = np.array([], dtype=np.float32)
             last_active = datetime.now()
-            
+
             while True:
-                audio_chunk, overflowed = stream.read(chunk_size)
+                audio_chunk, overflowed = stream.read(CHUNK_SIZE)
                 if overflowed:
                     logging.debug("Buffer overflow occurred")
-                
+
                 audio_chunk = audio_chunk.squeeze()
                 amplitude = np.max(np.abs(audio_chunk))
-                
-                # Buffer audio when speaking
-                if amplitude > silence_threshold:
+
+                if amplitude > SILENCE_THRESHOLD:
                     audio_buffer = np.concatenate((audio_buffer, audio_chunk))
                     last_active = datetime.now()
                 elif len(audio_buffer) > 0:
-                    # Process when silence detected after speech
                     silence_duration = (datetime.now() - last_active).total_seconds()
-                    if silence_duration > 0.5 and len(audio_buffer) > sampling_rate * min_audio_length:
+                    if silence_duration > 0.5 and len(audio_buffer) > SAMPLING_RATE * MIN_AUDIO_LENGTH:
                         try:
-                            # Normalize volume
+                            # Normalise volume
                             audio_buffer = audio_buffer * (1.0 / np.max(np.abs(audio_buffer)))
-                            result = model.transcribe(audio_buffer, fp16=False, language='en')
-                            text = result["text"].strip().lower()
-                            
+
+                            # Transcribe with faster‑whisper
+                            segments, _ = model.transcribe(audio_buffer, language="en")
+                            text = " ".join(seg.text for seg in segments).strip().lower()
+
                             if text:
                                 entry = {
                                     'time': datetime.now(),
@@ -96,20 +126,20 @@ def transcribe_audio():
                             logging.error(f"Transcription error: {str(e)}")
                         finally:
                             audio_buffer = np.array([], dtype=np.float32)
-                
+
     except Exception as e:
         logging.error(f"Fatal audio error: {str(e)}", exc_info=True)
         raise
 
 @app.route('/')
 def index():
+    """Show live transcriptions from the last minute."""
     one_minute_ago = datetime.now() - timedelta(minutes=1)
-    recent_transcriptions = [
+    recent = [
         f"{entry['time'].strftime('%H:%M:%S')} - {entry['text']}"
         for entry in transcriptions
         if entry['time'] > one_minute_ago
     ]
-    
     return render_template_string("""
     <!DOCTYPE html>
     <html>
@@ -118,8 +148,8 @@ def index():
         <meta http-equiv="refresh" content="2">
         <style>
             body { font-family: -apple-system, sans-serif; padding: 20px; }
-            #transcriptions div { 
-                padding: 10px; 
+            #transcriptions div {
+                padding: 10px;
                 border-bottom: 1px solid #e1e1e1;
                 font-size: 1.2em;
             }
@@ -137,16 +167,16 @@ def index():
         </div>
     </body>
     </html>
-    """, recent_transcriptions=recent_transcriptions or [])
+    """, recent_transcriptions=recent or [])
 
 if __name__ == '__main__':
     from threading import Thread
-    
+
     print("\n=== NUMBER TRANSCRIPTION TEST ===")
     print("Please speak clearly: 'one two three four five'")
     print("We should see these exact numbers appear below\n")
-    
+
     audio_thread = Thread(target=transcribe_audio, daemon=True)
     audio_thread.start()
-    
+
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
