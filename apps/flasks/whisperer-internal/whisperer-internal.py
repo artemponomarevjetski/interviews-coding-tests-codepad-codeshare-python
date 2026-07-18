@@ -31,10 +31,10 @@ from faster_whisper import WhisperModel
 # ----------------------------------------------------------------------
 SAMPLING_RATE = 16000
 CHUNK_SIZE = 4096
-SILENCE_THRESHOLD = 0.02
-MIN_AUDIO_LENGTH = 1.0          # seconds
-MODEL_SIZE = "base"             # "tiny", "base", "small", "medium", "large"
-COMPUTE_TYPE = "int8"           # "int8", "float16", "float32"
+SILENCE_THRESHOLD = 0.025          # slightly higher to ignore background hum
+MIN_AUDIO_LENGTH = 0.8             # shorter – catches brief numbers
+MODEL_SIZE = "small.en"            # UPGRADED: "small.en" is much more accurate than "base"
+COMPUTE_TYPE = "int8"              # keep for CPU; use "float16" if you have a GPU
 
 # ----------------------------------------------------------------------
 #  Load the model (CPU only)
@@ -107,11 +107,20 @@ def transcribe_audio():
                     silence_duration = (datetime.now() - last_active).total_seconds()
                     if silence_duration > 0.5 and len(audio_buffer) > SAMPLING_RATE * MIN_AUDIO_LENGTH:
                         try:
-                            # Normalise volume
-                            audio_buffer = audio_buffer * (1.0 / np.max(np.abs(audio_buffer)))
+                            # Normalise volume to avoid clipping or low volume
+                            max_amp = np.max(np.abs(audio_buffer))
+                            if max_amp > 0:
+                                audio_buffer = audio_buffer / max_amp
 
-                            # Transcribe with faster‑whisper
-                            segments, _ = model.transcribe(audio_buffer, language="en")
+                            # Transcribe with improved parameters
+                            segments, _ = model.transcribe(
+                                audio_buffer,
+                                language="en",                     # force English
+                                vad_filter=True,                   # ignore silence
+                                beam_size=5,                       # better decoding
+                                temperature=0.0,                   # deterministic output
+                                condition_on_previous_text=False   # avoid repetition errors
+                            )
                             text = " ".join(seg.text for seg in segments).strip().lower()
 
                             if text:
