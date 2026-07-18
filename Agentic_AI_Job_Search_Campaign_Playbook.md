@@ -1,14 +1,15 @@
 # Agentic AI Job-Search Campaign Playbook
 
-**Version:** 2.5 FINAL — consolidated operating policy and current campaign state
-**Last updated:** 2026-07-16
-**Primary operational email:** `artemponomarevjetski@gmail.com`
-**Secondary intake email:** `art.ponomarev.ai@gmail.com`
-**Primary identity:** **Agentic AI Engineer | AI Systems Engineer**
-**Core positioning:** **Production AI agents — Python systems that reason, use tools, evaluate, and scale.**
-**Primary target:** Remote or high-paying AI/ML engineering roles
-**Secondary target:** Credible opportunities that can create referrals, consulting income, strategic
-relationships, or high-value network effects
+**Version:** 3.2 FINAL — durable operating policy, single canonical resume, confidential reference registry, email-migration controls, archive controls, communication standards, and contract-agency homework<br>
+**Last updated:** 2026-07-17<br>
+**Primary operational email (Gmail1):** `artemponomarevjetski@gmail.com`<br>
+**Secondary intake and approved resume contact email (Gmail2):** `art.ponomarev.ai@gmail.com`<br>
+**Primary identity:** **Agentic AI Engineer | AI Systems Engineer**<br>
+**Core positioning:** **Production AI agents — Python systems that reason, use tools, evaluate, and scale.**<br>
+**Primary target:** Remote or high-paying AI/ML engineering roles<br>
+**Secondary target:** Credible opportunities that can create referrals, consulting income, strategic relationships, or high-value network effects
+
+> **CONFIDENTIAL INTERNAL CAMPAIGN RECORD.** Appendix F contains third-party professional and personal contact information. Do not distribute the master list, the source reference PDF, any individual reference name, or any contact detail without Art’s explicit approval for the specific recipient, opportunity, approved subset, and delivery channel. The registry is user-maintained and must be re-verified before every release.
 
 ## 0. Non-Negotiable Operating Rules
 
@@ -30,18 +31,18 @@ relationships, or high-value network effects
 16. LinkedIn messages, attachments, portal submissions, calendar bookings, and phone calls are manual unless a connected tool explicitly supports the action and the result is verified.
 17. Periodic campaign review means reviewing all sources during an active mission session. It does **not** imply autonomous background monitoring.
 18. Every substantial Gmail review must cover both Gmail accounts, the parent `Jobs` label, **all current and future `Jobs/...` sublabels**, and relevant Sent mail.
-19. Do not send references before an interview or confirmed client interest unless there is a compelling and verified reason.
+19. **Reference-approval rule:** never distribute the master reference list, reference PDF, an individual reference name, or any reference contact detail without Art’s explicit approval for that specific recipient and opportunity. Approval is not reusable across employers, recruiters, requisitions, or channels.
 20. Never use unsupported experience claims. Translate adjacent experience honestly instead of overstating direct expertise.
 21. For a highest-value strategic contact, send one consolidated, decision-useful message and then wait. Online status, profile activity, or anxiety is not a follow-up trigger.
-22. Follow the priority order in the current dated snapshot. Do not let lower-priority outreach delay a scheduled interview, client call, or high-value introduction.
+22. Follow the priority order in the current mission report. Do not let lower-priority outreach delay a scheduled interview, client call, or high-value introduction.
 23. When a recruiter or talent agent is arranging an introduction, do not apply directly to the same company or requisition until representation and submission status are clear.
 24. If an account, portal, label, attachment, or source cannot be accessed, state that limitation explicitly. Never describe a partial review as a complete audit.
 25. **Do not disclose graduation years, enrollment years, degree dates, or other education dates** in resumes, recruiter emails, LinkedIn messages, ordinary application materials, or optional portal fields. List only the degree, field, and institution. If a verified employer background-check or onboarding portal makes dates mandatory, flag the requirement and provide the dates only through that secure process.
-26. **Select one experience frame based on the role and application tone.** For broad Staff, Principal, Lead, infrastructure, architecture, scientific, or leadership roles, use the 20+ years overall technical/industry-experience frame. For narrowly AI-first or Agentic-AI roles, foreground five years of recent hands-on AI/ML systems work, including Agentic AI, LLM workflows, MLOps, and production deployment, and do not lead with earlier career history. Never use a framing that overstates direct experience.
+26. **Experience-framing rule:** the approved canonical resume uses the 20+ years overall technical-experience frame. For narrowly AI-first or Agentic-AI outreach, foreground the five years of recent hands-on AI/ML systems work in the email, portal summary, and interview introduction without creating a competing master resume unless Art explicitly authorizes a tailored variant. Never overstate direct experience.
 27. **Employment-structure wording:** use “I can work on W-2 or 1099. I do not do C2C contracts.” Qualify rate, client, duration, payment terms, insurance requirements, and all-inclusive status before confirming a 1099 submission.
 28. **Primary-email rule:** use `artemponomarevjetski@gmail.com` for new applications, recruiter replies, scheduling, and new portal accounts. Treat `art.ponomarev.ai@gmail.com` and LinkedIn as intake channels unless an existing application is already bound to them.
 29. **Conversation-migration rule:** move a substantive LinkedIn or Gmail2 conversation to Gmail1 with one explicit transition message. Never create parallel threads or contact the same recruiter independently from both accounts.
-30. **Stale-mail rule:** periodically list stale recruiting threads by age and recommended disposition. Do not delete, auto-archive, or remove messages solely because they are stale; organizational changes require explicit authorization.
+30. **Stale-mail and archive rule:** move eligible stale, dormant, rejected, superseded, or closed recruiting conversations as complete chains to `Jobs/Archive`. Remove obsolete active-state labels and the Inbox label, but preserve the messages in Gmail/All Mail. Never move campaign mail to Trash or delete it outright. Do not archive an unresolved, deadline-sensitive, interview, portal-action, reference-approval, or active submission thread merely because it is old.
 31. **Anti-spam rule:** use the existing thread, personalize the opening, avoid repeated same-day outreach, and send no more than two unanswered ordinary follow-ups before moving a lead to dormant status.
 32. **Manual-action rule:** portal registration, CAPTCHA, MFA, paywall checkout, LinkedIn attachments, calendar booking, and final portal submission remain manual unless a connected tool explicitly supports and verifies them.
 33. **Paid-service rule:** never pay an employer, recruiter, or staffing agency for placement. Evaluate optional paid job banks through free-tier testing, renewal controls, and measurable application value.
@@ -49,10 +50,19 @@ relationships, or high-value network effects
 35. **Audit-disclosure rule:** every substantial campaign report must state which mailboxes, labels, portals, LinkedIn conversations, and other sources were actually accessible.
 36. **Single-file rule:** this document is the sole operating playbook. Future changes should be integrated here rather than maintained as a separate addendum.
 37. **Formal ATS identity rule:** use **Artem Ponomarev** in employer portals, background-check systems, and formal application records. Use **Art Ponomarev** in ordinary recruiter communication and public professional branding when preferred.
-38. **Microsoft-experience consistency rule:** keep the two Microsoft contracts separate. Use **AI/MLOps Engineer (Contract), 2025–Present** for Synapse Analytics, Microsoft Fabric, metadata-driven pipelines, Databricks/Starburst governance, Python/PySpark, Kusto, and platform observability. Use **Azure ML/DevOps Engineer (Contract), 2021–2022** for Azure DevOps agents, ONNX packaging, Microsoft Surface/edge deployment, CPU/GPU/NPU validation, reusable YAML, testing, and rollback-safe releases.
+38. **Microsoft-experience consistency rule:** keep the two Microsoft contracts separate. Use **Agentic AI/ML Platform Engineer (Contract), 2025–Present** for Microsoft Agency Copilot workflows, Azure Synapse Analytics, Microsoft Fabric, metadata-driven pipelines, federated governance and access orchestration across Databricks and Starburst with Collibra and Immuta, Python/PySpark, Kusto, platform observability, and LLM prompt/evaluation work. Use **Azure ML/DevOps Engineer (Contract), 2021–2022** for Azure DevOps agents, ONNX packaging, Microsoft Surface/edge deployment, CPU/GPU/NPU validation, reusable YAML, testing, and rollback-safe releases.
 39. **Infrastructure-depth calibration rule:** present **Terraform as the strongest infrastructure-as-code area** and Kubernetes as hands-on experience supporting containerized or Kubernetes-backed workloads, unless a specific project supports a deeper Kubernetes claim.
 40. **Verified-portal-completion rule:** after a portal submission, save the confirmation page or confirmation email, record the exact resume/version used, and notify the recruiter once. Do not send repeated same-day confirmation messages.
-41. **Submission-chain hold rule:** when agency or vendor ownership is unclear, do not submit, resubmit, withdraw, or cancel until the legal submitting entity, end client, requisition ID, submission date/time, single-active-submission state, and authorized point of contact are confirmed in writing.
+41. **Submission-chain hold rule:** when agency or vendor ownership is unclear, pause all submit, resubmit, withdraw, and cancel actions. Keep the full verification checklist in the internal campaign record, but ask the recruiter only the next necessary question in a brief, natural message. Use a formal multi-item request only when a material dispute genuinely requires a written record.
+42. **Recruiter-message brevity rule:** keep ordinary recruiter emails natural, cordial, and brief—normally two to five sentences and under 120 words. Ask no more than one or two decision-relevant questions. Avoid legalistic phrasing, numbered demands, exhaustive checklists, repeated confirmations, and unnecessary disclaimers.
+43. **Finicky-or-spam rule:** when a recruiter, vendor, portal, or message appears spammy, evasive, manipulative, unstable, or needlessly finicky, flag it for the user and stop trying to repair the process. Do not send repeated explanations, debate obvious spam, or provide sensitive information without explicit user approval.
+44. **Existing-profile interview rule:** a repeated interview reminder tied to an existing vendor profile is not a new application. Do not create a second profile or use an alternate email to manufacture a new record. When the portal confirms the same existing candidate record, complete the required interview through that record and handle the preferred-email change separately through support. Stop if the portal asks for a new account, alternate identity, duplicate application, payment, or sensitive onboarding documents.
+45. **Promotional-mail rule:** job-bank promotions, resume-review teasers, and paid apply-for-you offers are marketing, not application activity. Use the mailbox provider’s unsubscribe control, then move the complete conversation to `Jobs/Archive`; do not delete it outright. Mark it as spam only when the signup was unauthorized, authentication fails, the destination is unrelated, or messages continue after unsubscribe. Do not migrate promotional mail to Gmail1.
+46. **Migration-closure rule:** after a substantive Gmail2 or LinkedIn thread is continued from Gmail1, do not send parallel same-day messages from both channels. Keep the source history as evidence, wait for the recipient to reply to Gmail1, and close the migration status only after the primary address is acknowledged or used.
+47. **Minimum-necessary reference rule:** after Art approves a release, share only the selected two or three references and only the fields the verified recipient actually needs. Do not send home addresses, multiple personal phone numbers, or the full background-check reference document unless the verified process requires them and Art separately approves that disclosure. Confirm each selected reference’s current consent and contact information before release.
+48. **Deceased-reference rule:** Prof. R. K. (Ray) Sachs is deceased. Retain his name only as historical career context; never list him as a current reference, attempt to contact him, or distribute any former contact details.
+49. **Canonical-resume rule:** Appendix D contains the only approved master resume. Retire or remove competing master-resume blocks. The approved resume contact email remains `art.ponomarev.ai@gmail.com` as supplied by Art; Gmail1 remains the operational address for applications, recruiter correspondence, and scheduling.
+50. **Durable-record rule:** this file stores durable policy, templates, the canonical resume, and the confidential reference registry. Do not append historical recruiter communications, dated thread inventories, or volatile campaign status. Produce dated mission reports separately for Art’s review.
 
 
 ---
@@ -117,7 +127,11 @@ Avoid making **Data Scientist** the lead identity for ordinary roles.
 - More than 20 years of technical experience across research, software, DevOps, cloud, data, and AI systems
 - Experience across Microsoft, TetraMem, Lucid Motors, 3Cloud, NASA-related research, and other technical organizations
 - Recent production exposure to agentic AI, LLM workflows, evaluation, CI/CD, observability, and reliable deployment
-- Strong transferability across Azure, AWS, GCP, Kubernetes, MLflow, Spark, Databricks, SQL, and accelerator platforms
+- Metadata-driven Azure data-platform work across Synapse Analytics and Microsoft Fabric
+- Federated data governance and access-orchestration experience spanning Databricks, Starburst, Collibra, and Immuta
+- Prompt engineering and prompt-response factuality, grounding, consistency, and tool-use testing across Claude, GPT, Gemini, and Perplexity
+- Terraform-first infrastructure-as-code experience, with Ansible, Chef, Docker, and hands-on Kubernetes workload support
+- Strong transferability across Terraform, Azure, AWS, GCP, Docker, hands-on Kubernetes workloads, MLflow, Spark, Databricks, SQL, and accelerator platforms
 - Flexible, truthful career narrative: either 20+ years of broad technical/industry depth or five years of recent AI/ML systems work, selected according to role seniority and application tone
 
 ### 2.2 Execution risks
@@ -155,6 +169,9 @@ Prioritize roles containing at least two of the following:
 - RAG
 - Function calling / tool calling
 - Prompt and retrieval patterns
+- Prompt-response factuality, grounding, and consistency testing across Claude, GPT, Gemini, and Perplexity
+- Azure Synapse Analytics / Microsoft Fabric / metadata-driven pipelines
+- Federated data governance and access orchestration with Collibra, Starburst, and Immuta
 - Memory
 - Guardrails
 - Model and system evaluation
@@ -168,7 +185,7 @@ Prioritize roles containing at least two of the following:
 - LangChain / LangGraph / LlamaIndex / Semantic Kernel-style orchestration
 - MCP or tool-protocol integration
 - MLflow / model registry / metric-gated promotion
-- Kubernetes / Docker / Terraform
+- Terraform / Docker / Kubernetes
 - Azure / AWS / GCP
 - Databricks / Spark / SQL / Kusto
 - Observability / drift / release health / rollback
@@ -315,60 +332,51 @@ For senior or lead AI engineering roles, my target is $220K–$280K base, depend
 
 ### 7.1 Canonical resume
 
-```text
-art_ponomarev_resume.pdf
-```
+The sole approved master resume is in **Appendix D**.
 
-### 7.2 Tailored Agentic AI resume
-
-Use the tailored Agentic AI / AI Systems version when the role emphasizes:
-
-- Claude or other LLM families
-- AI coding agents
-- Tool calling
-- RAG
-- Agent evaluation
-- Guardrails
-- Python implementation, debugging, refactoring, or test generation
-- Agentic workflows inside project responsibilities
-
-### 7.3 Adaptive experience-positioning selector
-
-Choose the experience frame before writing the resume, email, LinkedIn reply, or portal summary.
-
-**Default for narrowly AI-first, Agentic-AI, GenAI, startup, or hands-on implementation roles:**
+Recommended generated filename:
 
 ```text
-5 Years of Recent AI/ML Systems Experience | Agentic AI, LLM Workflows, MLOps & Production Deployment
+Art_Ponomarev_Agentic_AI_Systems_Resume.pdf
 ```
 
-Preferred supporting sentence:
+Retire earlier generic, AI-first, broad-senior, or duplicate master-resume blocks. A role-specific PDF may be generated from Appendix D only when tailoring materially improves fit and the resulting content remains truthful and internally consistent.
 
-```text
-I have five years of recent hands-on experience building and operationalizing AI/ML systems, including Agentic AI, LLM workflows, evaluation, MLOps, cloud infrastructure, and reliable production deployment.
-```
+### 7.2 Role-specific tailoring
 
-Use this frame when earlier research, physics, or general engineering history would distract from the immediate AI fit. Do not foreground the total career length in the opening paragraph.
+Tailor emphasis from the Appendix D master rather than substituting another base resume. Prioritize the most relevant evidence when a role emphasizes:
 
-**Use for Staff, Principal, Lead, architecture, infrastructure, platform, scientific-computing, or leadership roles where breadth is an advantage:**
+- AI agents, LLM workflows, RAG, tool calling, memory, or guardrails
+- Agent and model evaluation, shadow testing, observability, or release controls
+- Python services, APIs, backend automation, debugging, or evaluation harnesses
+- Azure Synapse Analytics, Microsoft Fabric, Databricks, Starburst, Collibra, or Immuta
+- MLOps, Terraform, Docker, Kubernetes-backed workloads, MLflow, CI/CD, or SRE
+- CPU/GPU/NPU inference, distributed training, ONNX, or hardware-aware AI
+- Scientific computing, Monte Carlo methods, reliability, or uncertainty analysis
+
+Do not add unsupported frameworks, titles, dates, metrics, or scope.
+
+### 7.3 Experience framing without competing masters
+
+The Appendix D resume uses:
 
 ```text
 20+ Years Overall Technical Experience | Recent Focus: Agentic AI, MLOps, Cloud, LLM Workflows & Production AI Systems
 ```
 
-Preferred supporting sentence:
+For narrowly AI-first or Agentic-AI opportunities, use this outreach framing while keeping the same approved resume unless Art authorizes a tailored derivative:
+
+```text
+I have five years of recent hands-on experience building and operationalizing AI/ML systems, including Agentic AI, LLM workflows, evaluation, MLOps, cloud infrastructure, and reliable production deployment.
+```
+
+For Staff, Principal, Lead, architecture, infrastructure, platform, scientific-computing, or leadership roles, use:
 
 ```text
 I bring 20+ years of technical and industry experience across production software, cloud infrastructure, DevOps, scientific computing, data systems, and AI/ML, with a recent focus on Agentic AI and reliable production AI systems.
 ```
 
-Selection rules:
-
-- Use the five-year recent-AI frame by default for ordinary Agentic-AI and GenAI applications.
-- Use the 20+ years frame when seniority, architecture ownership, leadership, platform breadth, or a full-career chronology is materially relevant.
-- Do not place both duration claims in the same headline or opening paragraph unless a recruiter specifically asks to reconcile recent AI experience with total experience.
-- Preserve the distinction between direct Agentic-AI experience and adjacent AI/ML, MLOps, cloud, or software-systems experience.
-- Never inflate years in a narrowly defined technology or framework.
+Never combine the two duration claims into a cluttered opening, and never inflate tenure in a narrowly defined framework or technology.
 
 ### 7.4 Education-date and age-protection rule
 
@@ -378,8 +386,7 @@ Use:
 
 ```text
 PhD, Applied Physics — Columbia University
-MS, Applied Physics — Columbia University
-Engineer-Physicist, Applied Mathematics and Physics — Moscow Institute of Physics and Technology
+MS, BS, Engineering Physics — Moscow Institute of Physics and Technology; Theoretical Physics Group of V. Ginzburg (Nobel 2003)
 ```
 
 Do not include:
@@ -424,47 +431,59 @@ Art Ponomarev, PhD
 
 ### 7.7 Canonical Microsoft contract split
 
-Use the following public recruiting titles and evidence boundaries unless verified payroll records require different wording:
+Use the following public recruiting titles and evidence boundaries unless a verified formal process requires an exact payroll title.
 
-**Microsoft — AI/MLOps Engineer (Contract), 2025–Present**
+**Microsoft — Agentic AI/ML Platform Engineer (Contract), 2025–Present**
 
+- Microsoft Agency Copilot workflows with function/tool calling, memory, guardrails, and LLM-quality evaluation
 - Azure Synapse Analytics and Microsoft Fabric
-- Metadata-driven ingestion, transformation, KPI/reporting, scheduling, and backfills
-- JSON control-table framework and source-to-target mappings
-- Python, PySpark, SQL, KQL/Kusto, ADLS, Spark notebooks, and Power BI
-- Databricks/Starburst governed access orchestration, Python wheels, Databricks Asset Bundles, metadata/classification policies, and access-state validation
-- CI/CD, data-quality checks, reconciliation, parity testing, production troubleshooting, observability, and runbooks
+- Metadata-driven ingestion, transformation, KPI/reporting, scheduling, dependency handling, and backfill pipelines
+- JSON control-table frameworks, source-to-target mappings, Python, PySpark, SQL, KQL/Kusto, ADLS, Spark notebooks, and Power BI
+- Federated data governance and access orchestration across Databricks and Starburst, with Collibra and Immuta
+- Databricks Asset Bundles, Python wheels, metadata/classification policies, access-state validation, reconciliation, and parity testing
+- Prompt engineering and testing for factuality, grounding, consistency, retrieval quality, and tool-use behavior across Claude, GPT, Gemini, and Perplexity
+- CI/CD, data-quality gates, production troubleshooting, observability, and runbooks
 
 **Microsoft — Azure ML/DevOps Engineer (Contract), 2021–2022**
 
-- Azure DevOps CI/CD pipelines and build agents
+- Azure DevOps CI/CD pipelines, agents, and reusable YAML
 - PyTorch/TensorFlow model packaging into ONNX and quantization-ready artifacts
 - Microsoft Surface and other edge-device targets
 - CPU/GPU/NPU validation and hardware-aware release workflows
-- Reusable YAML, automated unit/integration/performance tests, release gates, observability, and rollback-safe deployment
+- Automated unit, integration, and performance tests; release gates; observability; and rollback-safe deployment
 
-Do not move Synapse/Fabric/Databricks/Starburst work into the 2021–2022 entry. Do not move ONNX/Surface/edge-device work into the 2025–Present entry unless the underlying project evidence supports it.
+Do not move Synapse/Fabric/Databricks/Starburst/Collibra/Immuta or LLM prompt-evaluation work into the 2021–2022 entry. Do not move ONNX/Surface/edge-device work into the 2025–Present entry unless project evidence supports it.
 
-### 7.8 Infrastructure skill calibration
+### 7.8 Infrastructure and language skill calibration
 
 Preferred wording for infrastructure-heavy roles:
 
 ```text
-My strongest infrastructure-as-code experience is with Terraform. I also have hands-on experience supporting Kubernetes-based workloads, containerized ML/data-platform services, CI/CD, observability, and operational troubleshooting.
+My strongest infrastructure-as-code experience is with Terraform. I also have hands-on experience with Ansible, Chef, Docker, and Kubernetes-backed workloads, including CI/CD, observability, and operational troubleshooting.
 ```
 
-Order the stack accordingly when accuracy permits:
+Order the infrastructure stack accordingly when accurate:
 
 ```text
-Terraform, Azure, AWS, GCP, Docker, Kubernetes, GitLab, Azure DevOps, GitOps, Databricks Asset Bundles
+Terraform, Ansible, Chef, Azure, AWS, GCP, Docker, Kubernetes, GitLab, Azure DevOps, GitOps, Databricks Asset Bundles
 ```
+
+Programming-language breadth may include:
+
+```text
+Python, SQL, Bash, Ruby, Scala
+```
+
+Do not imply equal depth across every tool. Lead with the technologies most relevant to the role and be prepared to describe direct project use.
 
 ### 7.9 ATS identity and application consistency
 
 - Formal portal name: **Artem Ponomarev**
 - Preferred professional name in correspondence: **Art Ponomarev**
-- Primary operational email: `artemponomarevjetski@gmail.com`
-- Location for Bay Area applications: `Milpitas, CA, US` or the portal's validated equivalent
+- Primary operational email for new applications and correspondence: `artemponomarevjetski@gmail.com`
+- Approved canonical-resume contact email: `art.ponomarev.ai@gmail.com`
+- Treat the resume email as a deliberate approved exception; do not silently alter it. Do not create a duplicate application merely to reconcile the two addresses.
+- Location for Bay Area applications: `Milpitas, CA, US` or the portal’s validated equivalent
 - Work authorization: `Work authorization: U.S. citizen; no sponsorship required.`
 - Keep portal titles, dates, attached resume, and LinkedIn chronology materially consistent.
 - Optional education dates remain blank unless a verified process requires them.
@@ -487,8 +506,9 @@ Never send during an ordinary application:
 - Pay stubs
 - Full date of birth
 - Graduation years, enrollment years, or degree-award dates during ordinary recruiting
+- Diplomas, transcripts, or education-verification documents during ordinary recruiting
 - Visa or work-authorization copy
-- Reference list before an appropriate stage
+- Any reference list, reference document, reference name, or reference contact detail without Art’s explicit approval for that specific release
 - Onboarding paperwork before a verified offer or contract process
 
 Safe during normal recruiting:
@@ -508,6 +528,34 @@ Provide sensitive documents only through a verified employer onboarding portal a
 
 If sensitive material was previously sent, label the thread for review and do not send it again.
 
+### 8.1 Professional-reference release protocol
+
+A recruiter, employer, client, staffing firm, or background-check vendor requesting references does **not** create automatic permission to share them.
+
+Before any release:
+
+1. Verify the requester, organization, role, requisition, and stage of the process.
+2. Ask Art for explicit approval and identify the proposed reference subset, fields, recipient, and delivery channel.
+3. Prefer two or three role-relevant references rather than the complete registry.
+4. Confirm the selected references still consent and that their title, organization, email, and phone number remain current.
+5. Prefer a verified employer or background-check portal. Use ordinary email only when the recipient and request are verified.
+6. Never attach the master background-check reference PDF by default.
+7. Omit home addresses and secondary personal numbers unless a verified process requires them and Art explicitly approves them.
+8. Record the date, recipient, company, role or requisition, references released, fields shared, channel, and Art’s approval.
+9. Treat every new requester, employer, requisition, or delivery channel as a new approval event.
+
+Approval request format:
+
+```text
+Reference request received from: [name, title, company]
+Opportunity: [role and requisition]
+Proposed references: [names]
+Proposed fields: [name/title/company/email/phone]
+Delivery channel: [verified email or secure portal]
+
+Approve this specific release? [Yes / No / Revise]
+```
+
 ---
 
 ## 9. Standard Candidate Facts
@@ -518,7 +566,7 @@ If sensitive material was previously sent, label the thread for review and do no
 Work authorization: U.S. citizen; no sponsorship required.
 ```
 
-### 9.2 Availability
+### 9.2 Availability (use the approved wording)
 
 ```text
 I am available now.
@@ -543,8 +591,7 @@ I am based in the Bay Area and would consider relocation to New York City for th
 
 ```text
 PhD, Applied Physics — Columbia University
-MS, Applied Physics — Columbia University
-Engineer-Physicist, Applied Mathematics and Physics — Moscow Institute of Physics and Technology
+MS, BS, Engineering Physics — Moscow Institute of Physics and Technology; Theoretical Physics Group of V. Ginzburg (Nobel 2003)
 ```
 
 Do not add education dates unless a verified secure background-check or onboarding form makes them mandatory.
@@ -563,49 +610,63 @@ Broad senior version:
 I bring 20+ years of technical and industry experience across production software, cloud infrastructure, DevOps, scientific computing, data systems, and AI/ML, with a recent focus on Agentic AI and reliable production AI systems.
 ```
 
-### 9.6 Preferred signature
+### 9.6 Preferred signatures
+
+Default for ordinary recruiter replies:
+
+```text
+Best,
+Art
+```
+
+Use contact details only when they are needed or the thread is new:
 
 ```text
 Art Ponomarev, PhD
-Agentic AI Engineer | AI Systems Engineer
 650.863.2555
 artemponomarevjetski@gmail.com
-linkedin.com/in/art-ponomarev-ai
-github.com/artemponomarevjetski
 ```
+
+Add the title, LinkedIn, or GitHub only when they materially help the recipient. Do not let the signature become longer than the message.
 
 ---
 
-## 10. Standard Application Reply Structure
+## 10. Recruiter and Application Message Style
 
-Use this order:
+### 10.1 Default brevity and tone
 
-1. Thank the recruiter.
-2. Confirm interest.
-3. Connect the role to the current positioning.
-4. State work authorization.
-5. State location / remote / commute status.
-6. State availability.
-7. Give compensation only when asked or strategically useful.
-8. Mention the attached resume or provide a concise summary.
-9. Request the client, employment structure, compensation, interview process, or submission confirmation when missing.
-10. End with phone and email.
+Ordinary recruiter communication should be brief, natural, and easy to answer.
 
-### 10.1 Standard identity paragraph
+- Default to **two to five sentences** and **under 120 words**.
+- Ask **one primary question**; add a second only when it is necessary for the next decision.
+- Answer only the facts the recruiter requested. Do not repeat the full resume, work-authorization statement, rate, location, and employment structure in every message.
+- Keep detailed verification checklists in the campaign record rather than pasting them into routine email.
+- Avoid legalistic wording, numbered demands, threats, disclaimers, and repeated confirmations unless a serious dispute requires a formal record.
+- Use a longer response only when the recruiter asks detailed screening questions or the user explicitly requests a formal message.
+
+Default order:
+
+1. Thank the recruiter or acknowledge the update.
+2. State interest or the single relevant fit point.
+3. Answer the requested fact.
+4. Ask one next-step or qualification question.
+5. Sign simply.
+
+### 10.2 Standard identity sentence
 
 ```text
-My current positioning is Agentic AI Engineer / AI Systems Engineer. I build Python-based AI systems, LLM workflows, AI-agent pipelines, function/tool-calling systems, RAG workflows, evaluation harnesses, guardrails, CI/CD-backed release controls, observability, and rollback-safe production AI/ML infrastructure.
+My current focus is Agentic AI and AI systems engineering: Python-based agents, LLM workflows, tool calling, RAG, evaluation, guardrails, CI/CD, observability, and reliable production deployment.
 ```
 
-### 10.2 Short LinkedIn identity
+### 10.3 Short LinkedIn identity
 
 ```text
-My current focus is production AI agents and AI systems engineering: Python, LLM workflows, tool/function calling, RAG, evaluation, guardrails, CI/CD, and reliable deployment.
+I build production AI agents and Python AI systems, with recent work in LLM workflows, tool calling, RAG, evaluation, MLOps, and reliable deployment.
 ```
 
-### 10.3 Short inline resume summary — AI-first version
+### 10.4 Short inline resume summary — AI-first version
 
-Use this by default for narrowly Agentic-AI, GenAI, applied-AI, or hands-on engineering roles.
+Use this only when an attachment is unavailable or the recruiter specifically asks for a short summary.
 
 ```text
 Art Ponomarev, PhD
@@ -613,12 +674,12 @@ Bay Area | 650.863.2555 | artemponomarevjetski@gmail.com
 linkedin.com/in/art-ponomarev-ai | github.com/artemponomarevjetski
 
 Agentic AI Engineer | AI Systems Engineer
-Five years of recent hands-on AI/ML systems experience, including production AI agents, LLM workflows, MLOps, Python systems, CI/CD, evaluation, guardrails, observability, and rollback-safe deployment.
+Five years of recent hands-on AI/ML systems experience, including production AI agents, LLM workflows, prompt and factuality evaluation, MLOps, Python systems, CI/CD, observability, and rollback-safe deployment.
 
-Core fit: Python, agent orchestration, RAG, function/tool calling, MLflow, Kubernetes, Azure/AWS/GCP, Databricks/Spark/SQL/Kusto, CPU/GPU/NPU inference, and production AI reliability.
+Core fit: Python, agent orchestration, RAG, tool calling, MLflow, Terraform, Azure/AWS/GCP, Synapse/Fabric, Databricks/Starburst, Collibra/Immuta, Docker/Kubernetes-backed workloads, and CPU/GPU/NPU inference.
 ```
 
-### 10.4 Short inline resume summary — broad senior version
+### 10.5 Short inline resume summary — broad senior version
 
 Use this for Staff, Principal, Lead, architecture, infrastructure, scientific-computing, or leadership roles where total breadth is an asset.
 
@@ -628,9 +689,9 @@ Bay Area | 650.863.2555 | artemponomarevjetski@gmail.com
 linkedin.com/in/art-ponomarev-ai | github.com/artemponomarevjetski
 
 Agentic AI Engineer | AI Systems Engineer
-20+ years of technical and industry experience across production software, cloud infrastructure, DevOps, scientific computing, data systems, and AI/ML; recent focus on production AI agents, LLM workflows, MLOps, CI/CD, evaluation, guardrails, observability, and rollback-safe deployment.
+20+ years of technical experience across production software, cloud infrastructure, DevOps, data platforms, scientific computing, and AI/ML; recent focus on production AI agents, LLM evaluation, metadata-driven pipelines, MLOps, and reliable deployment.
 
-Core fit: Python, agent orchestration, RAG, function/tool calling, MLflow, Kubernetes, Azure/AWS/GCP, Databricks/Spark/SQL/Kusto, CPU/GPU/NPU inference, and production AI reliability.
+Core fit: Python, AI-agent orchestration, prompt/factuality testing, Terraform, Azure/AWS/GCP, Synapse/Fabric, Databricks/Starburst, Collibra/Immuta, CI/CD, observability, and CPU/GPU/NPU systems.
 ```
 
 ---
@@ -676,18 +737,20 @@ If only one mailbox is connected or searchable:
 
 ### 11.3 Jobs-label hierarchy
 
-Every substantial review must independently inspect:
+Every substantial review must discover and inspect the parent `Jobs` label and every current or future label whose name starts with `Jobs/`.
+
+At minimum, inspect these durable workflow labels when they exist:
 
 ```text
 Jobs
-Jobs/Remote Priority
-Jobs/Call Priority
-Jobs/USTech
-Jobs/SEAQR
+Jobs/Archive
+Jobs/Awaiting Response
+Jobs/Submitted
+Jobs/Portal Action Required
+Jobs/References Approval Required
 Jobs/Sensitive Docs Review
+Jobs/Primary Email Migration
 ```
-
-Also discover and include every future label whose name starts with `Jobs/`.
 
 Gmail nesting does not guarantee that a child-labeled message also has the parent `Jobs` label. Query the parent and each child independently.
 
@@ -733,6 +796,21 @@ A message is not “sent” until:
 - A supported sending tool returns confirmed delivery state
 
 A draft is a draft. A failed payload is not an email. A bounced message is not a delivered application.
+
+### 11.8 Authorized archive workflow
+
+The user has authorized organizational archiving of stale and closed campaign mail.
+
+For an eligible conversation:
+
+1. Apply `Jobs/Archive` to the **entire thread**, including sent messages and delivery notices that belong to the chain.
+2. Remove obsolete active-state labels such as `Jobs/Awaiting Response`, `Jobs/Call Priority`, `Jobs/Follow-up Queue`, or `Jobs/Remote Priority` when they no longer describe the thread.
+3. Remove the Gmail Inbox label so the chain leaves the Inbox but remains available in All Mail and under `Jobs/Archive`.
+4. Preserve safety or history labels such as `Jobs/Sensitive Docs Review` when they remain relevant.
+5. Never move campaign messages to Trash and never delete them outright.
+6. Do not archive a live interview, active submission, unresolved portal action, pending reference-approval request, open deadline, or recent decision-critical recruiter thread.
+
+If `Jobs/Archive` does not exist, create that exact label before moving any eligible conversation.
 
 ---
 
@@ -853,15 +931,16 @@ After submission, record:
 
 ### 13.4 Duplicate-submission control
 
-Before submitting through another recruiter or agency, check:
+Before submitting through another recruiter or agency, check internally:
 
 - Same end client
 - Same requisition ID
 - Same implementation partner
 - Same agency
 - Prior right-to-represent or rate confirmation
+- Current active-submission status and named point of contact
 
-Avoid parallel submissions that create ownership conflicts.
+Avoid parallel submissions that create ownership conflicts. Keep the detailed checklist in the campaign record. In recruiter email, ask only the next necessary question—for example, whether one active submission exists or who the main contact is. Do not send a multi-item legalistic demand unless a material dispute has escalated.
 
 ### 13.5 ATS field and resume consistency
 
@@ -905,19 +984,22 @@ After a portal reports success:
 ```text
 Hi [Name],
 
-Following up on the [Role] opportunity. I remain interested and available to discuss next steps.
-
-My strongest fit is [two or three role-specific skills]. Please let me know if the client is still moving forward or if you need anything else from me.
+Checking in on the [Role]. I am still interested and available. Is the process moving forward?
 
 Best,
-Art Ponomarev, PhD
-650.863.2555
+Art
 ```
 
 ### 14.3 Submission confirmation request
 
 ```text
-Please confirm once my profile has been submitted to the client and share the requisition ID or next interview step when available.
+Thanks. Please confirm that my profile is active through [Agency] and send the requisition ID when available.
+```
+
+For a duplicate-submission concern, use:
+
+```text
+Thanks for confirming that I have one active submission through [Agency]. Are you my main point of contact for this role?
 ```
 
 ### 14.4 Bounce recovery
@@ -925,12 +1007,12 @@ Please confirm once my profile has been submitted to the client and share the re
 When an address bounces:
 
 1. Do not count the message as delivered.
-2. Search for the recruiter’s valid company address, relay address, colleague, account manager, or agency proxy.
-3. Reuse the same application content and attachment.
-4. Explain briefly that the original address failed.
-5. Verify the replacement message in Sent and monitor for another bounce.
+2. Make one recovery attempt only when a verified company or agency address is available.
+3. Keep the note brief: state that the earlier address failed and resend the same attachment once.
+4. If the replacement address is unclear, the domain looks suspicious, or the second attempt also fails, report the issue and stop. Do not blast multiple employees or try to rehabilitate a finicky process.
 
 ---
+
 
 ## 15. Calls, Scheduling, and Deadlines
 
@@ -1005,6 +1087,7 @@ For every interview prepare:
 - Memory
 - Guardrails
 - Evaluation
+- Prompt engineering and factuality, grounding, consistency, retrieval-quality, and tool-use testing across Claude, GPT, Gemini, and Perplexity
 - CI/CD-backed release controls
 - Observability
 - Rollback and incident response
@@ -1015,7 +1098,10 @@ For every interview prepare:
 - Model registry
 - Metric-gated promotion
 - Drift monitoring
-- Kubernetes
+- Terraform-first infrastructure-as-code (in connection to gitlab, immuta, collibra, starburst, aws s3, aws secrets manager)
+- Docker and hands-on Kubernetes-backed workloads
+- Azure Synapse Analytics / Microsoft Fabric metadata-driven pipelines
+- Databricks / Starburst / Collibra / Immuta governance workflows
 - Release-health dashboards
 - Rollback playbooks
 - Azure ML / AWS / GCP
@@ -1107,6 +1193,7 @@ Lead with:
 - Memory
 - Guardrails
 - Evaluation
+- Prompt engineering and factuality, grounding, consistency, retrieval-quality, and tool-use testing
 - CI/CD-backed release controls
 - Production reliability
 
@@ -1134,7 +1221,10 @@ Lead with:
 - CI/CD
 - Drift monitoring
 - Observability
-- Kubernetes
+- Terraform-first infrastructure-as-code
+- Docker and hands-on Kubernetes-backed workloads
+- Synapse/Fabric metadata-driven pipelines
+- Federated governance with Databricks, Starburst, Collibra, and Immuta
 - Release-health dashboards
 - Rollback playbooks
 - Multi-cloud model serving
@@ -1323,21 +1413,21 @@ Do not drift into generic Data Scientist positioning unless the role is senior, 
 3. Review recent Sent mail, bounces, attachment status, duplicate submissions, and right-to-represent conflicts.
 4. Review LinkedIn messages manually from current text, screenshots, or exports.
 5. Move substantive LinkedIn and Gmail2 conversations to Gmail1 using the controlled transition procedure in Section 25.
-6. List stale threads by age; do not delete or auto-archive them.
+6. Evaluate stale, dormant, rejected, superseded, and closed conversations under Section 26; move eligible complete chains to `Jobs/Archive`, never Trash or deletion.
 7. Rank new leads by technical fit, compensation, work arrangement, seniority, employer quality, process quality, and strategic value.
 8. Reply the same day to high-fit interview, screening, scheduling, and document requests.
 9. Attach the actual role-appropriate PDF whenever a resume or CV is requested.
 10. Complete manual portal confirmations, calendar bookings, MFA, and application submissions in priority order.
-11. Record exact requisition IDs, client chains, employment structure, rates, resume versions, and confirmation states.
+11. Record exact requisition IDs, client chains, employment structure, rates, resume versions, and confirmation states in the current mission report.
 12. Prevent duplicate agency representation and parallel applications to the same requisition.
 13. Observe the seven-day cooldown unless a recruiter specifies a sooner trigger.
 14. Apply anti-spam controls before any follow-up or multi-contact outreach.
 15. Include GitHub evidence only when role-relevant and profile-safe.
 16. Review paid job-bank value, renewal dates, and cancellation obligations when applicable.
 17. Prepare role-specific interview stories, coding practice, architecture examples, and questions.
-18. Update the dated campaign snapshot and the next valid trigger for each live opportunity.
+18. Produce a dated mission report with each live opportunity’s next valid trigger; do not append that volatile status to this playbook.
 19. State inaccessible sources and unverified manual actions explicitly.
-20. Keep durable policy separate from volatile status, but maintain both in this single document.
+20. Update this file only when a durable policy, template, canonical asset, or approved reference-registry entry changes.
 
 ---
 
@@ -1354,6 +1444,9 @@ SCHEDULE
 QUALIFY FIRST
 HIGH-VALUE INTRODUCTION REQUEST
 PRIMARY EMAIL MIGRATION
+MIGRATED — AWAITING PRIMARY-EMAIL REPLY
+AUTOMATED REMINDER — EXISTING PROFILE ONLY
+PROMOTIONAL / UNSUBSCRIBE
 MANUAL PORTAL ACTION
 PAYWALL / SUBSCRIPTION REVIEW
 GITHUB EVIDENCE REVIEW
@@ -1365,8 +1458,11 @@ WAIT — SUBMITTED TO CLIENT
 RELATIONSHIP ONLY
 STALE REVIEW
 DORMANT
-ARCHIVE CANDIDATE — DO NOT DELETE
+ARCHIVE ELIGIBLE
+ARCHIVED — JOBS/ARCHIVE
 SENSITIVE DOCS — DO NOT SEND
+REFERENCES REQUESTED — APPROVAL REQUIRED
+REFERENCES APPROVED — LIMITED RELEASE
 DECLINE / SKIP
 LOW VALUE / BACKUP
 CLOSED / NOT MOVING
@@ -1376,6 +1472,8 @@ DO NOT CONTACT
 ---
 
 ## 24. Standard Mission Report
+
+Use this as a separate dated report. Do not append completed reports to this playbook.
 
 ```text
 ## Audit Scope
@@ -1403,10 +1501,13 @@ DO NOT CONTACT
 ## Primary-Email Migration
 - [Contact / role] — [LinkedIn or Gmail2] — [Transition state]
 
-## Stale Threads — No Deletion Performed
+## Stale Review
 - [Contact / company / role] — [Last substantive date] — [Age]
-  Status: FOLLOW UP / FINAL FOLLOW UP / DORMANT / ARCHIVE CANDIDATE / CLOSED
+  Status: FOLLOW UP / FINAL FOLLOW UP / DORMANT / ARCHIVE ELIGIBLE / CLOSED
   Next valid trigger:
+
+## Archived Under Jobs/Archive — No Deletion
+- [Contact / company / role] — [Reason] — [Active labels removed / safety labels retained]
 
 ## Spam / Duplicate / Deliverability Risks
 - [Thread / company] — [Risk] — [Control]
@@ -1416,9 +1517,6 @@ DO NOT CONTACT
 
 ## Waiting — Inside Cooldown
 - [Contact / company] — [Reason] — [Earliest next date]
-
-## Dormant / Archive Candidates
-- [Contact / company] — [Reason; retained, not deleted]
 
 ## Closed / Do Not Contact
 - [Contact / company] — [Reason]
@@ -1448,10 +1546,10 @@ DO NOT CONTACT
 ### 25.1 Single source of truth
 
 1. Use `artemponomarevjetski@gmail.com` as the operational address for new applications, recruiter replies, scheduling, and new portal registrations.
-2. Treat `art.ponomarev.ai@gmail.com` and LinkedIn as intake channels. Move a conversation only when it becomes substantive: a live job description, resume request, screening question, call, interview, or recruiter submission.
-3. Do not contact the same recruiter from both Gmail accounts unless the message explicitly explains the transition.
-4. Update future resumes, signatures, LinkedIn contact fields, and portal profiles to Gmail1. Preserve Gmail2 only where an existing application is already bound to it.
-5. An actual Gmail or LinkedIn thread cannot be transplanted. Preserve continuity through a concise context summary and the same company, role, subject, and requisition ID.
+2. Treat `art.ponomarev.ai@gmail.com` and LinkedIn as intake channels. The canonical resume intentionally retains `art.ponomarev.ai@gmail.com` as its approved contact email.
+3. Move a conversation only when it becomes substantive: a live job description, resume request, screening question, call, interview, or recruiter submission.
+4. Do not contact the same recruiter from both Gmail accounts unless the message explicitly explains the transition.
+5. Preserve any existing portal or application identity already bound to Gmail2; do not manufacture a duplicate record merely to migrate communication.
 6. Keep the original Gmail2 or LinkedIn history as evidence. Do not delete it.
 
 ### 25.2 LinkedIn to Gmail1 — manual procedure
@@ -1479,9 +1577,6 @@ Thank you for connecting with me on LinkedIn regarding the [Role] opportunity at
 Work authorization: U.S. citizen; no sponsorship required.
 I am available now.
 
-LinkedIn: https://www.linkedin.com/in/art-ponomarev-ai/
-GitHub: https://github.com/artemponomarevjetski
-
 Best,
 Art Ponomarev, PhD
 650.863.2555
@@ -1489,8 +1584,8 @@ Art Ponomarev, PhD
 
 ### 25.3 Gmail2 to Gmail1 — manual procedure
 
-1. Reply from Gmail2 and CC Gmail1.
-2. State that Gmail1 is the primary address going forward.
+1. Reply from Gmail2 and copy Gmail1.
+2. State that Gmail1 is the primary operational address going forward.
 3. Continue the next substantive reply from Gmail1 using the same role, company, subject, and requisition ID.
 4. Do not resend an acknowledged resume unless requested or materially tailored.
 5. Retain the Gmail2 copy.
@@ -1513,44 +1608,55 @@ Art
 5. Keep Gmail2 copies and disable automatic deletion.
 6. Test with one non-sensitive message.
 
+### 25.5 Migration closure and existing-profile exceptions
+
+1. A migration changes the communication channel; it does not automatically change an employer or vendor portal identity.
+2. When a platform interview is already bound to Gmail2, use the existing profile rather than creating a new Gmail1 profile. Request the contact-email change separately.
+3. After sending the Gmail1 transition, wait for the recruiter or support team to use Gmail1. Do not send a second same-day transition from Gmail2.
+4. Keep `PRIMARY EMAIL MIGRATION` or `MIGRATED — AWAITING PRIMARY-EMAIL REPLY` until the recipient acknowledges or replies to Gmail1.
+5. If the recipient insists on a second application, alternate identity, or duplicate record, apply `DUPLICATE RISK` and stop until ownership is clarified.
+
 ---
 
-## 26. Stale-Thread Review — List, Never Auto-Delete
+## 26. Stale-Thread Review and Authorized `Jobs/Archive` Workflow
 
-A stale review is a decision queue, not a deletion queue. Measure age from the last substantive inbound or outbound contact.
+Measure age from the last substantive inbound or outbound contact. Age is a signal, not the only criterion.
 
-| Age | Default treatment |
+| Age / state | Default treatment |
 |---|---|
-| 0–6 days | Active. Do not follow up unless a deadline or recruiter request requires action. |
+| 0–6 days | Active. Do not follow up unless a deadline or recruiter request requires action. Do not archive. |
 | 7–13 days | Follow-up eligible. Send one concise status request when the opportunity remains credible. |
-| 14–29 days | Send a final ordinary follow-up or move the thread to dormant status. Do not repeat the same message. |
-| 30–89 days | Dormant. List it; revive only for a confirmed requisition, strong relationship, or high strategic value. |
-| 90+ days | Archive candidate. Retain for history; reopen only for a new role, refreshed requisition, or explicit activity. |
-| Rejected / closed | No routine follow-up. Retain and label; do not delete. |
+| 14–29 days | Send the final ordinary follow-up when warranted. Archive the complete chain when it is clearly closed, superseded, duplicate, low-value, or no longer actionable. |
+| 30–89 days | Archive under `Jobs/Archive` unless there is a documented live trigger, strategic relationship, or unresolved action. |
+| 90+ days | Archive under `Jobs/Archive`; reopen only for a new role, refreshed requisition, or explicit activity. |
+| Rejected / closed / superseded / duplicate | Archive the complete chain after preserving any required safety or evidence label. |
+
+Do **not** archive a thread that has any of these active conditions:
+
+- Scheduled interview, recruiter call, or preparation session
+- Open deadline, requested document, or pending portal action
+- Active client submission or recruiter response inside the current cooldown
+- Unresolved submission ownership, rate, reference approval, or sensitive-document remediation
+- High-value strategic introduction with a valid next trigger
+
+Archive procedure:
+
+1. Apply `Jobs/Archive` to the entire conversation chain.
+2. Remove obsolete active-state labels.
+3. Remove the Inbox label.
+4. Preserve `Jobs/Sensitive Docs Review` or another safety/evidence label when still relevant.
+5. Confirm the thread remains available in Gmail/All Mail and under `Jobs/Archive`.
+6. Never move it to Trash and never delete it outright.
 
 Required report format:
 
 ```text
-## Stale Threads — No Deletion Performed
-- [Contact / company / role] — [last substantive date] — [age]
-  Status: FOLLOW UP / FINAL FOLLOW UP / DORMANT / ARCHIVE CANDIDATE / CLOSED
-  Reason:
-  Next valid trigger:
+## Archived Under Jobs/Archive — No Deletion
+- [Contact / company / role] — [last substantive date] — [reason]
+  Active labels removed:
+  Safety/history labels retained:
+  Reopen trigger:
 ```
-
-Suggested labels:
-
-```text
-Jobs/Stale Review
-Jobs/Dormant
-Jobs/Archive Candidate
-Jobs/Do Not Contact
-Jobs/Primary Email Migration
-Jobs/Manual Portal
-Jobs/Spam Risk Review
-```
-
-Do not delete, auto-archive, or remove labels solely because a thread is old. Archive, Trash, or deletion requires explicit user authorization and verification.
 
 ---
 
@@ -1577,15 +1683,15 @@ Avoid:
 ### 27.2 Conservative outreach discipline
 
 1. Use the existing thread for the same role.
-2. Name the role, company, and requisition ID.
-3. Personalize the first two sentences.
-4. Keep ordinary recruiter replies concise.
-5. Attach one resume PDF only when requested or when formally applying.
-6. Include LinkedIn and GitHub as links, not extra attachments.
-7. Send the first routine follow-up after approximately seven calendar days.
-8. Send no more than two unanswered ordinary follow-ups before moving the opportunity to dormant.
-9. For a top strategic contact, send one consolidated, decision-useful message and wait.
-10. After a bounce, make one recovery attempt through a verified address; do not blast alternatives.
+2. Personalize the opening and keep the message to two to five sentences when possible.
+3. Ask one primary question rather than sending a checklist.
+4. Attach one resume PDF only when requested or when formally applying.
+5. Include LinkedIn and GitHub as links, not extra attachments.
+6. Send the first routine follow-up after approximately seven calendar days.
+7. Send no more than two unanswered ordinary follow-ups before moving the opportunity to dormant.
+8. For a top strategic contact, send one consolidated, decision-useful message and wait.
+9. After a bounce, make one recovery attempt through a verified address; do not blast alternatives.
+10. If the process becomes evasive, spammy, or needlessly finicky, report it and stop trying to sort it out.
 
 ### 27.3 Inbound fraud or low-quality warning signs
 
@@ -1593,13 +1699,16 @@ Escalate for review when several signals appear:
 
 - No named client, employer, requisition, location, rate, or meaningful job description.
 - Sender domain does not match the claimed organization and cannot be verified.
-- Early request for passport, SSN, driver’s license, banking, tax forms, date of birth, or payment.
+- Early request for passport, SSN, driver’s license, banking, tax forms, date of birth, payment, or account credentials.
 - Request to purchase equipment, gift cards, training, placement, or a background check.
 - Interview only through text/chat with no verifiable identity.
 - Pressure to sign a right-to-represent without client, rate, requisition, and employment structure.
 - C2C-only terms.
 - Implausible compensation without a credible explanation.
 - Generic language unrelated to the candidate profile.
+- Repeated evasiveness, contradictory instructions, unnecessary urgency, or a process that requires disproportionate effort to obtain basic facts.
+
+When the risk is clear, label or report the thread and stop. Do not argue with obvious spam, coach the sender, chase multiple alternate contacts, or disclose sensitive information. Further outreach requires explicit user direction.
 
 ---
 
@@ -1614,6 +1723,7 @@ Escalate for review when several signals appear:
 5. Use Gmail1 unless an existing application is already tied to Gmail2.
 6. Use a password manager, a unique password, and MFA where available.
 7. Never pay a recruiter or staffing agency for placement.
+8. If the portal is suspicious, contradictory, or needlessly finicky, report the issue and stop rather than attempting repeated workarounds.
 
 ### 28.2 Direct-employer or ATS signup
 
@@ -1677,6 +1787,64 @@ Duplicate-submission risk:
 Next manual action:
 ```
 
+### 28.6 Career-counselor homework — contract-agency registration
+
+**Source:** Lisa Stotlar, CareerGenerations, email dated 2026-07-07.
+
+**Objective:** Create or verify a candidate profile with each contract-staffing or supplier channel below, then document whether it supports direct candidate registration, requires an invitation, or is not appropriate for direct signup. Registration is a sourcing task, not an application or submission authorization.
+
+#### Assigned channels
+
+- [ ] Adecco Staffing
+- [ ] TEKsystems
+- [ ] Insight Global
+- [ ] Artech Information Systems
+- [ ] Tundra Technical Solutions
+- [ ] Allegis Global Solutions
+- [ ] TalentNet
+- [ ] Beeline
+- [ ] PRO Unlimited
+- [ ] Rose International
+
+#### Execution rules
+
+1. Use only the verified official domain or a verified invitation from an established recruiter or employer.
+2. Search for an existing account before creating a new one. Do not create duplicate profiles or parallel records under Gmail1 and Gmail2.
+3. Use Gmail1 for a new account unless an existing legitimate profile is already bound to Gmail2.
+4. Use **Artem Ponomarev** for formal portal records and the approved canonical resume from Appendix D. Upload an actual PDF when the portal requests a resume.
+5. Do not count profile registration as an application. Record a role as applied only after a specific requisition is submitted and confirmation is saved.
+6. Do not authorize a staffing submission without the named client or a justified confidentiality explanation, requisition ID, employment structure, rate, work arrangement, duration, and duplicate-submission check.
+7. Some channels may be supplier-management or invitation-only systems rather than public candidate portals. When no legitimate candidate signup exists, record **INVITE-ONLY** or **NO CANDIDATE SIGNUP** instead of forcing account creation.
+8. Do not provide passport, driver’s license, SSN, date of birth, tax forms, banking data, background-check documents, or references during ordinary registration.
+9. Use a unique password and MFA where available. Do not store passwords, recovery codes, or security answers in this playbook.
+10. Stop and flag any paywall, placement fee, suspicious domain, contradictory process, duplicate-submission risk, or request for premature sensitive information.
+
+#### Completion register
+
+| Channel | Official domain verified | Existing account checked | Disposition | Account email | Resume/version used | Evidence saved | Next action |
+|---|---|---|---|---|---|---|---|
+| Adecco Staffing |  |  |  |  |  |  |  |
+| TEKsystems |  |  |  |  |  |  |  |
+| Insight Global |  |  |  |  |  |  |  |
+| Artech Information Systems |  |  |  |  |  |  |  |
+| Tundra Technical Solutions |  |  |  |  |  |  |  |
+| Allegis Global Solutions |  |  |  |  |  |  |  |
+| TalentNet |  |  |  |  |  |  |  |
+| Beeline |  |  |  |  |  |  |  |
+| PRO Unlimited |  |  |  |  |  |  |  |
+| Rose International |  |  |  |  |  |  |  |
+
+Use one of these dispositions for each row:
+
+- **REGISTERED / VERIFIED**
+- **EXISTING ACCOUNT UPDATED**
+- **INVITE-ONLY**
+- **NO CANDIDATE SIGNUP**
+- **BLOCKED — MANUAL REVIEW NEEDED**
+- **SKIP — DOCUMENTED REASON**
+
+The homework is complete when every channel has a verified disposition and supporting evidence. Do not submit to a generic or undisclosed role merely to complete the checklist.
+
 ---
 
 ## 29. GitHub Evidence and Public-Profile Hygiene
@@ -1705,37 +1873,28 @@ Limit ordinary outreach to one or two role-relevant repositories.
 
 ### 29.3 Hygiene gate before broad distribution
 
-1. Ensure `.env`, keys, credentials, tokens, private data, recordings, and proprietary code are not committed.
-2. If a secret was ever committed, remove it from history and rotate it; deleting the current file is insufficient.
-3. Review projects named `keylogger`, voice cloning, overlays, or interview-assistance tools. Explain legitimate defensive/research use or make them private when they may be misunderstood.
-4. Do not publish Microsoft, TetraMem, Lucid, NASA, client, recruiter, or interview-confidential material.
-5. Pin three to five repositories that support the target identity.
-6. Give pinned repositories clear READMEs, architecture summaries, setup instructions, tests, licenses, demos, and honest maturity labels.
-7. Remove unsupported “production-ready” claims when tests, deployment instructions, security review, or maintained dependencies are absent.
-8. Lead the profile README with Agentic AI, Python systems, MLOps, evaluation, and infrastructure.
-
-### 29.4 Recommended pinned evidence categories
-
-- Agent/tool orchestration or MCP integration.
-- Evaluation harness with tests and metrics.
-- Python API or backend service.
-- MLOps/CI/CD or Kubernetes example.
-- Data pipeline or observability example.
+1. Ensure `.env` files, keys, credentials, tokens, private data, recordings, and proprietary code are not committed.
+2. If a secret was ever committed, remove it from repository history and rotate it; deleting only the current file is insufficient.
+3. Do not create new repositories or commit changes to existing repositories as part of this job-search campaign unless Art explicitly authorizes the exact repository and change.
+4. Do not publish confidential or proprietary material from Microsoft, TetraMem, Lucid Motors, NASA, collaborators, clients, recruiters, interviews, or any other protected source.
+5. Do not upload passports, driver’s licenses, transcripts, diplomas, reference files, employment records, or other private campaign documents to GitHub.
+6. Pin three to five repositories that support the target identity and are safe for recruiter review.
+7. Remove unsupported “production-ready” claims from repository README files when CI, deployment instructions, security review, or maintained dependencies do not substantiate the claim.
 
 ---
 
 ## 30. Automation and Verification Boundary
 
-### 30.1 Supported when a connected tool permits and verifies the action
+### 30.1 Supported when a connected ChatGPT tool permits and verifies the action
 
 - Search and read Gmail1.
 - Read complete Gmail threads.
 - List labels and drafts.
 - Verify Sent state and attachment metadata.
 - Identify stale threads and prepare decision lists.
-- Apply labels, archive, or move mail only when an available tool supports it and the user explicitly authorizes it.
+- Apply labels, archive, or move mail only when an available tool supports it. Sections 11.8 and 26 provide standing authorization for eligible stale, dormant, rejected, superseded, or closed campaign chains; all other mailbox changes require explicit authorization.
 
-### 30.2 Manual unless a connected tool explicitly supports and verifies it
+### 30.2 Manual unless a connected ChatGPT tool explicitly supports and verifies it
 
 - LinkedIn messaging, profile edits, and attachments.
 - Accessing Gmail2 when not connected.
@@ -1751,27 +1910,19 @@ Never describe a draft, proposed action, manual action, inaccessible source, or 
 
 # Appendix A — Reusable Templates
 
+These are defaults, not scripts that must be used verbatim. Keep the message natural and omit facts the recruiter did not ask for.
+
 ## A.1 General recruiter qualification
 
 ```text
 Hi [Name],
 
-Thank you for reaching out. I am interested in learning more about the [Role].
+Thanks for reaching out. The [Role] sounds relevant to my Agentic AI and AI systems background. Could you send the company or end client, compensation range, location, and employment type?
 
-My current positioning is Agentic AI Engineer / AI Systems Engineer. My work focuses on Python-based AI systems, LLM workflows, RAG, tool calling, evaluation, MLOps, cloud infrastructure, and reliable production deployment.
-
-Work authorization: U.S. citizen; no sponsorship required.
-Current location: Bay Area, California.
-I am available now.
-
-Could you please share the end client, employment structure, compensation range, location expectations, duration, and interview process?
-
-I can work on W-2 or 1099. I do not do C2C contracts.
+I am available now and can work on W-2 or 1099, but not C2C.
 
 Best,
-Art Ponomarev, PhD
-650.863.2555
-artemponomarevjetski@gmail.com
+Art
 ```
 
 ## A.2 Remote-role response
@@ -1779,18 +1930,10 @@ artemponomarevjetski@gmail.com
 ```text
 Hi [Name],
 
-Thank you for sharing the opportunity. The role is aligned with my current focus on Agentic AI, AI Systems, Python, MLOps, and production AI infrastructure.
-
-Work authorization: U.S. citizen; no sponsorship required.
-Current location: Bay Area, California.
-Remote: yes.
-I am available now.
-
-Please confirm the end client, compensation range, employment structure, duration, and interview process. I can work on W-2 or 1099. I do not do C2C contracts.
+Thanks for sharing this. I am interested, and remote works for me. Could you send the compensation range, employment type, and interview process?
 
 Best,
-Art Ponomarev, PhD
-650.863.2555
+Art
 ```
 
 ## A.3 High-value founding role
@@ -1798,13 +1941,7 @@ Art Ponomarev, PhD
 ```text
 Hi [Name],
 
-This opportunity is strongly aligned with my background in Agentic AI, AI systems, Python platform engineering, customer implementations, evaluation, MLOps, and technical leadership.
-
-Please move me forward and send the introduction or formal-application step. I am open to an onsite requirement for an exceptional Bay Area opportunity.
-
-Please also share the equity range, funding stage, team size, expected customer travel, interview timeline, and first-round format.
-
-I am available now.
+This is strongly aligned with my Agentic AI and forward-deployed engineering background. Please move me forward and send the next step. When available, I would also like the equity range and interview timeline.
 
 Best,
 Art
@@ -1815,9 +1952,7 @@ Art
 ```text
 Hi [Name],
 
-I submitted my application for [Role / Requisition ID] through the official portal and received confirmation.
-
-Thank you for offering to comment on or route my application. I used my current resume and LinkedIn profile. Please let me know if you need anything else from me.
+I submitted my application for [Role / Requisition ID] and received confirmation. Thanks for offering to help route it.
 
 Best,
 Art
@@ -1826,372 +1961,199 @@ Art
 ## A.5 Calm rejection clarification
 
 ```text
-Thank you for the feedback. I appreciate the interviewer’s time. I may not have mapped my experience clearly to the interview format, but I do have hands-on experience across AI/ML systems, cloud, CI/CD, data pipelines, and production reliability. If there is a better-matched AI platform, MLOps, or Python AI systems role, I am available now to discuss.
+Thank you for the update. I appreciate the interviewer's time. My background may be a stronger fit for AI platform, MLOps, or Python AI systems roles, so please keep me in mind for those.
 ```
 
 ## A.6 Relationship-only response
 
 ```text
-It was good reconnecting. I appreciate the conversation, and I would like to stay in touch professionally. If you hear of a strong Agentic AI, AI Systems, ML infrastructure, or DevOps/automation opportunity, I would appreciate the pointer.
+It was good reconnecting. I would be glad to stay in touch, and I would appreciate a pointer if you hear of a strong Agentic AI, AI systems, ML infrastructure, or DevOps opportunity.
+```
+
+## A.7 Duplicate-submission clarification
+
+```text
+Hi [Name],
+
+Thanks for confirming that I have one active submission through [Agency]. Are you my main point of contact for this role?
+
+Best,
+Art
+```
+
+Do not expand this into a multi-item legalistic checklist unless there is concrete evidence of a second submission, unauthorized withdrawal/resubmission, or conflicting recruiter ownership.
+
+## A.8 Resume attachment reply
+
+```text
+Hi [Name],
+
+Please find my updated resume attached.
+
+Best,
+Art
 ```
 
 ---
+# Appendix B — Canonical Microsoft Positioning
 
-# Appendix B — Dated Campaign Snapshot
-
-**Snapshot date:** 2026-07-16  
-**Evidence standard:** Based on confirmation pages, confirmation email, Sent-mail verification, recruiter correspondence, and portal state reported or verified during the current campaign session. A portal action remains unconfirmed until a confirmation page or confirmation email is recorded.  
-**Mailbox scope:** Gmail1 is the operational source of truth. Gmail2 must be reported as not independently audited whenever it is unavailable.
-
-## B.1 Completed today
-
-1. **LinkedIn Staff Software Engineer — Systems Infrastructure application submitted successfully** through SmartRecruiters.
-2. **SmartRecruiters confirmation received** for the LinkedIn application.
-3. **Stacy Kramer and Ricardo Thomas notified** that the application was completed; the notification was verified in Sent.
-4. A role-specific **LinkedIn systems-infrastructure resume package** was prepared in DOCX and PDF formats.
-5. The LinkedIn application was standardized to the primary operational email, formal ATS name, Bay Area location, work authorization, separate Microsoft contracts, and a tailored hiring-team message.
-6. The Microsoft experience narrative was corrected so the current contract covers metadata-driven data-platform work and the earlier contract covers Azure DevOps agents, ONNX, Surface/edge deployment, and CPU/GPU/NPU validation.
-7. Infrastructure positioning was calibrated to state that **Terraform is the stronger area**, with hands-on Kubernetes-backed workload experience.
-
-## B.2 Current priority order
-
-1. **LinkedIn Strategic Infrastructure — Staff Software Engineer, Systems Infrastructure**
-2. **TIFIN — Staff/Senior MLE process through Joe McDermott**
-3. **Waymo — Senior Staff Engineer, Agentic AI Engineering, requisition 5131**
-4. **Delta Dental — duplicate-submission and vendor-chain clarification through Nexwave/VBize**
-5. **Elevance Health / Vantage Point — Remote AI Tech Lead**
-6. **Micro1 / Avance — Agentic AI Expert duplicate-record clarification**
-7. **DatologyAI / Faros AI / Andrenam recruiter-managed opportunities**
-8. **Senior AI Agents Developer through Tim Lane — follow-up due**
-9. **SBase — Data Platform Infrastructure Engineer qualification**
-10. **Other qualified direct-employer and recruiter pipelines**
-
-A lower-priority portal or sourcing task must not delay LinkedIn interview preparation, a scheduled call, a recruiter deadline, or a high-value direct-employer process.
-
-## B.3 LinkedIn Strategic Infrastructure
-
-```text
-Role: Staff Software Engineer — Systems Infrastructure
-Location: Mountain View, California
-Work arrangement: Hybrid; three days per week in the office was confirmed as workable
-Career track: IC4/9
-Stage: Official application submitted and confirmation received
-Recruiter process: Introductory call completed with Ricardo on Stacy's behalf; Stacy remains the primary point of contact
-Interview structure discussed: Virtual interview sequence followed by team matching
-Primary alignment: Python, distributed data and ML platforms, metadata-driven pipelines, observability, CI/CD, reliability, storage/streaming/data infrastructure, and technical leadership
-Submitted application asset: `Art_Ponomarev_LinkedIn_Staff_Systems_Infrastructure.pdf`
-Recruiter notification: Stacy and Ricardo notified; verified in Sent
-```
-
-Current LinkedIn actions:
-
-1. **Do not send another application-confirmation email.** One verified notice is sufficient.
-2. Schedule Stacy's interview-preparation session manually if it is not already booked.
-3. Await the technical phone-screen schedule based on the availability already supplied.
-4. Review the supplied preparation package and five-video Systems & Infrastructure playlist.
-5. Prepare Python coding/algorithms, infrastructure design, distributed-systems tradeoffs, production debugging, observability, and Staff-level leadership stories.
-
-Interview positioning:
-
-- Lead with systems and data infrastructure, not generic data science.
-- Describe Terraform as the strongest IaC area and Kubernetes as hands-on workload/platform experience.
-- Distinguish the two Microsoft contracts clearly.
-- Use concise problem → action → measurable result → relevance answers.
-
-## B.4 Canonical Microsoft positioning for current applications
+## B.1 Current application wording
 
 ```text
 Microsoft, 2025–Present
-Title: AI/MLOps Engineer (Contract)
-Evidence focus: Azure Synapse Analytics, Microsoft Fabric, metadata-driven pipelines, JSON control tables, Python/PySpark/SQL/Kusto, ADLS, Power BI, Databricks/Starburst governance, observability, validation, CI/CD, and runbooks
+Title: Agentic AI/ML Platform Engineer (Contract)
+Evidence focus: Microsoft Agency Copilot workflows; Azure Synapse Analytics; Microsoft Fabric; metadata-driven pipelines; JSON control tables; Python/PySpark/SQL/Kusto; ADLS; Power BI; federated Databricks/Starburst orchestration with Collibra and Immuta; LLM prompt, factuality, grounding, consistency, and tool-use evaluation; observability; validation; CI/CD; and runbooks.
 
 Microsoft, 2021–2022
 Title: Azure ML/DevOps Engineer (Contract)
-Evidence focus: Azure DevOps agents and pipelines, ONNX and quantization-ready packaging, Microsoft Surface/edge devices, CPU/GPU/NPU validation, reusable YAML, automated tests, release gates, observability, and rollback-safe deployment
+Evidence focus: Azure DevOps agents and pipelines; ONNX and quantization-ready packaging; Microsoft Surface and edge devices; CPU/GPU/NPU validation; reusable YAML; automated tests; release gates; observability; and rollback-safe deployment.
 ```
 
-Application consistency rule:
+Application consistency:
 
-- Use `AI/MLOps`, not `AI/MLops`, `AI/ML Ops`, or other inconsistent variants.
+- Use `Agentic AI/ML Platform Engineer` for the 2025–Present canonical-resume entry unless a verified formal process requires an exact payroll title.
+- Use `Azure ML/DevOps Engineer` for the 2021–2022 entry.
 - Use **Artem Ponomarev** in formal portals and **Art Ponomarev** in ordinary correspondence.
-- Use the primary email `artemponomarevjetski@gmail.com` for all new applications and recruiter correspondence.
-
-## B.5 TIFIN and Scout AI
-
-```text
-Channel: Joe McDermott / Alldus
-TIFIN status: Resume shared; awaiting company feedback
-TIFIN compensation reported: $200K–$300K base plus equity
-Likely interview flow: Talent introduction, CEO conversation, Head of ML final round
-Core themes: LoRA/QLoRA/PEFT, production agentic systems, multi-agent orchestration, business orientation, startup execution, product sense, and investment-domain understanding
-Scout AI status: Keep representation controlled through Joe until exact requisition and duplicate-submission status are confirmed
-```
-
-Do not contact TIFIN or Scout AI directly while Joe is arranging representation.
-
-## B.6 Waymo — Requisition 5131
-
-```text
-Role: Senior Staff Engineer, Agentic AI Engineering
-Location: Mountain View / San Francisco, hybrid
-Fit: Production agents, automated evaluation, tool use, safety/reliability, platform engineering, and technical leadership
-Application asset: Tailored resume package prepared
-Current action state: Manual portal submission remains pending unless a confirmation is recorded later
-```
-
-Use the AI-first / senior-agentic frame and save the portal confirmation after submission.
-
-## B.7 Delta Dental — Nexwave / VBize
-
-```text
-Role: Machine Learning / AI Engineer Lead
-Current control state: Hold on any withdrawal, resubmission, or additional submission until the vendor chain is documented
-Required written confirmation: Legal submitting entity, whether Nexwave and VBize are in one chain, exact requisition ID, submission date/time, whether exactly one active submission exists, and the authorized representative
-Current contact direction: Preserve the valid first submission and prevent duplicate representation
-```
-
-Do not authorize a new submission or withdrawal by phone alone.
-
-## B.8 Elevance Health / Vantage Point
-
-```text
-Role: Remote AI Tech Lead
-Employment structure discussed: $70/hour W-2, 40 hours per week
-Healthcare evidence supplied: Gilead/life-sciences and reliability-related experience
-Current requirement: Confirm that the healthcare background satisfies the client requirement, identify the requisition, and confirm one recruiter / one submission inside Vantage Point
-```
-
-Wait for written confirmation before treating the submission as authorized and unique.
-
-## B.9 Micro1 / Avance
-
-```text
-Opportunity: Agentic AI Expert
-Rate discussed: $90/hour W-2
-Risk: A separate existing Micro1 Machine Learning Researcher application may create a duplicate candidate record
-Current control: Do not use an alternate email merely to create another Micro1 profile
-Required confirmation: Separate engagement/requisition, Avance representation authority, exact project or requisition ID, and whether Micro1 specifically requires another email
-```
-
-Use the primary email unless Micro1 supplies a documented exception.
-
-## B.10 Recruiter-managed and follow-up queue
-
-**DatologyAI:** Confirm Interest remains a manual Paraform action unless already completed. Do not create a duplicate direct application.  
-**Sonatus:** Treat as closed for the present cycle if the prior-interview restriction remains active.  
-**Faros AI / Andrenam:** Continue only through Anna Malayan unless representation changes in writing.  
-**SBase:** Await confirmation of client, requisition, Sunnyvale attendance expectations, rate, duration, interview flow, and whether Python-first experience is acceptable for the Go-adjacent environment.  
-**Tim Lane / Senior AI Agents Developer:** A concise follow-up is due because seven calendar days have passed since the revised resume was routed to Evan.  
-**CCS Medical:** Eligible for a final concise follow-up after the Tim Lane message; avoid a burst of simultaneous follow-ups.
-
-## B.11 Immediate action queue
-
-1. Book Stacy's LinkedIn preparation session if it is not already on the calendar.
-2. Begin LinkedIn technical preparation: Python algorithms, infrastructure design, distributed systems, storage/streaming, observability, and leadership.
-3. Send the Tim Lane follow-up in the existing thread.
-4. Submit Waymo requisition 5131 and save the confirmation.
-5. Complete DatologyAI Confirm Interest if still pending.
-6. Check Gmail2 manually and migrate any substantive recruiting thread to Gmail1.
-7. Wait for written duplicate-control confirmations from Delta Dental, Elevance/Vantage, and Micro1/Avance.
-8. Continue TIFIN and Scout AI only through Joe.
-9. Review GitHub hygiene before using it in additional high-value infrastructure applications.
-10. Update this snapshot when LinkedIn schedules the technical screen or Stacy's preparation session is booked.
-
-## B.12 Snapshot-maintenance checklist
-
-1. Remove or mark closed items; never silently delete the evidence.
-2. Update exact last-contact date and channel.
-3. Record the resume version and attachment state.
-4. Record application, portal, or introduction confirmation.
-5. Record the next valid trigger rather than a desired action.
-6. Record duplicate-submission and representation risk.
-7. State which Gmail accounts, LinkedIn conversations, and portals were actually accessible.
-8. Keep no more than ten immediate-priority actions.
+- Use `artemponomarevjetski@gmail.com` for new applications and recruiter correspondence.
+- Preserve `art.ponomarev.ai@gmail.com` in the approved canonical resume unless Art instructs otherwise.
 
 ---
 
-# Appendix C — Change Log
+# Appendix C — Campaign Record-Keeping Boundary
 
-## 2026-07-16 — Version 2.5 FINAL
+This playbook is a durable operating document, not a historical communications log.
 
-- Recorded successful submission of the LinkedIn Staff Software Engineer — Systems Infrastructure application and receipt of the SmartRecruiters confirmation.
-- Recorded verified notification to Stacy Kramer and Ricardo Thomas and prohibited duplicate same-day confirmation messages.
-- Updated LinkedIn from manual-application status to active interview-preparation status.
-- Added the canonical Microsoft contract split: AI/MLOps Engineer, 2025–Present, versus Azure ML/DevOps Engineer, 2021–2022.
-- Added formal ATS identity, primary-email, location, and portal-consistency controls.
-- Added Terraform-first / Kubernetes-hands-on skill calibration.
-- Added the LinkedIn technical-preparation queue covering Python coding, infrastructure design, distributed systems, observability, production debugging, and Staff-level leadership.
-- Updated duplicate-submission controls for Delta Dental, Elevance/Vantage, and Micro1/Avance.
-- Added ATS field-consistency, post-submission confirmation, and vendor-chain hold procedures.
-- Updated TIFIN/Scout AI, Waymo, recruiter-managed opportunities, and the seven-day follow-up queue.
-- Preserved the single-file operating model and versioned backup of the prior 2026-07-15 state.
+- Do not append recruiter-email transcripts, old campaign reports, dated thread inventories, or routine status history.
+- Produce a separate dated mission report for Art’s attention during each active review.
+- Do not save the mission report back into this file unless Art explicitly requests a durable policy change.
+- Update this file only for durable rules, templates, canonical resume content, or approved reference-registry maintenance.
+- Keep the campaign focused on the current actionable state while preserving email history in Gmail and stale/closed chains under `Jobs/Archive`.
 
-## 2026-07-15 — Version 2.4 FINAL
-
-- Consolidated the permanent playbook and the former Version 2.4 addendum into one source of truth.
-- Made Gmail1 the primary operational email and Gmail2/LinkedIn controlled intake channels.
-- Added explicit LinkedIn-to-Gmail1 and Gmail2-to-Gmail1 migration procedures.
-- Added periodic stale-thread listing with a strict no-auto-delete rule.
-- Added spam, fraud, duplicate-submission, and deliverability controls.
-- Added manual registration procedures for ATS portals, staffing agencies, talent marketplaces, and paid job banks.
-- Added paywall renewal, cancellation, and return-on-investment safeguards.
-- Added GitHub relevance, evidence selection, and public-profile hygiene gates.
-- Expanded campaign reporting to include audit scope, manual actions, stale mail, spam risk, account migration, and inaccessible sources.
-- Updated the dated campaign snapshot and standardized the primary email in outward-facing templates.
-
-
-## 2026-07-13 — Version 2.3
-
-- Added W-2 and 1099 as accepted employment structures while preserving the no-C2C rule.
-- Standardized the exact recruiter wording: “I can work on W-2 or 1099. I do not do C2C contracts.”
-- Added 1099 qualification controls for rate, client, duration, payment schedule, all-inclusive terms, insurance requirements, equipment/expense obligations, expected hours, and net economics.
-- Updated the Delta Dental snapshot to record the role-specific $75/hour 1099 confirmation and pending client-submission verification.
-- Clarified that agreement to 1099 for one opportunity does not authorize C2C or establish a blanket rate for other roles.
-
-## 2026-07-13 — Version 2.2
-
-- Added a non-negotiable prohibition on disclosing graduation years, enrollment years, degree-award dates, or education chronology during ordinary recruiting.
-- Added date-free standard education wording and a secure-background-check exception for mandatory dates.
-- Added adaptive experience positioning: five years of recent AI/ML systems work for AI-first roles, or 20+ years of broad technical/industry experience for Staff, Principal, Lead, infrastructure, architecture, scientific, and leadership roles.
-- Made the five-year recent-AI frame the default for narrowly Agentic-AI and GenAI applications to reduce irrelevant age signaling.
-- Added separate inline-summary templates for the AI-first and broad-senior narratives.
-- Preserved the rule against unsupported experience claims and clarified that narrowly defined technology tenure must not be inflated.
-
-## 2026-07-12 — Version 2.1
-
-- Certified the main body as the durable operating policy and replaced the stale dated snapshot.
-- Locked the mission priority order: Fulcrum first, Delta Dental second.
-- Added low-frequency, high-value cadence for Alexander Farr and other strategic contacts.
-- Updated Fulcrum status from “request introduction” to “marked interested; company action pending.”
-- Added Delta Dental’s then-current W-2-only gate, Monday contact trigger, and identity-document remediation; this historical entry is superseded by Version 2.3, which permits W-2 or 1099 and records the specific Delta 1099 confirmation.
-- Added current Clera secondary opportunities and duplicate-introduction controls.
-- Added Meta CWx / TalentNet, Tundra, fresh-referral, and contract-channel rules.
-- Added explicit disclosure when only one Gmail account is accessible.
-- Replaced the read-only Gmail assumption with capability-based, verified actions.
-
-
-## 2026-07-11 — Version 2.0
-
-- Corrected spelling, grammar, and Markdown formatting
-- Added both Gmail accounts and all `Jobs/...` sublabels to the required review scope
-- Made remote-first priority explicit
-- Reframed raw personal notes into professional assets, risks, and mitigations
-- Removed stigmatizing and non-actionable wording
-- Standardized employment-structure, work authorization, availability, compensation, and no-C2C language
-- Clarified read-only Gmail and manual LinkedIn/portal boundaries
-- Added opportunity scoring and duplicate-submission control
-- Separated durable policy from volatile campaign status
-- Added current Alexander Farr / Fulcrum, LlamaIndex, Evidently, and Richard Lewis / 3Cloud status
-- Added Meta portal prioritization
-- Consolidated duplicate templates and stale queue sections
 ---
 
-# Appendix D — Canonical Resume Master Content
+# Appendix D — Canonical Resume Master
 
-These are content masters, not automatic attachments. Generate and inspect the actual PDF before sending. Use Gmail1 in all new outward-facing versions. Do not add education dates.
+> **Approved source.** This is the only master resume in this playbook. Generate and inspect the actual PDF before sending. Do not add education dates. The contact email is preserved exactly as supplied by Art. Include GitHub only while the public profile passes the hygiene gate in Section 29.
 
-## D.1 AI-first master — five years of recent AI/ML systems experience
+## D.1 Art Ponomarev, PhD
 
-```text
-Art Ponomarev, PhD
-Bay Area | 650.863.2555 | artemponomarevjetski@gmail.com
-linkedin.com/in/art-ponomarev-ai | github.com/artemponomarevjetski
+**Bay Area** · **650.863.2555** · [art.ponomarev.ai@gmail.com](mailto:art.ponomarev.ai@gmail.com)<br>
+[linkedin.com/in/art-ponomarev-ai](https://linkedin.com/in/art-ponomarev-ai) · [github.com/artemponomarevjetski](https://github.com/artemponomarevjetski)
 
-Agentic AI Engineer | AI Systems Engineer
-Production AI agents — Python systems that reason, use tools, evaluate, and scale
-Five Years of Recent AI/ML Systems Experience | Agentic AI, LLM Workflows, MLOps & Production Deployment
-```
+### Agentic AI Engineer | AI Systems Engineer
 
-### Summary
+**Production AI agents — Python systems that reason, use tools, evaluate, and scale**<br>
+**20+ Years Overall Technical Experience | Recent Focus: Agentic AI, MLOps, Cloud, LLM Workflows & Production AI Systems**
 
-- AI/ML systems engineer with five years of recent hands-on work building and operationalizing production AI agents, LLM workflows, evaluation platforms, MLOps pipelines, and reliable Python systems for Microsoft, TetraMem, and Lucid Motors.
-- Builds systems connecting models to tools, memory, enterprise data, observability, CI/CD, evaluation gates, cloud infrastructure, and rollback-safe deployment.
-- Hands-on with RAG, function/tool calling, prompt and retrieval patterns, guardrails, memory, offline and online evaluation, shadow testing, and production release controls.
-- Delivered lower-latency inference, shorter deployment cycles, stronger evaluation coverage, and reliable model operations across Azure, AWS, GCP, Kubernetes, CPU/GPU/NPU targets, and MLflow registries.
-- Statistical modeling and scientific-computing background supports rigorous evaluation, uncertainty analysis, validation, telemetry diagnostics, and decision support.
+### Professional Summary
 
-### Technology
+Agentic AI and production ML systems engineer with 20+ years of technical experience and recent hands-on focus on AI agents, LLM evaluation, MLOps, and cloud platforms. Built Microsoft agentic workflows and metadata-driven Azure Synapse Analytics and Microsoft Fabric pipelines, connecting models to tools, governed enterprise data, observability, evaluation gates, and rollback-safe CI/CD. Delivered approximately 30% faster NPU inference and 25% higher training efficiency across cloud and edge environments.
 
-- **Agentic AI and LLM systems:** agents, RAG, tool/function calling, prompt and retrieval patterns, memory, guardrails, model/service evaluation, shadow testing, observability, workflow orchestration.
-- **Python AI engineering:** Python, APIs, backend automation, evaluation harnesses, data/model pipelines, workflow services, diagnostic tooling, reproducible environments.
-- **ML and GenAI:** PyTorch, TensorFlow, ONNX, Llama-family models, Phi-family/SLMs, scikit-learn, XGBoost, SciPy, MLflow, Azure ML.
-- **MLOps and reliability:** CI/CD, Azure DevOps, GitLab, GitOps, unit/integration/performance gates, metric-gated promotion, drift detection, SLOs, observability, rollback playbooks, release-health monitoring.
-- **Cloud and infrastructure:** Azure, AWS, GCP, Kubernetes, Docker, Terraform, CPU/GPU/NPU serving, immutable artifacts, versioned releases.
-- **Data systems:** SQL, Spark, Databricks, Kusto/ADX, Power BI, validation, lineage, ETL/ELT, telemetry processing.
-- **Modeling:** NumPy, pandas, statistical modeling, Monte Carlo simulation, experiment design, uncertainty analysis, offline A/B tests, model-quality metrics.
+### Technology Stack
 
-### Selected recent experience
+- **Agentic AI and LLM systems:** AI agents; LangChain/LangGraph-style orchestration; RAG; function/tool calling; prompt and retrieval patterns; memory; guardrails; model/service evaluation; offline and online evaluation; shadow testing; agent observability; AI workflow orchestration.
+- **Additional languages and infrastructure automation:** Working familiarity with Ruby, Scala, Ansible, and Chef.
+- **Python AI engineering:** Python; APIs; backend automation; evaluation harnesses; data/model pipelines; workflow services; diagnostic tooling; reproducible environments.
+- **ML and GenAI:** PyTorch; TensorFlow; ONNX; Llama family; Phi family/SLMs; scikit-learn; XGBoost; SciPy; MLflow; Azure ML.
+- **MLOps and reliability:** CI/CD; Azure DevOps; GitLab; GitOps; unit/integration/performance gates; metric-gated promotion; drift detection; SLOs; observability; rollback playbooks; release-health monitoring.
+- **Enterprise engineering:** Git; GitLab; Azure DevOps; Confluence-style documentation; Slack; code reviews; release runbooks; debugging workflows; incident-response coordination.
+- **Cloud and infrastructure:** Terraform; Azure; AWS; GCP; Docker; hands-on support for Kubernetes-backed workloads; CPU/GPU/NPU model serving; immutable artifacts; versioned releases.
+- **Data systems and analytics:** SQL; Spark; Databricks; Kusto/ADX; Power BI; data validation; lineage; ETL/ELT; telemetry processing.
+- **Modeling in Python:** NumPy; pandas; statistical modeling; Monte Carlo simulation; experiment design; uncertainty analysis; offline A/B tests; model-quality metrics.
 
-**Microsoft — Senior Data Scientist / Agentic AI & Data Platform contract; Azure ML/DevOps contract**
+### Selected Recent Experience and Achievements
 
-- Built reproducible Azure DevOps CI/CD for training, evaluation, and serving with drift checks, release-health telemetry, and rollback controls.
-- Standardized reusable YAML pipelines, environments, immutable artifacts, versioned releases, and green-only merges with unit, integration, and performance gates.
-- Translated product SLAs into acceptance criteria, evaluation gates, runbooks, and operational controls.
-- Operated Kubernetes-backed ML/DNN workflows across CPU/GPU/NPU targets; shipped ONNX and quantization-ready artifacts.
-- Built Kusto/Power BI observability for drift, latency, throughput, and release health; supported offline A/B and shadow rollouts.
+*Most relevant AI/ML, MLOps, cloud, and production-systems work from 20+ years of technical experience.*
 
-**TetraMem — AI/ML Engineer, DevOps & Data Engineering**
+#### Microsoft | 2025–Present
 
-- Orchestrated CI/CD for training, evaluation, and serving with MLflow registry promotion, metric gates, immutable artifacts, and safe daily releases.
-- Developed distributed training pipelines and improved training efficiency by approximately 25%.
-- Applied unsupervised learning to cluster failure modes and accelerate root-cause analysis.
-- Optimized neuromorphic NPU inference, contributing to approximately 30% faster inference and approximately 25% end-to-end gains.
-- Established drift, latency, and throughput observability, SLOs, incident-response practices, lineage, validation, and storage lifecycle controls.
+##### Agentic AI/ML Platform Engineer
 
-**Lucid Motors — Full-Stack Python Developer**
+**AI/ML Ops**
 
-- Ingested and validated OTA telemetry, normalized JSON manifests, and built SQL diagnostics for ECU flash outcomes.
+- Built Microsoft Agency Copilot workflows with function/tool calling, memory, and guardrails; engineered and evaluated prompts across Claude, GPT, Gemini, and Perplexity for factuality, grounding, consistency, and tool-use behavior before CI/CD-controlled release.
+- Built reproducible Azure DevOps CI/CD for training, evaluation, and serving; integrated drift checks and release health through Kusto/Power BI; enabled safe one-click rollbacks.
+- Built metadata-driven pipelines in Azure Synapse Analytics and Microsoft Fabric using JSON control tables, Python/PySpark, SQL, and ADLS; integrated federated governance and access orchestration across Databricks and Starburst with Collibra and Immuta.
 
-### Education — no dates
+**Model Lifecycle**
 
-- PhD, Applied Physics — Columbia University
-- MS, Applied Physics — Columbia University
-- Engineer-Physicist, Applied Mathematics and Physics — Moscow Institute of Physics and Technology
-- DataCamp — Data Scientist with Python Career Track
+- Co-developed hyperparameter-tuning workflows with scikit-learn and SciPy; standardized environments and templates to reduce onboarding time.
+- Shipped immutable artifacts and versioned releases; enforced green-only merges with pre-merge unit, integration, and performance tests.
 
-### Publications and invention disclosure
+**Modeling and Data Pipelines**
 
-- 28 peer-reviewed publications.
-- NASA Disclosure of Invention and New Technology, US MSC-24760-1: Galactic Cosmic Ray Event-Based Risk Model code.
+- Translated product SLAs into AI-system acceptance criteria, evaluation gates, deployment runbooks, and release controls for ML engineers, platform engineers, and AI workflow owners.
 
-## D.2 Broad senior master — 20+ years overall technical experience
+##### Azure ML/DevOps Engineer | 2021–2022
 
-```text
-Art Ponomarev, PhD
-Bay Area | 650.863.2555 | artemponomarevjetski@gmail.com
-linkedin.com/in/art-ponomarev-ai | github.com/artemponomarevjetski
+**Microsoft ML Suite**
 
-Agentic AI Engineer | AI Systems Engineer
-Production AI agents — Python systems that reason, use tools, evaluate, and scale
-20+ Years Overall Technical Experience | Recent Focus: Agentic AI, MLOps, Cloud, LLM Workflows & Production AI Systems
-```
+- Standardized reusable YAML templates and environments; shipped portable ONNX artifacts and quantization-ready builds.
+- Built edge-to-cloud observability with Kusto/Power BI, including drift and alerting; partnered with Microsoft Security; authored runbooks and rollback playbooks; enabled offline A/B and shadow rollouts.
+- Maintained robust unit, integration, and performance tests in the ML-Suite monorepo.
+- Used Terraform as the primary infrastructure-as-code layer and supported Kubernetes-backed ML/DNN workloads across CPU, GPU, and NPU targets for Surface and edge deployments; enforced TDD-backed Azure DevOps release gates.
 
-### Summary
+#### TetraMem — Neuromorphic Computing and Inference-Acceleration Startup | 2022–2025
 
-- AI/ML and production-systems engineer with 20+ years across engineering, research, DevOps, build/release, cloud infrastructure, scientific computing, data systems, and production software; recent focus on agentic AI and reliable Python-based AI systems.
-- Builds production-grade AI agents, evaluation platforms, data and model pipelines, cloud/edge infrastructure, and rollback-safe delivery workflows.
-- Combines system architecture, performance engineering, cross-functional implementation, and rigorous scientific validation.
+##### AI/ML Engineer — DevOps and Data Engineering
 
-### Selected recent experience
+**AI/ML Ops**
 
-Use the Microsoft, TetraMem, and Lucid content from D.1, then add:
+- Orchestrated end-to-end CI/CD for training, evaluation, and serving with MLflow registry promotion and pre-merge unit, integration, and performance gates; enabled safe daily releases.
+- Implemented immutable artifacts and versioning; enforced green-only merges through pre-merge unit, integration, and performance tests.
+- Managed TetraMem’s Jira-based customer portal, supporting customer issue intake, status tracking, and coordination between customers and engineering teams.
 
-**NASA / Columbia / applied research / scientific computing**
+**Model Lifecycle**
+
+- Implemented MLflow with a model registry, metric-gated promotions, and evaluation harnesses for latency, accuracy, and throughput.
+- Co-developed hyperparameter-tuning workflows with scikit-learn and SciPy; standardized environments and templates to reduce onboarding time.
+
+**Modeling and Data Pipelines**
+
+- Developed distributed training pipelines; improved training efficiency by approximately 25%.
+- Applied unsupervised learning to cluster failure modes; accelerated root-cause analysis and prevented regressions.
+
+**Performance and Hardware Co-Design — NPU**
+
+- Optimized NPU inference for real-time edge AI; delivered approximately 30% faster inference and approximately 25% end-to-end gains.
+
+**Observability, Reliability, and SRE**
+
+- Established observability for accuracy drift, latency, and throughput; defined SLOs and incident-response practices to shorten time to mitigation.
+
+**Data Engineering and Cost**
+
+- Automated data workflows with lineage and validation; reduced storage cost through lifecycle policies and archival tiers.
+
+#### Lucid Motors | 2022
+
+##### Full-Stack Python Developer
+
+- Ingested and validated OTA telemetry; normalized JSON manifests; built SQL diagnostics for ECU flash outcomes.
+
+### Earlier Engineering, Research, DevOps, and Scientific Computing Experience
+
+#### NASA / Columbia / Applied Research / Scientific Computing
 
 - Contributed to aerospace radiation-risk modeling, Monte Carlo simulation, reliability analysis, and computational research workflows.
-- Co-authored peer-reviewed publications and contributed to NASA invention-disclosure work.
-- Applied numerical modeling, uncertainty analysis, and software-assisted research methods to high-reliability aerospace problems.
+- Co-authored peer-reviewed scientific publications and contributed to NASA Disclosure of Invention and New Technology work.
+- Applied physics, numerical modeling, uncertainty analysis, and software-assisted research methods to high-reliability aerospace and engineering problems.
 
-**Earlier software, DevOps, build/release, and systems engineering**
+#### Earlier Software, DevOps, Build/Release, and Systems Engineering Foundation
 
-- Longstanding foundation across software engineering, DevOps, build/release, cloud infrastructure, data pipelines, automation, scientific computing, and production reliability.
-- Experience spans enterprise systems, research environments, automotive telemetry, neuromorphic AI hardware, and cloud/edge AI infrastructure.
+- Longstanding background across software engineering, DevOps, build/release, cloud infrastructure, data pipelines, automation, scientific computing, and production reliability.
+- Experience spans research environments, automotive systems, neuromorphic AI hardware, cloud/edge AI infrastructure, and enterprise production systems.
+- Full 20+ year chronological work history is reflected on LinkedIn and can be provided as a longer CV when required.
 
-### Selection rule
+### Education
 
-- Use D.1 by default for hands-on Agentic AI, GenAI, applied-AI, and startup implementation roles.
-- Use D.2 for Staff, Principal, Lead, architecture, platform, infrastructure, scientific-computing, or leadership roles where breadth is material.
-- Do not put both duration claims in the same opening headline.
+- **PhD, Applied Physics** — Columbia University
+- **MS, BS, Engineering Physics** — Moscow Institute of Physics and Technology; Theoretical Physics Group of V. Ginzburg (Nobel 2003)
+
+### Publications and Invention Disclosure
+
+- 28 peer-reviewed publications in scientific journals, including *Radiation Research* and *Journal of Aerospace Engineering and Mechanics*.
+- NASA Disclosure of Invention and New Technology **US MSC-24760-1**: Galactic Cosmic Ray Event-Based Risk Model (GERM) code.
 
 ---
 
@@ -2202,22 +2164,25 @@ Use the Microsoft, TetraMem, and Lucid content from D.1, then add:
 - Correct recipient and existing thread.
 - Correct company, role, requisition, and client chain.
 - Gmail1 used unless a documented exception applies.
-- Personalized opening and concise role fit.
-- Work authorization and availability phrased exactly when needed.
-- Employment structure accurate; no C2C.
+- Two to five sentences and under 120 words unless a detailed response was requested.
+- Natural and cordial tone; no legalistic checklist, threats, or unnecessary disclaimers.
+- One primary next-step question.
+- Work authorization, availability, rate, and employment structure included only when asked or decision-relevant.
 - Actual PDF attached when requested.
-- No passport, license, SSN, tax, banking, transcript, background-check, or reference documents.
+- No passport, license, SSN, tax, banking, transcript, or background-check documents.
+- No reference name, contact detail, list, or document unless Art approved this exact recipient, opportunity, subset, fields, and channel.
 - LinkedIn/GitHub links included only when useful.
 - No duplicate submission or conflicting recruiter ownership.
 - Cooldown observed.
+- If the sender or process looks spammy, evasive, or needlessly finicky, do not send; report it.
 - Sent state and attachment metadata verified after sending.
 
 ## E.2 Portal pre-submit
 
 - Official domain verified.
 - Existing account and prior application checked.
-- Gmail1 used.
-- Correct resume frame and PDF selected.
+- Gmail1 used unless an existing portal/application is already bound to Gmail2.
+- The Appendix D canonical resume or an explicitly approved derivative PDF selected.
 - Parsed fields inspected.
 - Education dates omitted unless mandatory in a verified secure workflow.
 - Compensation, location, authorization, and employment structure answered truthfully.
@@ -2234,6 +2199,300 @@ Use the Microsoft, TetraMem, and Lucid content from D.1, then add:
 - No payment to employer, recruiter, or agency for placement.
 - Return on investment reviewed monthly.
 
+## E.4 Reference release
+
+- Requester, employer or client, role, requisition, and process stage verified.
+- Art’s explicit approval obtained for this exact release.
+- Approved reference subset recorded.
+- Approved fields recorded.
+- Selected references’ consent and current contact information verified.
+- Full master list and source PDF withheld unless separately approved.
+- Home addresses and secondary personal numbers omitted unless mandatory and separately approved.
+- Verified delivery channel used.
+- No deceased or historical-only contact selected.
+- Distribution logged after release.
+
 ---
 
-# End of Playbook
+
+# Appendix F — CONFIDENTIAL Professional Reference Registry
+
+<!-- INTERNAL ONLY: DO NOT DISTRIBUTE WITHOUT ART'S EXPLICIT APPROVAL FOR THE SPECIFIC RECIPIENT AND OPPORTUNITY. -->
+
+> **Internal use only.** This registry contains third-party contact information supplied or maintained by Art. It is not independently verified, is not an attachment for ordinary applications, and must not be copied, forwarded, uploaded, or disclosed without Art’s explicit approval for the exact recipient, opportunity, selected references, fields, and delivery channel.
+
+## F.1 Release controls
+
+- Ask Art for approval before distributing **any** name or contact detail from this registry.
+- Approval must identify the recipient, company or client, role or requisition, selected references, approved fields, and delivery channel.
+- Share two or three role-relevant references by default; never send the full list merely because references were requested.
+- Confirm each selected person’s willingness to serve, current title, organization, email, phone, and preferred method of contact before release.
+- Prefer name, title, organization, relationship, one email, and one preferred phone number.
+- Do not release street addresses, home phone numbers, alternate personal numbers, or the historical background-check PDF unless mandatory in a verified workflow and separately approved by Art.
+- Do not use networking contacts, old classmates, historical-only contacts, or deceased contacts as references unless their status permits it. A deceased contact can never be reactivated.
+- A prior approval does not authorize a later employer, recruiter, requisition, client, or delivery channel.
+
+## F.2 Status definitions
+
+- **Preferred reference candidate:** Art considers the person a strong first-choice reference; current consent and contact details are still required before use.
+- **Potential reference — verify first:** may be suitable, but the relationship, willingness, and current details must be confirmed before Art approves release.
+- **Networking contact only:** do not present as a reference unless the person explicitly agrees and Art separately approves the change in status.
+- **Legacy source-record contact:** appears in an older reference record; do not use until current eligibility, consent, and contact details are verified.
+- **Deceased / historical only:** retain only as historical context; never contact or list as a current reference.
+
+## F.3 Preferred reference candidates
+
+### Alan Pita
+
+- **Status:** Preferred reference candidate — verify consent and current details before release.
+- **Role:** Senior Technical Staff
+- **Company:** TetraMem
+- **LinkedIn:** <https://www.linkedin.com/in/alanpita/>
+- **Email:** `pitaman512@gmail.com`
+- **Phone:** 512-656-8676
+- **Relationship:** Former colleague, close DevOps collaborator, and MBO line manager
+
+### David George
+
+- **Status:** Preferred reference candidate — verify consent and current details before release.
+- **Role:** Former Vice President, Supply Chain and Quality
+- **Company:** TetraMem
+- **Email:** `davidwgeorge172@gmail.com`
+- **Phone:** 916-768-9562
+- **Relationship:** Professional colleague and former TetraMem executive
+
+### Eric Sommerlade
+
+- **Status:** Preferred reference candidate — verify consent and all contact details before release.
+- **Role:** Research Manager
+- **Company:** Microsoft Applied Sciences
+- **LinkedIn:** <https://www.linkedin.com/in/sommerlade>
+- **Websites:** <http://uzr.de>, <http://imodeller.com>, <http://sommerla.de>
+- **Email:** `eric.sommerlade@microsoft.com`
+- **Phone on record:** +49 (0)162 1234567 (Germany)
+- **Relationship:** Direct manager at Microsoft, February 2021–June 2022
+
+### Ephraim Suhir
+
+- **Status:** Preferred reference candidate — verify consent and current details before release.
+- **Role:** Research Professor
+- **Institution:** Portland State University
+- **Phone:** 650-969-1530
+- **Email:** `suhire@aol.com`
+- **LinkedIn:** <https://www.linkedin.com/in/ephraim-suhir-28b10543/>
+- **Scholar profile:** <https://research.com/u/ephraim-suhir>
+- **Relationship:** Long-term collaborator and co-published author
+
+### Francis Cucinotta, PhD
+
+- **Status:** Preferred reference candidate — verify consent and current details before release.
+- **Role:** Professor of Health Physics
+- **Institution:** University of Nevada, Las Vegas
+- **Phone:** 702-895-0977
+- **Email:** `francis.cucinotta@unlv.edu`
+- **Relationship:** Supervisor and collaborator at NASA, 1999–2014
+
+### Colonel Tom Williams, PhD, U.S. Army Retired
+
+- **Status:** Preferred character/professional reference candidate — verify consent and current details before release.
+- **Role:** NASA Element Scientist
+- **Phone:** 281-483-8773
+- **Email:** `thomas.j.williams-1@nasa.gov`
+- **Relationship:** Character reference
+
+### Gary Miner
+
+- **Status:** Preferred reference candidate — verify direct contact method, consent, and current role before release.
+- **Role:** Executive Vice President, Partnerships and Operations
+- **Company:** TetraMem
+- **General contact number on record:** 510-249-9409
+- **Address on record — internal only:** 4027 Clipper Ct, Fremont, CA 94538
+- **Relationship:** Mentor at TetraMem
+
+## F.4 Recent TetraMem reference candidates
+
+### Ellie Chan Brown
+
+- **Status:** Potential recent reference — verify relationship, willingness, and current details before release.
+- **Role:** Vice President of HR and Administration
+- **Company:** TetraMem
+- **Email:** `ellie.chan@tetramem.com`
+
+### Miao Hu, PhD
+
+- **Status:** Potential recent technical/executive reference — verify willingness and current details before release.
+- **Role:** CTO and Co-founder
+- **Company:** TetraMem
+- **LinkedIn:** <https://www.linkedin.com/in/miao-hu-107bbb21>
+- **Email:** `miao.hu@tetramem.com`
+
+## F.5 Older professional reference candidates
+
+### Alexandr Uzelac
+
+- **Status:** Potential Microsoft engineering reference — verify name spelling, consent, and current details before release.
+- **Role:** Principal Software Engineering Lead
+- **Company:** Microsoft
+- **LinkedIn:** <https://www.linkedin.com/in/aleksandar-uzelac-635601152>
+- **Email:** `alu@microsoft.com`
+
+### T. J. Sirisak
+
+- **Status:** Potential recruiting/professional reference — use only when a recruiter reference is appropriate and consent is current.
+- **Role:** Senior Recruiter
+- **Company:** Triple Crown Consulting
+- **LinkedIn:** <https://www.linkedin.com/in/tj-sirisak>
+- **Phone:** 408-680-2573
+
+### Liming Wang
+
+- **Status:** Potential direct-manager reference — verify consent and current details before release.
+- **Role:** Manager, Software Engineering
+- **Company:** Lucid Motors
+- **LinkedIn:** <https://www.linkedin.com/in/wangliming>
+- **Email:** `wangliming@gmail.com`
+- **Phone:** 408-883-4198
+- **Relationship:** Direct manager at Lucid Motors
+
+### Ronald “Ron” Niland
+
+- **Status:** Potential senior professional reference — verify consent and current details before release.
+- **Role:** President
+- **Company:** JANA Life Sciences
+- **LinkedIn:** <https://www.linkedin.com/in/ronald-niland>
+- **Email:** `ronaldniland@hotmail.com`
+- **Phone:** 805-405-4115
+
+## F.6 Additional professional reference candidates
+
+### Neeraj Kashyap
+
+- **Status:** Potential founder/technical reference — verify consent and relationship scope before release.
+- **Role:** Founder and CEO
+- **Company:** Simiotics / Bugout.dev
+- **Email:** `neeraj@simiotics.com`
+- **Phone:** 704-802-9664
+
+### Remus Osan
+
+- **Status:** Potential professional reference — verify consent and current details before release.
+- **Role:** Associate Director
+- **Company:** Gilead Sciences
+- **LinkedIn:** <https://www.linkedin.com/in/remus-osan-a9636718/>
+- **Email:** `remus.osan@gilead.com`
+
+### Stas Shalunov
+
+- **Status:** Potential senior professional reference — verify consent and current details before release.
+- **Role:** Chief Investment Officer
+- **Company:** FORA Capital
+- **Email:** `stas@foracapital.com`
+- **Phone:** 415-601-7021
+- **Alternate office phone from legacy source — do not distribute by default:** 415-505-3354
+- **Address on record — internal only:** 950 Tower Lane, Suite 1710, Foster City, CA 94404
+
+## F.7 NASA and academic reference candidates
+
+### Paul Mudgett, PhD
+
+- **Status:** Potential NASA scientific reference — verify consent and current details before release.
+- **Role:** Senior Environmental Scientist
+- **Institution:** NASA Johnson Space Center
+- **Phone:** 713-295-1843
+- **Alternate cell phone from legacy source — do not distribute by default:** 346-306-3862
+- **Email:** `paul.d.mudgett@nasa.gov`
+
+### David Brown
+
+- **Status:** Potential NASA engineering reference — verify consent and current details before release.
+- **Role:** Senior Engineer
+- **Institution:** NASA Johnson Space Center
+- **Phone:** 281-483-7426
+- **Email:** `david.l.brown@nasa.gov`
+
+### Jason Weeks
+
+- **Status:** Potential NASA program reference — verify consent and current details before release.
+- **Role:** NASA Space Radiation Element Program Manager
+- **Phone:** 281-483-0438
+- **Email:** `jason.weeks-1@nasa.gov`
+
+### Antony Jeevarajan
+
+- **Status:** Potential NASA senior scientific/leadership reference — verify consent and current details before release.
+- **Role:** Deputy Division Chief Emeritus
+- **Institution:** NASA Johnson Space Center
+- **Phone:** 281-483-4298 (office)
+- **Alternate cell phone — do not distribute by default:** 281-536-6082
+- **Home phone in legacy source — never distribute without a verified mandatory requirement and separate approval:** 832-407-0723
+- **Email:** `antony.s.jeevarajan@nasa.gov`
+
+### S. R. Blattnig, PhD
+
+- **Status:** Potential NASA scientific reference — verify consent and current details before release.
+- **Role:** Senior Scientist
+- **Institution:** NASA Langley Research Center
+- **Phone:** 757-864-1421
+- **Email:** `steve.r.blattnig@nasa.gov`
+
+### D. J. Brenner, PhD
+
+- **Status:** Legacy source-record academic reference — do not use until current eligibility, consent, and details are verified.
+- **Role in legacy record:** Director, Center for Radiological Research
+- **Institution:** Columbia University
+- **Phone in legacy record:** 212-305-9930
+- **Email in legacy record:** `djb2@columbia.edu`
+
+> Ephraim Suhir, Francis Cucinotta, and Tom Williams are listed in the preferred-reference section above and are also relevant to NASA, aerospace, academic, reliability, and scientific-computing opportunities.
+
+## F.8 MIPT classmates and networking contacts
+
+These contacts are **networking contacts only**, not distributable references, unless each person explicitly agrees to serve and Art separately approves the change in status.
+
+### Maxim Galushka
+
+- **Status:** Networking contact only
+- **LinkedIn:** <https://www.linkedin.com/in/mgalushka/>
+
+### Ruslan Mavlyutov
+
+- **Status:** Networking contact only
+- **LinkedIn:** <https://www.linkedin.com/in/ruslan_mavlyutov>
+
+### Alexey Kozhevnikov
+
+- **Status:** Networking contact only
+- **LinkedIn:** <https://www.linkedin.com/in/alexey-kozh>
+
+## F.9 Deceased / historical-only contact
+
+### R. K. “Ray” Sachs, PhD — deceased
+
+- **Status:** Deceased / historical only — permanently excluded from all reference releases.
+- **Historical relationship:** Postdoctoral supervisor
+- **Historical role:** Professor Emeritus of Mathematics and Physics, University of California, Berkeley
+- **Control:** Do not attempt contact, list him as a current reference, or distribute any former phone number, email address, or address. Retain the name only as historical career context when relevant.
+
+## F.10 Role-based selection guidance
+
+Select references by direct relevance and firsthand observation, not prestige alone:
+
+- **Agentic AI, MLOps, DevOps, and production systems:** prioritize Alan Pita, Eric Sommerlade, Miao Hu, Ellie Chan Brown, or another person who directly observed the relevant engineering work and confirms consent.
+- **TetraMem engineering, leadership, and cross-functional work:** prioritize Alan Pita, David George, Gary Miner, Ellie Chan Brown, or Miao Hu after current consent is confirmed.
+- **Microsoft engineering:** prioritize Eric Sommerlade or Alexandr Uzelac after current consent and relationship scope are confirmed.
+- **Lucid Motors:** prioritize Liming Wang after current consent is confirmed.
+- **Scientific computing, aerospace, radiation, and reliability:** prioritize Ephraim Suhir, Francis Cucinotta, Tom Williams, Paul Mudgett, David Brown, Jason Weeks, Antony Jeevarajan, or S. R. Blattnig according to the role and observed work.
+- **Leadership or character:** use a person who directly observed judgment, communication, ownership, or cross-functional leadership; Tom Williams, Gary Miner, or David George may be relevant after consent is confirmed.
+- **Formal background check:** follow the verified vendor’s required format, but still obtain Art’s exact approval and provide only the selected, current, consented contacts.
+
+## F.11 Verification register template
+
+| Reference | Current status | Last contact verified | Consent confirmed | Current title/company verified | Approved role types | Notes |
+|---|---|---|---|---|---|---|
+|  |  | YYYY-MM-DD | Yes / No | Yes / No |  |  |
+
+## F.12 Distribution log template
+
+| Date | Requester / recipient | Company or client | Role / requisition | References approved | Fields approved | Channel | Art approval recorded | Sent / submitted verification |
+|---|---|---|---|---|---|---|---|---|
+| YYYY-MM-DD |  |  |  |  |  |  |  |  |

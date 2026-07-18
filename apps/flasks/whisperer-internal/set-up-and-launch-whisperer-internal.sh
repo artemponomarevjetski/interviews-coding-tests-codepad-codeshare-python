@@ -1,28 +1,16 @@
 #!/usr/bin/env bash
 #
-# ╔══════════════════════════════════════════════════════════════════════╗
-# ║                                                                      ║
-# ║     ██╗    ██╗██╗  ██╗██╗███████╗██████╗ ███████╗██████╗ ███████╗   ║
-# ║     ██║    ██║██║  ██║██║██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝   ║
-# ║     ██║ █╗ ██║███████║██║█████╗  ██████╔╝█████╗  ██████╔╝█████╗     ║
-# ║     ██║███╗██║██╔══██║██║██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══╝     ║
-# ║     ╚███╔███╔╝██║  ██║██║███████╗██║  ██║███████╗██║  ██║███████╗   ║
-# ║      ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ║
-# ║                                                                      ║
-# ║               🎤  WHISPERER‑INTERNAL  –  MICROPHONE                  ║
-# ║                                                                      ║
-# ║  • Uses faster‑whisper – no llvmlite/numba compilation headaches     ║
-# ║  • Listens to your built‑in microphone                              ║
-# ║  • Shows real‑time transcriptions on the web interface               ║
-# ║  • Kills all previous instances before starting                     ║
-# ║  • Runs in background, survives terminal closure                    ║
-# ║  • Includes a troubleshooter script for audio diagnostics           ║
-# ╚══════════════════════════════════════════════════════════════════════╝
-#
-# =============================================================================
-#  LAUNCHER FOR WHISPERER‑INTERNAL (microphone transcription)
-#  Uses faster‑whisper to avoid llvmlite build errors.
-# =============================================================================
+# +----------------------------------------------------------+
+# |                                                          |
+# |     WHISPERER-INTERNAL  –  MICROPHONE TRANSCRIPTION      |
+# |                                                          |
+# |  • Uses faster-whisper – no llvmlite/numba headaches     |
+# |  • Listens to your built-in microphone                   |
+# |  • Shows real-time transcriptions on the web interface   |
+# |  • Kills all previous instances before starting          |
+# |  • Runs in background, survives terminal closure         |
+# |  • Includes a troubleshooter script for audio diagnostics|
+# +----------------------------------------------------------+
 
 set -Eeuo pipefail
 
