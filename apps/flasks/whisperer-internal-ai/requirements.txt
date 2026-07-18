@@ -1,0 +1,6 @@
+Flask==2.3.2
+numpy==1.26.4
+sounddevice==0.4.6
+faster-whisper
+python-dotenv>=1.0.0
+openai>=1.0.0
