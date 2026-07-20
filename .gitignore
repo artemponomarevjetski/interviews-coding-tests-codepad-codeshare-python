@@ -160,3 +160,4 @@ solver/log/                       # solver Flask logs
 solver/venv/                      # solver virtual environment
 overlay/data/
 apps/flasks/researcher/logs/
+apps/overlay/data/
