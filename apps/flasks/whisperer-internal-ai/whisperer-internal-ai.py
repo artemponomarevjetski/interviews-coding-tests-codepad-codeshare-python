@@ -18,6 +18,7 @@
 
 import os
 import sys
+import re
 from datetime import datetime, timedelta
 from collections import deque
 import logging
@@ -61,10 +62,10 @@ from faster_whisper import WhisperModel
 # ----------------------------------------------------------------------
 SAMPLING_RATE = 16000
 CHUNK_SIZE = 4096
-SILENCE_THRESHOLD = 0.025          # slightly higher to ignore background hum
-MIN_AUDIO_LENGTH = 0.8             # shorter – catches brief numbers
-MODEL_SIZE = "small.en"            # UPGRADED: "small.en" is much more accurate than "base"
-COMPUTE_TYPE = "int8"              # keep for CPU; use "float16" if you have a GPU
+SILENCE_THRESHOLD = 0.025
+MIN_AUDIO_LENGTH = 0.8
+MODEL_SIZE = "small.en"
+COMPUTE_TYPE = "int8"
 
 # ----------------------------------------------------------------------
 #  Load the model (CPU only)
@@ -93,8 +94,7 @@ logging.basicConfig(
 history = deque(maxlen=20)          # stores {"role": "user"/"assistant", "content": ...}
 history_lock = threading.Lock()
 
-# Display list for the web UI (same as before)
-conversations = []
+conversations = []                  # display list (for the web UI)
 conversations_lock = threading.Lock()
 MAX_CONVERSATIONS = 20
 
@@ -102,29 +102,25 @@ MAX_CONVERSATIONS = 20
 #  Microphone selection
 # ----------------------------------------------------------------------
 def get_microphone():
-    """Find the built‑in microphone (MacBook Pro) or fallback to first input."""
     devices = sd.query_devices()
     for i, dev in enumerate(devices):
         if 'MacBook Pro Microphone' in dev['name'] and dev['max_input_channels'] > 0:
             return i
-    # fallback: any non‑BlackHole input device
     for i, dev in enumerate(devices):
         if dev['max_input_channels'] > 0 and 'blackhole' not in dev['name'].lower():
             return i
     return None
 
 # ----------------------------------------------------------------------
-#  Async OpenAI caller – receives the whole history snapshot
+#  Async OpenAI caller – with Markdown stripping and full context
 # ----------------------------------------------------------------------
 def get_ai_reply(history_snapshot, entry):
-    """Send the entire conversation history to OpenAI asynchronously."""
     try:
-        # ----- STRONGEST MODEL: gpt-4o (replace with 'o1-preview' for reasoning) -----
         messages = [
             {"role": "system", "content": (
                 "You are a senior engineer. Provide only the raw code solution. "
-                "Do not include any explanations, introductions, or comments. "
-                "Output just the code – nothing else."
+                "Do not use Markdown, no backticks, no code fences, no explanations, no comments. "
+                "Output just the plain code – nothing else."
             )}
         ] + history_snapshot
 
@@ -132,18 +128,23 @@ def get_ai_reply(history_snapshot, entry):
             model="gpt-4o",           # the strongest general‑purpose model
             messages=messages,
             max_tokens=1200,          # full solutions, no truncation
-            temperature=0.2,          # focused, deterministic output
+            temperature=0.2,
         )
         reply = response.choices[0].message.content.strip()
+
+        # ----- STRIP ANY MARKDOWN FENCES (fallback) -----
+        reply = re.sub(r'^```\w*\n?', '', reply)
+        reply = re.sub(r'\n?```$', '', reply)
+
     except Exception as e:
         logging.error(f"OpenAI error: {e}")
         reply = f"[Error: {e}]"
 
-    # Append assistant reply to the rolling history
+    # Append assistant reply to rolling history
     with history_lock:
         history.append({"role": "assistant", "content": reply})
 
-    # Update the display entry
+    # Update display entry
     with conversations_lock:
         entry['reply'] = reply
         entry['time'] = datetime.now()
@@ -155,7 +156,6 @@ def get_ai_reply(history_snapshot, entry):
 #  Transcription loop (non‑blocking)
 # ----------------------------------------------------------------------
 def transcribe_audio():
-    """Capture microphone audio and transcribe with faster‑whisper – non‑blocking."""
     try:
         device_id = get_microphone()
         if device_id is None:
@@ -195,14 +195,13 @@ def transcribe_audio():
                             if max_amp > 0:
                                 audio_buffer = audio_buffer / max_amp
 
-                            # Transcribe with improved parameters
                             segments, _ = model.transcribe(
                                 audio_buffer,
-                                language="en",                     # force English
-                                vad_filter=True,                   # ignore silence
-                                beam_size=5,                       # better decoding
-                                temperature=0.0,                   # deterministic output
-                                condition_on_previous_text=False   # avoid repetition errors
+                                language="en",
+                                vad_filter=True,
+                                beam_size=5,
+                                temperature=0.0,
+                                condition_on_previous_text=False
                             )
                             user_text = " ".join(seg.text for seg in segments).strip().lower()
 
@@ -211,11 +210,11 @@ def transcribe_audio():
                                 with history_lock:
                                     history.append({"role": "user", "content": user_text})
 
-                                # Create display entry (for the web UI)
+                                # Create display entry
                                 entry = {
                                     'time': datetime.now(),
                                     'user': user_text,
-                                    'reply': None  # placeholder
+                                    'reply': None
                                 }
                                 with conversations_lock:
                                     conversations.append(entry)
@@ -225,8 +224,8 @@ def transcribe_audio():
                                 print(f"\n>> USER: {user_text}")
                                 logging.info(f"USER: {user_text}")
 
-                                # Take a snapshot of the current history and fire off the API call
-                                history_snapshot = list(history)  # copy
+                                # Snapshot history and spawn API call
+                                history_snapshot = list(history)
                                 threading.Thread(
                                     target=get_ai_reply,
                                     args=(history_snapshot, entry),
@@ -247,7 +246,6 @@ def transcribe_audio():
 # ----------------------------------------------------------------------
 @app.route('/')
 def index():
-    """Show conversations – user text and AI reply (if available)."""
     cutoff = datetime.now() - timedelta(minutes=5)
     with conversations_lock:
         recent = [
@@ -282,7 +280,6 @@ def index():
             .thinking { color: #999; font-style: italic; }
             .time { color: #888; font-size: 0.8em; }
 
-            /* preserve indentation in code blocks */
             .code-block {
                 background: #f4f4f4;
                 border-radius: 4px;

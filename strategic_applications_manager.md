@@ -1,13 +1,20 @@
 # Strategic Applications Manager
 
-**Version:** 5.0 FINAL  
-**Last updated:** 2026-07-18  
-**Primary objective:** Increase recruiter-screen, technical-interview, and offer conversion by prioritizing high-fit opportunities, evidence-backed positioning, and mandatory opportunity-specific resumes over application volume.  
+**Version:** 5.2 FINAL — DURABLE  
+**Last updated:** 2026-07-19  
+**Primary objective:** Increase recruiter-screen, technical-interview, and offer conversion through high-fit opportunities, warm network paths, evidence-backed positioning, and mandatory opportunity-specific resumes rather than application volume.  
 **Primary operational email (Gmail1):** `artemponomarevjetski@gmail.com`  
 **Controlled resume-source email:** `art.ponomarev.ai@gmail.com`  
 **Primary positioning:** **Agentic AI Engineer | AI Systems Engineer**
 
 > **CONFIDENTIAL INTERNAL OPERATING FILE.** This file contains private campaign policy and a confidential reference registry. Do not distribute it.
+
+
+## Trusted Career-Counseling Relationship
+
+Lisa Stotlar of CareerGenerations is a trusted career counselor. Treat her communications as career coaching, interview preparation, resume strategy, or private administrative correspondence—not as recruiter, staffing-agency, employer, or application activity.
+
+Coaching guidance may inform campaign decisions, but it does not authorize an application, resume or profile submission, reference release, account creation, or disclosure of sensitive information. Dated sessions, assignments, invoices, billing questions, and follow-up actions belong in `status.md`, the calendar, or the originating mailbox—not in this durable manager.
 
 ## File Architecture
 
@@ -19,10 +26,11 @@ Use a separate file, [`status.md`](status.md), for:
 - appointments, deadlines, and interview stages;
 - manual URL, test, assessment, scheduling, and portal actions;
 - recruiter-specific holds and follow-up dates;
+- third-party talent-platform matches, interest selections, introductions, profile-sharing state, and data-control requests;
 - current market and compensation observations;
 - the next three actions.
 
-Do not place dated campaign state, live inbox counts, or one-off recruiter events in this durable strategy file.
+Do not place dated campaign state, live inbox counts, one-off recruiter events, or the disposition of a named opportunity in this durable strategy file. A fact belongs in `status.md` whenever it can change without a durable policy decision.
 
 ## Operating Precedence
 
@@ -39,6 +47,7 @@ Required prompt:
 > No approved customized resume exists for **[Company] — [Role] ([Requisition ID or URL])**. I will not send or upload a generic resume. Shall I create a targeted two-page resume now from the controlled source resume and this job description?
 
 If the complete job description is unavailable:
+#@@@@@@@@@@@@
 
 > I need the complete job description or official role URL before I can create the required customized resume. I will hold the email or portal submission until the tailored PDF is ready.
 
@@ -57,7 +66,55 @@ The campaign should assume that the primary constraint is usually **signal preci
 7. Treat manual portal steps as incomplete until confirmation evidence exists.
 8. Keep recruiter communication concise: **problem → evidence → next decision**.
 9. Remove public-portfolio links that create avoidable trust or interview-integrity concerns until they pass review.
-10. Use current response data to refine targeting rather than increasing volume indiscriminately.
+10. Use observed response data to refine targeting rather than increasing volume indiscriminately.
+11. Use the LinkedIn network selectively to create warm paths to qualified roles; never treat it as a broadcast list or substitute network size for role fit.
+
+## LinkedIn Network Leverage Strategy
+
+Art's large LinkedIn network is a strategic distribution and referral asset. The live connection count is volatile and belongs in `status.md`; the durable rule is to use the network through **targeted, relationship-aware, opportunity-specific outreach**, not mass messaging. The internal starting point is the [LinkedIn connections directory](https://www.linkedin.com/mynetwork/invite-connect/connections/).
+
+### Network segmentation
+
+Classify relevant first-degree contacts before outreach:
+
+1. **Tier A — warm and directly relevant:** former managers, teammates, collaborators, clients, trusted recruiters, and current employees at a target company who know Art's work.
+2. **Tier B — strategically relevant:** hiring leaders, technical leaders, recruiters, alumni, and domain peers connected to a high-fit employer or role family.
+3. **Tier C — credible dormant relationships:** older professional contacts with a legitimate shared history who may be reactivated with context.
+4. **Tier D — broad visibility network:** the remainder of the network, reached through useful content and normal engagement rather than direct referral requests.
+
+Do not classify a person as a reference merely because the person is a LinkedIn connection. Reference eligibility remains governed by Appendix F and the opportunity-specific approval rule.
+
+### Opportunity-first activation workflow
+
+For each role that passes the application threshold:
+
+1. Confirm the exact employer, role, requisition, job description, location, compensation evidence, and submission path.
+2. Search the LinkedIn network by employer, team, title, domain, shared organization, school, and prior working relationship.
+3. Identify no more than three plausible warm paths and rank them by relationship strength, role relevance, and ability to influence or clarify the process.
+4. Choose one primary path first. Avoid simultaneous referral requests to multiple people at the same company or for the same requisition unless the contacts are informed and the channels are non-conflicting.
+5. Create and approve the opportunity-specific resume before asking anyone to forward it. The generic-resume hard stop still applies.
+6. Send a concise, individualized message that states the shared context, exact role, one or two fit signals, and one low-friction request: team context, hiring-process guidance, or a referral.
+7. Record the contact, relationship, company, role, date, request, response, referral state, and follow-up date in `status.md`.
+8. Follow up once after approximately seven calendar days. A second unanswered ordinary follow-up is the maximum; then return the contact to relationship-only status.
+
+### Outreach limits and safeguards
+
+- Never scrape, automate, or bulk-message the connection list.
+- Do not send identical messages to many contacts or use the network to bypass a known recruiter, referrer, or authorized agency submission path.
+- Keep active warm-introduction requests limited enough to remain personal and trackable; use small weekly batches rather than campaign blasts.
+- Do not attach a resume in a first reactivation message unless the relationship is strong, the role is exact, and the customized PDF is already approved.
+- Treat profile views, online status, reactions, and content impressions as weak prioritization signals—not automatic reasons to message someone.
+- Preserve privacy: do not export, publish, or share the connection list or personalized LinkedIn URLs outside the campaign record.
+
+### Content and visibility loop
+
+Use LinkedIn content to reinforce one target role family at a time and make warm outreach more credible:
+
+- Publish useful technical content or project lessons at a sustainable cadence, normally no more than one substantive post per week during an active interview cycle.
+- Lead with a concrete systems problem, decision, result, or lesson; avoid generic motivational posts and unsupported performance claims.
+- Use a small set of relevant hashtags rather than a long keyword block.
+- Avoid content, screenshots, repository links, or descriptions that can create security, privacy, proprietary-information, or interview-integrity concerns.
+- Track which themes produce recruiter views, relevant messages, profile visits, and referral conversations; optimize for qualified conversations rather than impressions alone.
 
 ## Three Controlled Role Families
 
@@ -88,6 +145,8 @@ The manager must test for these recurring failure modes before applying:
 - **Agency dilution:** the sender does not control the requisition, client, rate, or submission path.
 - **Incomplete application:** a password reset, screening link, interview reminder, or recruiter email is incorrectly counted as a completed application.
 - **Communication drag:** long, defensive, legalistic, or overqualified messages obscure the next decision.
+- **Talent-platform consent ambiguity:** an `Interested`, `Finalize`, `Request intro`, or similar control may authorize profile or resume sharing before the exact disclosure path is understood.
+- **Personalized-link exposure:** a tokenized dashboard or match link may reveal candidate information to anyone who possesses the URL, even without a normal account login.
 
 ## What Recruiters Actually Know
 
@@ -163,24 +222,19 @@ Interpret the funnel as follows:
 - **Technical interviews but little advancement:** interview-execution problem.
 - **Final rounds but no offers:** closing, role selection, references, compensation, or risk-perception problem.
 
-## Version 5.0 Finalization Changes
+## Durable-Document Maintenance Rule
 
-- Separated durable strategy from volatile campaign state in `status.md`.
-- Removed company-specific current events and dated interview status from the strategy file.
-- Converted recruiter-knowledge, compensation, and market-accessibility notes into repeatable decision methods.
-- Preserved and strengthened the generic-resume hard stop.
-- Replaced named-company role-family examples with general role-family rules.
-- Replaced company-specific relationship rules with durable channel patterns.
-- Replaced the current contract-agency list with a reusable registration workflow; the active list now belongs in `status.md`.
-- Replaced Appendix D with the supplied recent-experience-first controlled fact source, removed the “20+ years” header, and omitted GitHub pending public-profile review.
-- Kept current appointments, submissions, manual portal actions, holds, and immediate priorities outside this file.
+- Update this file only when a durable policy, template, canonical candidate fact, communication standard, safety control, or approved reference-registry entry changes.
+- Keep named opportunities, recruiter conversations, dated events, appointments, deadlines, current compensation quotes, platform match selections, and immediate priorities in `status.md` or the underlying system of record.
+- Use Git history or a separate changelog for document revisions; do not turn this manager into a chronological campaign diary.
+- When a live incident reveals a reusable lesson, convert only the generalized rule into this file and leave the incident details in `status.md`.
 
 ---
 
 # Campaign Operating Playbook
 
-**Version:** 5.0 FINAL  
-**Last updated:** 2026-07-18  
+**Version:** 5.2 FINAL — DURABLE  
+**Last updated:** 2026-07-19  
 **Durable scope:** strategic conversion policy, customized-resume gate, controlled resume fact source, confidential reference registry, communication standards, email/portal controls, archive rules, and reusable templates  
 **Volatile companion:** [`status.md`](status.md)
 
@@ -237,6 +291,11 @@ Interpret the funnel as follows:
 49. **Controlled-resume-source rule:** Appendix D contains the only approved source of resume facts, but it is **never an outbound artifact**. Retire competing masters. Generate a new customized PDF for every specific opportunity. The controlled source contact email remains `art.ponomarev.ai@gmail.com` as supplied by Art; Gmail1 remains the operational address for applications, recruiter correspondence, and scheduling.
 50. **Durable-record rule:** this file stores durable policy, templates, the controlled resume fact source, and the confidential reference registry. Historical recruiter communications, dated thread inventories, current opportunities, appointments, market observations, and immediate priorities belong in `status.md` or the underlying systems of record.
 51. **Pre-send enforcement rule:** before any send or portal submission involving a resume, verify: exact employer, exact role, requisition or URL, complete job description, tailored title and summary, mapped top requirements, approved filename, and actual PDF attachment or upload. Any missing item triggers the generic-resume hard stop and the customization prompt.
+52. **Career-counselor classification rule:** treat trusted career-counselor messages as coaching or administration, not as recruiter outreach or application activity. Coaching does not authorize any submission or disclosure.
+53. **Talent-platform consent rule:** treat `Interested`, `Finalize`, `Approve`, `Request intro`, and comparable controls as potential authorization to share a profile, AI-generated profile, LinkedIn data, or resume. Do not confirm until the exact employer, role, job description, disclosure scope, representation status, and resume version are understood. Never approve blanket reuse of one resume across unrelated opportunities.
+54. **Security-warning link rule:** if LinkedIn, email, the browser, or another security layer warns that a link may be unsafe, do not bypass the warning. Open a clean tab, type or use the verified canonical root domain, authenticate there if appropriate, and navigate internally. Stop if the same warning persists, the domain changes, or the page requests unexpected credentials or downloads.
+55. **Evidence-preservation rule:** before deleting, retracting, reporting, or escalating a disputed recruiting message, capture the relevant thread, timestamps, URLs, attachments, and platform state. Message deletion does not reverse profile sharing, submissions, introductions, or other actions already taken outside the conversation.
+56. **LinkedIn-network leverage rule:** use the large LinkedIn network through personalized, opportunity-specific warm paths, not bulk outreach. Qualify the role first, coordinate one primary referral path per company or requisition, apply the customized-resume gate, and record each request and outcome in `status.md`.
 
 
 ---
@@ -248,7 +307,6 @@ The campaign operates across:
 - Gmail1 — primary operational mailbox: `artemponomarevjetski@gmail.com`
 - Gmail2 — secondary intake mailbox: `art.ponomarev.ai@gmail.com`
 - LinkedIn — intake, networking, recruiter conversations, and manual application actions
-- Direct-employer career portals
 - Direct-employer career portals
 - Staffing-agency portals
 - Greenhouse, Lever, Workday, BrassRing, Dice, and similar systems
@@ -282,7 +340,7 @@ Remote or high-paying roles involving production AI systems, agentic AI, ML plat
 
 Avoid making **Data Scientist** the lead identity for ordinary roles.
 
-### 1.3 Current market positioning
+### 1.3 Canonical market positioning
 
 > **Agentic AI Engineer | AI Systems Engineer**
 > **Production AI agents — Python systems that reason, use tools, evaluate, and scale.**
@@ -417,8 +475,8 @@ Skip or deprioritize unless compensation or strategic value is unusually strong:
 - Business analyst roles
 - Admin, support, call-center, data-entry, or low-rate work
 - Onsite roles far outside the Bay Area
-- Roles below roughly **$120K/year**
-- W-2 roles below roughly **$60/hour**
+- Roles below the opportunity-specific compensation floor recorded in `status.md`
+- Contract rates whose verified net economics fall below the opportunity-specific floor recorded in `status.md`
 - C2C-only roles. A 1099 role may proceed after the client, rate, duration, payment terms, insurance requirements, and duplicate-submission status are verified
 - Recruiter spam with no client, rate, location, or meaningful job description
 - Requests for passport, SSN, driver’s license, W-2, tax forms, references, or work-authorization copies before formal onboarding
@@ -435,7 +493,7 @@ Thanks, but I do not need financial planning or advisory services. I am focused 
 
 ## 6. Contract and Compensation Rules
 
-The numerical ranges below are internal default anchors, not permanent market facts. `status.md` must record the current verified range for each opportunity, and a live posting or written recruiter quote takes precedence.
+Opportunity-specific compensation figures are volatile. Published ranges, recruiter quotes, floors, targets, stretch anchors, commute costs, and contract economics belong in `status.md`. This section defines the reusable decision method only.
 
 ### 6.1 Accepted employment structures
 
@@ -445,59 +503,44 @@ Use exactly:
 I can work on W-2 or 1099. I do not do C2C contracts.
 ```
 
-For a specific opportunity, confirm the selected structure in writing before authorizing submission. Do not treat acceptance of 1099 for one role as authorization for C2C or as a blanket rate confirmation for unrelated roles.
+For a specific opportunity, confirm the selected structure in writing before authorizing submission. Acceptance of one 1099 engagement is not blanket authorization for C2C, another client, or another rate.
 
-### 6.2 Senior full-time AI/ML roles
+### 6.2 Full-time roles
 
-```text
-Target: $220K–$280K base depending on level, scope, bonus, equity, and benefits.
-For unusually strong senior, principal, or founding roles: $230K–$300K+ base plus equity and bonus.
-```
+For each serious role, record in `status.md`:
 
-### 6.3 Exceptional founding / forward-deployed leadership
+- verified published or recruiter-stated range;
+- level, scope, location, and onsite expectations;
+- base, bonus, equity, benefits, and sign-on;
+- a reasoned floor, target, and stretch outcome;
+- the strategic value of the role and the cost of accepting it.
 
-For highly aligned founding leadership roles with substantial ownership:
+Do not volunteer the floor. Anchor only after the role's level, scope, and budget are sufficiently clear.
 
-```text
-Target: market-leading base, meaningful equity, and clear scope.
-A $300K–$400K base range is an immediate-priority signal when the role and company are credible.
-```
+### 6.3 Founding and forward-deployed leadership
 
-### 6.4 Elite quant / high-compensation research-engineering roles
+Evaluate base compensation together with equity, dilution, funding stage, runway, ownership, travel, customer exposure, hiring authority, and technical scope. A lower base may be rational only when the equity and ownership are credible, documented, and proportionate to the risk.
 
-```text
-Target: $500K+ total compensation or the advertised range, with full-package discussion.
-```
+### 6.4 Quantitative, research-engineering, and unusually high-compensation roles
+
+Compare total compensation, deferred compensation, bonus variability, restrictive covenants, confidentiality, location, and interview burden. Use the verified advertised range or a current market-supported range stored in `status.md`.
 
 ### 6.5 W-2 contracts
 
-```text
-Preferred: $80–$120/hour W-2 for strong AI/ML/platform roles.
-Tactical floor: approximately $60/hour W-2 only when the role is remote, local, strategically useful, or likely to convert.
-```
+Compare the hourly rate with annualized cash, paid time off, health coverage, retirement benefits, overtime rules, expected utilization, duration, conversion probability, equipment, commute, and bench risk. A strategically valuable exception requires an explicit reason in `status.md`.
 
 ### 6.6 1099 contracts
 
-```text
-1099 is acceptable when the opportunity is credible and the rate, client, duration, payment schedule, all-inclusive terms, insurance requirements, equipment or expense obligations, and expected hours are clear. Compare the net economics with W-2 compensation before confirming.
-```
+Proceed only when the client, rate, duration, expected hours, payment schedule, all-inclusive terms, insurance requirements, equipment and expense obligations, intellectual-property terms, termination rights, and net economics are clear. Compare the result with an equivalent W-2 package before confirming.
 
-### 6.7 Remote $70/hour W-2 roles
+### 6.7 Low-compensation strategic exceptions
 
-```text
-Acceptable as a fallback when the work is relevant, fully remote, and likely to convert, but not above high-compensation Agentic AI or AI Systems roles.
-```
+An opportunity below the normal floor may proceed only when it is unusually relevant, fully remote or local, likely to convert, provides scarce evidence, or creates a high-value relationship. Record the override reason and exit condition in `status.md`.
 
-### 6.8 Bay Area salaries around $130K
+### 6.8 Compensation response template
 
 ```text
-Continue only when the employer can move upward or the role provides exceptional strategic value.
-```
-
-### 6.9 Compensation reply for senior startup roles
-
-```text
-For senior or lead AI engineering roles, my target is $220K–$280K base, depending on level, scope, bonus, equity, and benefits. For an unusually strong founding role, I can consider a different base/equity balance when the ownership, funding, and technical scope are compelling.
+For this role, I would like to understand the level, scope, and complete compensation package before anchoring. Based on the verified responsibilities and comparable roles, my target is [target range], with flexibility depending on base, bonus, equity, benefits, location, and employment structure.
 ```
 
 ---
@@ -1095,6 +1138,34 @@ For a top strategic recruiter, founder, talent agent, or internal referrer:
 - Wait approximately seven calendar days before a status check unless there is a stated deadline or substantive inbound activity.
 - Keep each follow-up short, specific, and tied to a concrete decision or next step.
 
+### 12.8 Large-network search and segmentation
+
+Use the [LinkedIn connections directory](https://www.linkedin.com/mynetwork/invite-connect/connections/) manually to identify warm paths for a qualified role. Search by target company, hiring function, role family, technical domain, shared employer, school, and genuine prior relationship. Rank contacts as Tier A, B, C, or D under the LinkedIn Network Leverage Strategy and store only the active shortlist in `status.md`.
+
+### 12.9 Warm introduction and referral workflow
+
+For a verified high-fit role:
+
+1. Confirm the official requisition and one authorized application path.
+2. Prepare the opportunity-specific resume before requesting a referral or forward.
+3. Contact one strongest warm path first.
+4. Ask for one action only: context, an introduction, or an internal referral.
+5. Apply through the agreed channel once.
+6. Send the confirmation and requisition ID to the contact.
+7. Record the outcome and follow-up date.
+
+Do not ask several employees to submit duplicate referrals for the same requisition. Do not bypass an active recruiter, agency, or internal referrer whose representation is already established.
+
+### 12.10 Content and profile visibility
+
+Use content as a credibility layer, not as a substitute for applications or relationships:
+
+- Keep each post aligned with one target role family.
+- Prefer systems decisions, measurable outcomes, trade-offs, reliability lessons, and technical explanations.
+- Use a concise set of relevant hashtags and avoid keyword stuffing.
+- Remove or withhold links that have not passed the public-profile hygiene review.
+- Treat profile views as weak signals and substantive messages, referrals, recruiter screens, and interviews as conversion signals.
+
 ---
 
 ## 13. Portal Application Rules
@@ -1130,7 +1201,17 @@ APPLICATION INCOMPLETE
 - Use Tundra only for relevant U.S., remote, or Bay Area openings or a verified recruiter-led Meta requisition.
 - Do not create standalone candidate accounts in enterprise VMS platforms such as Beeline or Magnit unless a client or recruiter provides a program-specific invitation.
 
-### 13.3 Greenhouse / Lever / Workday
+### 13.3 Third-party talent marketplaces and AI talent agents
+
+- Treat a match, recommendation, `Interested`, `Finalize`, `Approve`, or `Request intro` action as potentially consequential rather than as a harmless preference click.
+- Before authorizing anything, capture the exact employer, role, requisition or official URL, complete job description, compensation and location, what candidate data will be disclosed, whether a resume is included, and who controls the employer relationship.
+- Require written clarification when the representative cannot provide send dates, hiring-contact names, company confirmations, or a clear disclosure audit.
+- Do not authorize bulk profile sharing, blanket introduction rights, or reuse of one resume across multiple employers.
+- Treat personalized dashboard URLs as confidential bearer links. Do not forward or publish them. Request deactivation or regeneration if exposed.
+- If a security warning appears, navigate from the verified root domain instead of bypassing the warning.
+- Record live matches, approval state, disclosures, employer responses, and data-control requests only in `status.md`.
+
+### 13.4 Greenhouse / Lever / Workday
 
 After submission, record:
 
@@ -1143,7 +1224,7 @@ After submission, record:
 - Referral or recruiter contact
 - Follow-up date
 
-### 13.4 Duplicate-submission control
+### 13.5 Duplicate-submission control
 
 Before submitting through another recruiter or agency, check internally:
 
@@ -1156,7 +1237,7 @@ Before submitting through another recruiter or agency, check internally:
 
 Avoid parallel submissions that create ownership conflicts. Keep the detailed checklist in the campaign record. In recruiter email, ask only the next necessary question—for example, whether one active submission exists or who the main contact is. Do not send a multi-item legalistic demand unless a material dispute has escalated.
 
-### 13.5 ATS field and resume consistency
+### 13.6 ATS field and resume consistency
 
 Before pressing **Next** or **Submit**:
 
@@ -1170,7 +1251,7 @@ Before pressing **Next** or **Submit**:
 - Confirm that the final resume filename is visible in the required attachment section. A parser upload does not replace the final resume attachment.
 - Remove section-level resume text accidentally appended to an individual employer description.
 
-### 13.6 Post-submission confirmation
+### 13.7 Post-submission confirmation
 
 After a portal reports success:
 
@@ -1572,7 +1653,11 @@ Proceed only when scope, deliverables, time commitment, compensation, equity, in
 
 Maintain professional warmth but do not treat a relationship as an active job lead until a specific role, client project, referral path, or paid engagement exists.
 
-### 20.5 Prior-colleague referrals
+### 20.5 Career counselors and coaches
+
+Treat an identified career counselor or coach as a trusted advisory relationship, not a recruiter, employer, staffing agency, or application channel. Coaching materials may shape preparation and positioning, but dated assignments, appointments, invoices, and administrative follow-ups remain outside this durable manager. Never interpret coaching guidance as authorization to submit a resume, create a profile, release references, or disclose sensitive information.
+
+### 20.6 Prior-colleague referrals
 
 When a former colleague offers to route or comment on an application:
 
@@ -1899,8 +1984,22 @@ Escalate for review when several signals appear:
 - Implausible compensation without a credible explanation.
 - Generic language unrelated to the candidate profile.
 - Repeated evasiveness, contradictory instructions, unnecessary urgency, or a process that requires disproportionate effort to obtain basic facts.
+- A browser, email client, or social platform displays a security warning for the destination.
+- A personalized or tokenized URL exposes candidate preferences, compensation, contact data, or match state without normal authentication.
+- A representative claims submissions or employer interest but cannot provide send dates, recipient identities, requisitions, or company-side confirmation.
 
 When the risk is clear, label or report the thread and stop. Do not argue with obvious spam, coach the sender, chase multiple alternate contacts, or disclose sensitive information. Further outreach requires explicit user direction.
+
+
+### 27.4 Link and personalized-dashboard safety
+
+1. Do not bypass a platform or browser warning merely because the visible domain looks familiar.
+2. Copy only the root domain—not the personalized path—into a clean tab and navigate internally.
+3. Verify HTTPS, spelling, account context, and destination before entering credentials or opening downloads.
+4. Treat opaque tokens in URLs as secrets; anyone possessing the link may be able to view candidate information or act on the profile.
+5. Do not click state-changing controls such as `Interested`, `Finalize`, `Approve`, or `Request intro` during a safety review.
+6. Save the warning, URL, timestamp, and visible page state before escalating.
+7. Stop and request a clean official workflow when the warning persists or the destination cannot be independently verified.
 
 ---
 
@@ -1908,7 +2007,7 @@ When the risk is clear, label or report the thread and stop. Do not argue with o
 
 ### 28.1 Preflight
 
-1. Verify the official domain and organization.
+1. Verify the official domain and organization. If a warning appears, navigate manually from the canonical root domain rather than bypassing it.
 2. Classify the site: direct employer, ATS, staffing agency, talent marketplace, or paid job bank.
 3. Search for an existing account to avoid duplicate profiles.
 4. Check current representation for the same client or requisition.
@@ -1948,7 +2047,19 @@ Before authorizing submission, obtain:
 
 Do not provide identity, tax, banking, background-check, or onboarding documents during ordinary sourcing.
 
-### 28.4 Paid or paywalled job bank
+### 28.4 Talent marketplace or AI talent-agent consent workflow
+
+1. Determine whether the candidate has completed onboarding or merely responded to outbound prospecting.
+2. Capture the platform's privacy policy, terms, consent language, and candidate-data fields.
+3. Identify whether companies can view the LinkedIn profile, CV, AI-generated profile, call data, or contact information before a candidate-specific approval.
+4. For every role, require the employer, exact title, official job description, disclosure scope, resume version, representation status, and confirmation state.
+5. Treat profile-interest selections and introduction approvals as distinct events and record both.
+6. Never authorize blanket use of one resume or indiscriminate sharing across multiple companies.
+7. When visibility is disputed, request a written disclosure audit: recipient company, role, date, material shared, response, and current state.
+8. When appropriate, exercise access, correction, restriction, objection, withdrawal-of-consent, or deletion rights through the platform's official privacy channel.
+9. Store live role selections and disclosure history in `status.md`, not this manager.
+
+### 28.5 Paid or paywalled job bank
 
 1. Exhaust the free tier first.
 2. Confirm that payment unlocks specific current roles rather than generic coaching or scraped listings.
@@ -1960,7 +2071,7 @@ Do not provide identity, tax, banking, background-check, or onboarding documents
 8. Cancel when results are mostly duplicate, expired, low-fit, or unverifiable.
 9. Never pay an employer or recruiter to receive an interview or offer.
 
-### 28.5 Manual portal record
+### 28.6 Manual portal record
 
 ```text
 Portal / agency:
@@ -1979,9 +2090,9 @@ Duplicate-submission risk:
 Next manual action:
 ```
 
-### 28.6 Contract-agency registration workflow
+### 28.7 Contract-agency registration workflow
 
-The current registration queue belongs in `status.md`. For each approved agency:
+The live registration queue belongs in `status.md`. For each approved agency:
 
 1. Verify the official domain and whether candidate registration is public.
 2. Check for an existing account under either campaign email before creating a new one.
@@ -2145,10 +2256,34 @@ Best,
 Art
 ```
 
+## A.9 Warm referral request
+
+Use only after the role is verified and the opportunity-specific resume is ready.
+
+```text
+Hi [Name],
+
+I hope you are doing well. I am considering [Role] at [Company], requisition [ID], and my recent work in [one or two directly relevant areas] maps closely to the role. Would you be comfortable sharing any context on the team or referring me through the official process? I have a role-specific resume ready.
+
+Best,
+Art
+```
+
+## A.10 Dormant professional-connection reactivation
+
+```text
+Hi [Name],
+
+It has been a while since [shared context]. I am now focused on Agentic AI, AI systems, and ML infrastructure roles, and I noticed your work at [Company / domain]. I would be glad to reconnect and hear what you are seeing in the market. No action is needed unless a relevant role comes to mind.
+
+Best,
+Art
+```
+
 ---
 # Appendix B — Canonical Microsoft Positioning
 
-## B.1 Current application wording
+## B.1 Canonical application wording
 
 ```text
 Microsoft, 2025–Present
@@ -2178,7 +2313,7 @@ This playbook is a durable operating document, not a historical communications l
 - Produce a separate dated mission report for Art’s attention during each active review.
 - Do not save the mission report back into this file unless Art explicitly requests a durable policy change.
 - Update this file only for durable rules, templates, controlled resume-source content, or approved reference-registry maintenance.
-- Keep the campaign focused on the current actionable state while preserving email history in Gmail and stale/closed chains under `Jobs/Archive`.
+- Keep the campaign focused on the live actionable state while preserving email history in Gmail and stale/closed chains under `Jobs/Archive`.
 
 ---
 

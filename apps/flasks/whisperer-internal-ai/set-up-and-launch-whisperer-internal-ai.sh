@@ -11,7 +11,7 @@
 # |  • Runs in background, survives terminal closure         |
 # |  • Includes a troubleshooter script for audio diagnostics|
 # |  • Bundles transcribed text and sends to OpenAI async    |
-# |  • Continues transcription while waiting for OpenAI     |
+#  • Continues transcription while waiting for OpenAI     |
 # |  • Injects API responses into the webpage on the fly    |
 # +----------------------------------------------------------+
 
@@ -211,7 +211,7 @@ echo "$APP_PID" > "$PID_FILE"
 sleep 2
 if ps -p "$APP_PID" >/dev/null 2>&1; then
     log "${GREEN}✅ Whisperer started (PID $APP_PID)${NC}"
-    echo -e "\n${GREEN}🎤✅ Setup complete! Open http://localhost:${PORT} in your browser${NC}"
+    echo -e "\n${GREEN}🎤✅ Setup complete! Open http://localhost:${PORT} or http://192.168.1.167:5000 in your browser${NC}"
     echo -e "   Speak numbers like 'one two three' to test transcription."
     echo -e "   📝 Logs: tail -f $FLASK_LOG"
     echo -e "   🛑 Stop: pkill -f $APP_PY"
