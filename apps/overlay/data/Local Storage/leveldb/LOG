@@ -1,0 +1,168 @@
+2026/07/13-08:55:58.578 8c07 Reusing MANIFEST /Users/artem.ponomarev/interviews-coding-tests-codepad-codeshare-python/overlay/data/Local Storage/leveldb/MANIFEST-000001
+2026/07/13-08:55:58.602 8c07 Recovering log #13
+2026/07/13-08:55:58.603 8c07 Reusing old log /Users/artem.ponomarev/interviews-coding-tests-codepad-codeshare-python/overlay/data/Local Storage/leveldb/000013.log 
+2026/07/13-08:58:47.282 9903 Level-0 table #17: started
+2026/07/13-08:58:47.308 9903 Level-0 table #17: 104561 bytes OK
+2026/07/13-08:58:47.348 9903 Delete type=0 #13
+2026/07/13-09:02:00.657 9903 Level-0 table #19: started
+2026/07/13-09:02:00.681 9903 Level-0 table #19: 26955 bytes OK
+2026/07/13-09:02:00.722 9903 Delete type=0 #16
+2026/07/13-09:02:00.723 9903 Compacting 4@0 + 1@1 files
+2026/07/13-09:02:00.748 9903 Generated table #20@0: 18 keys, 94388 bytes
+2026/07/13-09:02:00.748 9903 Compacted 4@0 + 1@1 files => 94388 bytes
+2026/07/13-09:02:00.786 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-09:02:00.787 9903 Delete type=2 #14
+2026/07/13-09:02:00.787 9903 Delete type=2 #17
+2026/07/13-09:02:00.787 9903 Delete type=2 #11
+2026/07/13-09:02:00.787 9903 Delete type=2 #8
+2026/07/13-09:02:00.787 9903 Delete type=2 #19
+2026/07/13-09:04:00.657 9903 Level-0 table #22: started
+2026/07/13-09:04:00.679 9903 Level-0 table #22: 99089 bytes OK
+2026/07/13-09:04:00.720 9903 Delete type=0 #18
+2026/07/13-10:44:28.850 9903 Level-0 table #24: started
+2026/07/13-10:44:28.871 9903 Level-0 table #24: 27190 bytes OK
+2026/07/13-10:44:28.911 9903 Delete type=0 #21
+2026/07/13-10:44:34.281 9903 Level-0 table #26: started
+2026/07/13-10:44:34.304 9903 Level-0 table #26: 111380 bytes OK
+2026/07/13-10:44:34.343 9903 Delete type=0 #23
+2026/07/13-10:44:39.678 9903 Level-0 table #28: started
+2026/07/13-10:44:39.701 9903 Level-0 table #28: 95306 bytes OK
+2026/07/13-10:44:39.739 9903 Delete type=0 #25
+2026/07/13-10:44:39.740 9903 Compacting 4@0 + 1@1 files
+2026/07/13-10:44:39.765 9903 Generated table #29@0: 18 keys, 111516 bytes
+2026/07/13-10:44:39.765 9903 Compacted 4@0 + 1@1 files => 111516 bytes
+2026/07/13-10:44:39.803 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-10:44:39.804 9903 Delete type=2 #28
+2026/07/13-10:44:39.804 9903 Delete type=2 #20
+2026/07/13-10:44:39.804 9903 Delete type=2 #22
+2026/07/13-10:44:39.804 9903 Delete type=2 #26
+2026/07/13-10:44:39.804 9903 Delete type=2 #24
+2026/07/13-10:50:29.563 9903 Level-0 table #31: started
+2026/07/13-10:50:29.585 9903 Level-0 table #31: 30656 bytes OK
+2026/07/13-10:50:29.626 9903 Delete type=0 #27
+2026/07/13-11:57:26.535 9903 Level-0 table #33: started
+2026/07/13-11:57:26.561 9903 Level-0 table #33: 135821 bytes OK
+2026/07/13-11:57:26.600 9903 Delete type=0 #30
+2026/07/13-11:57:32.776 9903 Level-0 table #35: started
+2026/07/13-11:57:32.798 9903 Level-0 table #35: 65950 bytes OK
+2026/07/13-11:57:32.836 9903 Delete type=0 #32
+2026/07/13-12:02:27.551 9903 Level-0 table #37: started
+2026/07/13-12:02:27.573 9903 Level-0 table #37: 34786 bytes OK
+2026/07/13-12:02:27.612 9903 Delete type=0 #34
+2026/07/13-12:02:27.614 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:02:27.639 9903 Generated table #38@0: 18 keys, 95026 bytes
+2026/07/13-12:02:27.639 9903 Compacted 4@0 + 1@1 files => 95026 bytes
+2026/07/13-12:02:27.676 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:02:27.677 9903 Delete type=2 #29
+2026/07/13-12:02:27.677 9903 Delete type=2 #35
+2026/07/13-12:02:27.677 9903 Delete type=2 #37
+2026/07/13-12:02:27.677 9903 Delete type=2 #33
+2026/07/13-12:02:27.677 9903 Delete type=2 #31
+2026/07/13-12:02:46.370 9903 Level-0 table #40: started
+2026/07/13-12:02:46.392 9903 Level-0 table #40: 31967 bytes OK
+2026/07/13-12:02:46.432 9903 Delete type=0 #36
+2026/07/13-12:03:12.924 9903 Level-0 table #42: started
+2026/07/13-12:03:12.948 9903 Level-0 table #42: 125984 bytes OK
+2026/07/13-12:03:12.987 9903 Delete type=0 #39
+2026/07/13-12:03:22.931 9903 Level-0 table #44: started
+2026/07/13-12:03:22.956 9903 Level-0 table #44: 70320 bytes OK
+2026/07/13-12:03:22.994 9903 Delete type=0 #41
+2026/07/13-12:04:07.942 9903 Level-0 table #46: started
+2026/07/13-12:04:07.964 9903 Level-0 table #46: 37779 bytes OK
+2026/07/13-12:04:07.991 9903 Delete type=0 #43
+2026/07/13-12:04:07.992 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:04:08.024 9903 Generated table #47@0: 18 keys, 96115 bytes
+2026/07/13-12:04:08.025 9903 Compacted 4@0 + 1@1 files => 96115 bytes
+2026/07/13-12:04:08.063 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:04:08.064 9903 Delete type=2 #38
+2026/07/13-12:04:08.064 9903 Delete type=2 #42
+2026/07/13-12:04:08.064 9903 Delete type=2 #40
+2026/07/13-12:04:08.064 9903 Delete type=2 #44
+2026/07/13-12:04:08.064 9903 Delete type=2 #46
+2026/07/13-12:04:49.350 9903 Level-0 table #49: started
+2026/07/13-12:04:49.372 9903 Level-0 table #49: 33437 bytes OK
+2026/07/13-12:04:49.412 9903 Delete type=0 #45
+2026/07/13-12:05:33.328 9903 Level-0 table #51: started
+2026/07/13-12:05:33.349 9903 Level-0 table #51: 32492 bytes OK
+2026/07/13-12:05:33.390 9903 Delete type=0 #48
+2026/07/13-12:07:15.242 9903 Level-0 table #53: started
+2026/07/13-12:07:15.266 9903 Level-0 table #53: 39980 bytes OK
+2026/07/13-12:07:15.305 9903 Delete type=0 #50
+2026/07/13-12:08:27.671 9903 Level-0 table #55: started
+2026/07/13-12:08:27.693 9903 Level-0 table #55: 43688 bytes OK
+2026/07/13-12:08:27.733 9903 Delete type=0 #52
+2026/07/13-12:08:27.734 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:08:27.758 9903 Generated table #56@0: 18 keys, 97749 bytes
+2026/07/13-12:08:27.758 9903 Compacted 4@0 + 1@1 files => 97749 bytes
+2026/07/13-12:08:27.797 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:08:27.798 9903 Delete type=2 #49
+2026/07/13-12:08:27.798 9903 Delete type=2 #55
+2026/07/13-12:08:27.798 9903 Delete type=2 #51
+2026/07/13-12:08:27.798 9903 Delete type=2 #47
+2026/07/13-12:08:27.798 9903 Delete type=2 #53
+2026/07/13-12:09:17.111 9903 Level-0 table #58: started
+2026/07/13-12:09:17.133 9903 Level-0 table #58: 35285 bytes OK
+2026/07/13-12:09:17.173 9903 Delete type=0 #54
+2026/07/13-12:09:43.415 9903 Level-0 table #60: started
+2026/07/13-12:09:43.436 9903 Level-0 table #60: 37143 bytes OK
+2026/07/13-12:09:43.476 9903 Delete type=0 #57
+2026/07/13-12:10:44.458 9903 Level-0 table #62: started
+2026/07/13-12:10:44.481 9903 Level-0 table #62: 36366 bytes OK
+2026/07/13-12:10:44.519 9903 Delete type=0 #59
+2026/07/13-12:11:16.806 9903 Level-0 table #64: started
+2026/07/13-12:11:16.828 9903 Level-0 table #64: 35452 bytes OK
+2026/07/13-12:11:16.868 9903 Delete type=0 #61
+2026/07/13-12:11:16.869 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:11:16.892 9903 Generated table #65@0: 18 keys, 97470 bytes
+2026/07/13-12:11:16.892 9903 Compacted 4@0 + 1@1 files => 97470 bytes
+2026/07/13-12:11:16.931 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:11:16.932 9903 Delete type=2 #62
+2026/07/13-12:11:16.932 9903 Delete type=2 #60
+2026/07/13-12:11:16.932 9903 Delete type=2 #64
+2026/07/13-12:11:16.932 9903 Delete type=2 #58
+2026/07/13-12:11:16.932 9903 Delete type=2 #56
+2026/07/13-12:11:43.195 9903 Level-0 table #67: started
+2026/07/13-12:11:43.218 9903 Level-0 table #67: 37498 bytes OK
+2026/07/13-12:11:43.255 9903 Delete type=0 #63
+2026/07/13-12:12:39.353 9903 Level-0 table #69: started
+2026/07/13-12:12:39.374 9903 Level-0 table #69: 35545 bytes OK
+2026/07/13-12:12:39.414 9903 Delete type=0 #66
+2026/07/13-12:13:08.527 9903 Level-0 table #71: started
+2026/07/13-12:13:08.550 9903 Level-0 table #71: 34465 bytes OK
+2026/07/13-12:13:08.588 9903 Delete type=0 #68
+2026/07/13-12:14:08.782 9903 Level-0 table #73: started
+2026/07/13-12:14:08.807 9903 Level-0 table #73: 44217 bytes OK
+2026/07/13-12:14:08.846 9903 Delete type=0 #70
+2026/07/13-12:14:08.846 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:14:08.869 9903 Generated table #74@0: 18 keys, 98217 bytes
+2026/07/13-12:14:08.869 9903 Compacted 4@0 + 1@1 files => 98217 bytes
+2026/07/13-12:14:08.909 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:14:08.910 9903 Delete type=2 #71
+2026/07/13-12:14:08.910 9903 Delete type=2 #65
+2026/07/13-12:14:08.910 9903 Delete type=2 #73
+2026/07/13-12:14:08.910 9903 Delete type=2 #67
+2026/07/13-12:14:08.910 9903 Delete type=2 #69
+2026/07/13-12:14:53.405 9903 Level-0 table #76: started
+2026/07/13-12:14:53.429 9903 Level-0 table #76: 124996 bytes OK
+2026/07/13-12:14:53.469 9903 Delete type=0 #72
+2026/07/13-12:15:04.680 9903 Level-0 table #78: started
+2026/07/13-12:15:04.702 9903 Level-0 table #78: 71153 bytes OK
+2026/07/13-12:15:04.741 9903 Delete type=0 #75
+2026/07/13-12:15:34.954 9903 Level-0 table #80: started
+2026/07/13-12:15:34.976 9903 Level-0 table #80: 38754 bytes OK
+2026/07/13-12:15:35.015 9903 Delete type=0 #77
+2026/07/13-12:18:20.257 9903 Level-0 table #82: started
+2026/07/13-12:18:20.282 9903 Level-0 table #82: 35325 bytes OK
+2026/07/13-12:18:20.324 9903 Delete type=0 #79
+2026/07/13-12:18:20.324 9903 Compacting 4@0 + 1@1 files
+2026/07/13-12:18:20.351 9903 Generated table #83@0: 18 keys, 99767 bytes
+2026/07/13-12:18:20.351 9903 Compacted 4@0 + 1@1 files => 99767 bytes
+2026/07/13-12:18:20.387 9903 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/13-12:18:20.388 9903 Delete type=2 #76
+2026/07/13-12:18:20.388 9903 Delete type=2 #74
+2026/07/13-12:18:20.388 9903 Delete type=2 #80
+2026/07/13-12:18:20.388 9903 Delete type=2 #82
+2026/07/13-12:18:20.388 9903 Delete type=2 #78
+2026/07/13-12:25:14.365 9903 Level-0 table #85: started
+2026/07/13-12:25:19.124 9903 Level-0 table #85: 38789 bytes OK
+2026/07/13-12:25:19.195 9903 Delete type=0 #81

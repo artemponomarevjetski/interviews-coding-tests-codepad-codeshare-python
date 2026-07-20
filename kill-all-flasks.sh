@@ -15,23 +15,55 @@ NC='\033[0m' # No Color
 # Get repository root directory (3 levels up from script location)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-# ASCII Art for header
+# ---------------------------------------------------------------------------
+#  ASCII HEADER – Hangman + Pac-Man + Ghost
+# ---------------------------------------------------------------------------
 echo -e "${CYAN}"
-echo "╔══════════════════════════════════════════════════════╗"
-echo "║         🚨 REPOSITORY APP KILLER v3.0 🚨            ║"
-echo "║      Kills ALL apps from this repository            ║"
-echo "╚══════════════════════════════════════════════════════╝"
+cat << "EOF"
+   ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ 
+  ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
+  ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ 
+  ▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          
+  ▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          
+  ▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          
+  ▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          
+  ▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          
+  ▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄▄▄ 
+  ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
+   ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀ 
+EOF
+echo -e "${YELLOW}"
+cat << "EOF"
+       ____      _           _    _            ____  
+      / ___|    | |         | |  | |          / ___| 
+     | |  _  ___| | __  _ __| |__| |__   ___ | |  _  
+     | |_| |/ __| |/ / | '__|  __  '_ \ / _ \| |_| | 
+      \____|\___|   <  | |  | |  | |_) | (_) |\____| 
+      |_____|       |_| |_|  |_|  |_.__/ \___/|_____| 
+              ___  ___  ___  ___  ___  ___  ___  ___ 
+             |   \|   \|   \|   \|   \|   \|   \|   \ 
+             |_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_| 
+                                                       
+EOF
+echo -e "${PURPLE}"
+cat << "EOF"
+       ╔══════════════════════════════════════════════════════╗
+       ║     🚀 REPOSITORY APP KILLER v3.0  🚀              ║
+       ║   Kills ALL apps from this repository               ║
+       ╚══════════════════════════════════════════════════════╝
+EOF
 echo -e "${NC}"
 echo -e "${BOLD}Repository root:${NC} $REPO_ROOT"
 echo -e "${BOLD}Script location:${NC} $(dirname "${BASH_SOURCE[0]}")"
 echo ""
 
-# Function to display process info
+# ---------------------------------------------------------------------------
+#  FUNCTION: show_processes
+# ---------------------------------------------------------------------------
 show_processes() {
     echo -e "\n${YELLOW}🔍 Scanning for running processes from this repository...${NC}"
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
     
-    # Check all possible PID files in all app directories
     local pid_files_found=0
     for app_dir in whisperer-external whisperer-internal avatar solver; do
         if [ -f "$app_dir/whisperer.pid" ] || [ -f "$app_dir/avatar.pid" ] || [ -f "$app_dir/solver.pid" ]; then
@@ -103,7 +135,7 @@ show_processes() {
         done
     fi
     
-    # Check for snapshot processes (root-level flask app)
+    # Check for snapshot processes
     snapshot_pids=$(pgrep -f "python.*snapshot" 2>/dev/null)
     if [ ! -z "$snapshot_pids" ]; then
         processes_found=1
@@ -140,16 +172,16 @@ show_processes() {
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
 
-# Function to check app status
+# ---------------------------------------------------------------------------
+#  FUNCTION: check_status
+# ---------------------------------------------------------------------------
 check_status() {
     echo -e "\n${PURPLE}📊 REPOSITORY APP STATUS CHECK${NC}"
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
     
-    # Check all possible web interfaces
     echo -e "${BOLD}🌐 Web Interfaces:${NC}"
     local any_responding=0
     
-    # Check localhost:5000
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/ 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" = "200" ]; then
         any_responding=1
@@ -160,7 +192,6 @@ check_status() {
         echo -e "   ${YELLOW}⚠️  http://localhost:5000 returned HTTP $HTTP_CODE${NC}"
     fi
     
-    # Check localhost:5001
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/ 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" = "200" ]; then
         any_responding=1
@@ -171,10 +202,8 @@ check_status() {
         echo -e "   ${YELLOW}⚠️  http://localhost:5001 returned HTTP $HTTP_CODE${NC}"
     fi
     
-    # Check for log files
     echo -e "\n${BOLD}📋 Recent Logs:${NC}"
     local logs_found=0
-    
     for logdir in whisperer-external/logs whisperer-internal/logs avatar/logs solver/logs ../../flask/log; do
         if [ -f "$logdir/flask_app.log" ] || [ -f "$logdir/flask.log" ]; then
             logs_found=1
@@ -190,15 +219,11 @@ check_status() {
             fi
         fi
     done
-    
     if [ $logs_found -eq 0 ]; then
         echo -e "   ${YELLOW}No recent log files found${NC}"
     fi
     
-    # Quick system check
     echo -e "\n${BOLD}⚙️  System Check:${NC}"
-    
-    # Check if common ports are in use
     for PORT in 5000 5001 5002; do
         if lsof -ti:$PORT >/dev/null 2>&1; then
             PORT_PIDS=$(lsof -ti:$PORT | tr '\n' ' ')
@@ -207,11 +232,12 @@ check_status() {
             echo -e "   ${GREEN}Port $PORT: FREE${NC}"
         fi
     done
-    
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
 
-# Function to kill all repository processes
+# ---------------------------------------------------------------------------
+#  FUNCTION: kill_all_repo_processes
+# ---------------------------------------------------------------------------
 kill_all_repo_processes() {
     local kill_mode=$1
     
@@ -229,7 +255,6 @@ kill_all_repo_processes() {
     
     echo -e "\n${RED}🛑 Killing ALL repository processes...${NC}"
     
-    # Kill by all possible PID files in all app directories
     echo -e "${YELLOW}📄 Killing processes from PID files...${NC}"
     for app_dir in whisperer-external whisperer-internal avatar solver ../../flask; do
         for pidfile in "$app_dir"/*.pid; do
@@ -242,7 +267,6 @@ kill_all_repo_processes() {
         done
     done
     
-    # Kill by port (aggressive)
     echo -e "\n${YELLOW}🔌 Clearing common ports (5000-5010)...${NC}"
     for PORT in {5000..5010}; do
         PIDS=$(lsof -ti:$PORT 2>/dev/null)
@@ -252,45 +276,38 @@ kill_all_repo_processes() {
         fi
     done
     
-    # Kill by process name patterns
     echo -e "\n${YELLOW}👤 Killing by process name patterns...${NC}"
     
-    # Kill whisperer processes
     whisperer_pids=$(pgrep -f "python.*whisperer" 2>/dev/null)
     if [ ! -z "$whisperer_pids" ]; then
         echo -e "   Killing whisperer processes: $whisperer_pids"
         kill -9 $whisperer_pids 2>/dev/null
     fi
     
-    # Kill avatar processes
     avatar_pids=$(pgrep -f "python.*avatar" 2>/dev/null)
     if [ ! -z "$avatar_pids" ]; then
         echo -e "   Killing avatar processes: $avatar_pids"
         kill -9 $avatar_pids 2>/dev/null
     fi
     
-    # Kill solver processes
     solver_pids=$(pgrep -f "python.*solver" 2>/dev/null)
     if [ ! -z "$solver_pids" ]; then
         echo -e "   Killing solver processes: $solver_pids"
         kill -9 $solver_pids 2>/dev/null
     fi
     
-    # Kill snapshot processes (root-level flask app)
     snapshot_pids=$(pgrep -f "python.*snapshot" 2>/dev/null)
     if [ ! -z "$snapshot_pids" ]; then
         echo -e "   Killing snapshot processes: $snapshot_pids"
         kill -9 $snapshot_pids 2>/dev/null
     fi
     
-    # Kill Flask processes
     flask_pids=$(pgrep -f "flask" 2>/dev/null)
     if [ ! -z "$flask_pids" ]; then
         echo -e "   Killing Flask processes: $flask_pids"
         kill -9 $flask_pids 2>/dev/null
     fi
     
-    # Kill any Python process from this repo
     repo_python_pids=$(pgrep -f "python.*$REPO_ROOT" 2>/dev/null)
     if [ ! -z "$repo_python_pids" ]; then
         echo -e "   Killing Python processes from repo: $repo_python_pids"
@@ -300,11 +317,9 @@ kill_all_repo_processes() {
     echo -e "\n${GREEN}✅ All repository processes killed${NC}"
     echo -e "${GREEN}✅ All common ports cleared${NC}"
     
-    # Verify cleanup
     echo -e "\n${YELLOW}🔍 Verifying cleanup...${NC}"
     sleep 2
     
-    # Check if anything remains
     remaining_pids=$(pgrep -f "python.*($REPO_ROOT|whisperer|avatar|solver|snapshot|flask)" 2>/dev/null)
     if [ ! -z "$remaining_pids" ]; then
         echo -e "${RED}⚠️  Some processes still running: $remaining_pids${NC}"
@@ -314,14 +329,12 @@ kill_all_repo_processes() {
         echo -e "${GREEN}✅ No remaining processes found${NC}"
     fi
     
-    # Check ports again
     remaining_ports=""
     for PORT in 5000 5001 5002; do
         if lsof -ti:$PORT >/dev/null 2>&1; then
             remaining_ports="$remaining_ports $PORT"
         fi
     done
-    
     if [ ! -z "$remaining_ports" ]; then
         echo -e "${RED}⚠️  Ports still in use:$remaining_ports${NC}"
         echo -e "${YELLOW}   You may need to kill them manually:${NC}"
@@ -333,7 +346,9 @@ kill_all_repo_processes() {
     fi
 }
 
-# Function to display menu
+# ---------------------------------------------------------------------------
+#  FUNCTION: show_menu
+# ---------------------------------------------------------------------------
 show_menu() {
     echo -e "\n${CYAN}╔══════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║                 MAIN MENU                            ║${NC}"
@@ -349,18 +364,18 @@ show_menu() {
     echo -e "${BLUE}══════════════════════════════════════════════════════${NC}"
 }
 
-# Function to kill specific PID
+# ---------------------------------------------------------------------------
+#  FUNCTION: kill_specific_pid
+# ---------------------------------------------------------------------------
 kill_specific_pid() {
     echo -e "\n${YELLOW}🎯 Kill specific process${NC}"
     read -p "Enter PID to kill: " pid_to_kill
     
-    # Validate input
     if [[ ! "$pid_to_kill" =~ ^[0-9]+$ ]]; then
         echo -e "${RED}❌ Invalid PID format${NC}"
         return
     fi
     
-    # Check if process exists
     if ps -p $pid_to_kill >/dev/null 2>&1; then
         echo -e "Process found: $(ps -o command= -p $pid_to_kill)"
         read -p "Are you sure you want to kill PID $pid_to_kill? (y/N): " -n 1 -r
@@ -380,7 +395,9 @@ kill_specific_pid() {
     fi
 }
 
-# Main interactive loop
+# ---------------------------------------------------------------------------
+#  MAIN INTERACTIVE LOOP
+# ---------------------------------------------------------------------------
 while true; do
     show_menu
     echo -n "Select option (1-6): "

@@ -1,5 +1,14 @@
 # 🚀 Python Development Portfolio
 
+```
+  ██████╗ ██╗   ██╗████████╗██╗  ██╗ ██████╗ ███╗   ██╗    ██████╗ ███████╗██╗   ██╗
+  ██╔══██╗╚██╗ ██╔╝╚══██╔══╝██║  ██║██╔═══██╗████╗  ██║    ██╔══██╗██╔════╝╚██╗ ██╔╝
+  ██████╔╝ ╚████╔╝    ██║   ███████║██║   ██║██╔██╗ ██║    ██║  ██║█████╗   ╚████╔╝ 
+  ██╔═══╝   ╚██╔╝     ██║   ██╔══██║██║   ██║██║╚██╗██║    ██║  ██║██╔══╝    ╚██╔╝  
+  ██║        ██║      ██║   ██║  ██║╚██████╔╝██║ ╚████║    ██████╔╝███████╗   ██║   
+  ╚═╝        ╚═╝      ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═════╝ ╚══════╝   ╚═╝   
+```
+
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.3%2B-green)](https://flask.palletsprojects.com/)
 [![Bash](https://img.shields.io/badge/Bash-Scripting-4EAA25)](https://www.gnu.org/software/bash/)
@@ -7,8 +16,31 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)]()
 [![LLVM](https://img.shields.io/badge/LLVM-20.1.8-blueviolet)](https://llvm.org/)
 [![Whisper](https://img.shields.io/badge/Whisper-AI-7B68EE)](https://openai.com/research/whisper)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991)](https://openai.com/)
 
-A comprehensive collection of Python applications, scripts, and utilities demonstrating modern software development, automation, and full-stack capabilities.
+---
+
+## 📋 Table of Contents
+
+- [📁 Project Structure](#-project-structure)
+- [🎯 Featured Projects](#-featured-projects)
+  - [🎤 Internal Audio Transcription](#-internal-audio-transcription-system-whisperer_internal-)
+  - [🎤 Dual Audio Transcription](#-dual-audio-transcription-system-whisperer_external-)
+  - [🔤 OCR Dashboard](#-ocr-dashboard-appsflaskssolver-)
+  - [🎭 Browser Overlay](#-browser-overlay-system-appsoverlay-)
+  - [🔑 Keylogger Analysis](#-keylogger-analysis-suite-appskeylogger-)
+  - [🚀 Flask Development Framework](#-flask-development-framework-appsflasks-)
+- [🏗️ Technical Architecture](#%EF%B8%8F-technical-architecture)
+- [🚀 Getting Started](#-getting-started)
+- [🔧 Development Patterns](#-development-patterns)
+- [📊 Application Portfolio](#-application-portfolio)
+- [🧪 Testing & Quality](#-testing--quality)
+- [📈 Performance Characteristics](#-performance-characteristics)
+- [🎓 Learning Resources](#-learning-resources)
+- [🔄 Recent Updates](#-recent-updates)
+- [📋 Quick Start Guide](#-quick-start-guide)
+
+---
 
 ## 📁 Project Structure
 
@@ -55,30 +87,29 @@ interviews-coding-tests-codepad-codeshare-python/
 └── 🛠️ Infrastructure
     ├── .gitattributes       # Git line ending and binary file configuration
     ├── .gitignore          # Comprehensive git ignore rules
-    ├── .env                # Environment variables
+    ├── .env                # Environment variables (symlinked to ~/.env)
     ├── env-setup.sh        # Environment setup automation
+    ├── kill-all-flasks.sh  # 🔥 Kill all repo apps (with ASCII art!)
     └── README.md           # This documentation
 ```
+
+---
 
 ## 🎯 Featured Projects
 
 ### 🎤 **Internal Audio Transcription System** (`whisperer_internal/`) ✅ **RECENTLY FIXED**
 
-**Real-time microphone transcription with LLVM compatibility fix**
-
-```bash
-# ✅ FIXED: LLVM 21 → 20 compatibility issue resolved
-# Features:
-# • MacBook Pro microphone optimization
-# • Real-time Whisper AI transcription  
-# • Automatic LLVM version management
-# • Web dashboard with live updates
-# • Fallback to faster-whisper if needed
-
-# Launch the system (now with fixed LLVM):
-cd whisperer_internal
-./launch_flask_on5000_whisperer_internal.sh
-# Open: http://localhost:5000
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🎤 WHISPERER-INTERNAL – Real-time Voice Assistant            │
+  │                                                                 │
+  │  • Uses faster‑whisper (no llvmlite build issues)              │
+  │  • Listens to your built‑in microphone                         │
+  │  • Shows real‑time transcriptions on the web interface          │
+  │  • Runs in background, survives terminal closure               │
+  │  • Bundles transcribed text and sends to OpenAI async          │
+  │  • Injects API responses into the webpage on the fly           │
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Recent Fix - LLVM Compatibility:**
@@ -89,40 +120,70 @@ cd whisperer_internal
 - **Fallback**: Automatically switches to `faster-whisper` if llvmlite fails
 
 **Architecture:**
-- **Optimized audio capture** for MacBook Pro microphones
-- **Whisper AI** for real-time transcription
-- **LLVM 20 compatibility** with automated version management
-- **Flask web interface** with auto-refresh (2-second updates)
-- **Graceful degradation** to faster-whisper if needed
+- Optimized audio capture for MacBook Pro microphones
+- Whisper AI for real-time transcription
+- LLVM 20 compatibility with automated version management
+- Flask web interface with auto-refresh (2-second updates)
+- Graceful degradation to faster-whisper if needed
+
+```bash
+# Launch the system (now with fixed LLVM):
+cd whisperer_internal
+./launch_flask_on5000_whisperer_internal.sh
+# Open: http://localhost:5000
+```
+
+---
 
 ### 🎤 **Dual Audio Transcription System** (`whisperer_external/`)
 
-**Real-time microphone + YouTube audio transcription**
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🎤 WHISPERER-EXTERNAL – Microphone + System Audio            │
+  │                                                                 │
+  │  • Captures your microphone AND system audio                   │
+  │  • Real‑time Whisper AI transcription (dual streams)           │
+  │  • Web dashboard with live updates                             │
+  │  • BlackHole audio routing for system capture                  │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
+**Architecture:**
+- Multi-threaded audio capture (mic + system audio)
+- Whisper AI for real-time transcription
+- Flask web interface with auto-refresh
+- BlackHole audio routing for system capture
+- Crash protection and graceful recovery
 
 ```bash
-# Features:
-# • External microphone capture
-# • System audio capture via BlackHole
-# • Real-time Whisper AI transcription
-# • Web dashboard with live updates
-# • Dual-stream processing (YOU + HEAR)
-
 # Launch the system:
 cd whisperer_external
 ./launch-flask-on5000-whisperer-external.sh
 # Open: http://localhost:5000
 ```
 
-**Architecture:**
-- **Multi-threaded audio capture** (mic + system audio)
-- **Whisper AI** for real-time transcription
-- **Flask web interface** with auto-refresh
-- **BlackHole audio routing** for system capture
-- **Crash protection** and graceful recovery
+---
 
 ### 🔤 **OCR Dashboard** (`apps/flasks/solver/`) ✅ **UPDATED**
 
-**Screen capture OCR application with improved launcher**
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🔍 SOLVER – Screen OCR + GPT Dashboard                       │
+  │                                                                 │
+  │  • Captures your screen and extracts text with OCR             │
+  │  • Sends extracted text to GPT-4 for analysis                  │
+  │  • Shows results on a live web dashboard                       │
+  │  • Runs in background – close the terminal safely              │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- Screen capture with OCR using Tesseract
+- Optional GPT-4 analysis for extracted text
+- Background operation with automatic cleanup
+- MacOS permissions validation with troubleshooting
+- Virtual environment management
+- Log rotation and health monitoring
 
 ```bash
 # Launch the OCR dashboard:
@@ -134,38 +195,19 @@ cd apps/flasks/solver
 # Open: http://localhost:5000
 ```
 
-**Key Features:**
-- **Screen capture with OCR** using Tesseract
-- **Optional GPT-4 analysis** for extracted text
-- **Background operation** with automatic cleanup
-- **MacOS permissions validation** with troubleshooting
-- **Virtual environment management**
-- **Log rotation and health monitoring**
-
-**Files in `solver/` directory:**
-- `set-up-and-launch-solver-app.sh` - Main launcher script
-- `snapshot.py` - Flask OCR application
-- `requirements.txt` - Python dependencies
-- `archive/` - Legacy scripts for reference
+---
 
 ### 🎭 **Browser Overlay System** (`apps/overlay/`)
 
-**Semi-transparent, always-on-top browser windows**
-
-```python
-# Key Features:
-# • Truly stealth window (no taskbar/dock icon)
-# • Adjustable transparency (70% by default)
-# • Bypasses window managers
-# • Manual login capability
-# • Hidden from screen sharing
-
-# Setup:
-cd apps/overlay
-python -m venv venv
-source venv/bin/activate
-pip install PyQt6 PyQt6-WebEngine
-python browser-overlay.py
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🪟 BROWSER OVERLAY – Transparent, Always‑on‑Top              │
+  │                                                                 │
+  │  • Semi‑transparent, always‑on‑top browser window              │
+  │  • Persistent session (cookies & local storage)                │
+  │  • Toggle visibility with Ctrl+Shift+H                         │
+  │  • Runs in background, survives terminal closure               │
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Use Cases:**
@@ -174,20 +216,27 @@ python browser-overlay.py
 - Documentation sidebars
 - Learning tools transparency
 
+```bash
+# Setup:
+cd apps/overlay
+python -m venv venv
+source venv/bin/activate
+pip install PyQt6 PyQt6-WebEngine
+python browser-overlay.py
+```
+
+---
+
 ### 🔑 **Keylogger Analysis Suite** (`apps/keylogger/`)
 
-**Professional keyboard activity analysis and visualization**
-
-```python
-# Tools Included:
-# • text_reconstructor.py - Reconstruct typed content from keylogs
-# • web_dashboard.py - Real-time visualization interface
-# • Pattern analysis and security auditing
-
-# Sample usage:
-cd apps/keylogger
-python text_reconstructor.py path/to/keylog.jsonl
-python web_dashboard.py  # Launches visualization interface
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🔑 KEYLOGGER ANALYSIS – Professional Keyboard Activity       │
+  │                                                                 │
+  │  • text_reconstructor.py – Reconstruct typed content           │
+  │  • web_dashboard.py – Real‑time visualization interface        │
+  │  • Pattern analysis and security auditing                      │
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Features:**
@@ -196,51 +245,61 @@ python web_dashboard.py  # Launches visualization interface
 - Pattern analysis for productivity
 - Security auditing capabilities
 
+```bash
+cd apps/keylogger
+python text_reconstructor.py path/to/keylog.jsonl
+python web_dashboard.py  # Launches visualization interface
+```
+
+---
+
 ### 🚀 **Flask Development Framework** (`apps/flasks/`)
 
-**Comprehensive Flask development and testing environment**
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  🚀 FLASK FRAMEWORK – Comprehensive Development Environment   │
+  │                                                                 │
+  │  • flask-exercise/ – Basic Flask learning exercises            │
+  │  • flask-test/ – Testing framework with demo image server      │
+  │  • solver/ – OCR Dashboard application                         │
+  │  • whisperer_internal/ – ✅ Fixed internal audio transcription │
+  │  • whisperer_external/ – External audio transcription          │
+  │  • avatar/ – Voice cloning systems                             │
+  │  • image-to-gpt/ – Visual analysis tools                       │
+  └─────────────────────────────────────────────────────────────────┘
+```
 
-```python
-# Projects Included:
-# • flask-exercise/ - Basic Flask learning exercises
-# • flask-test/     - Testing framework with demo image server
-# • solver/         - OCR Dashboard application
-# • whisperer_internal/ - ✅ Fixed internal audio transcription
-# • whisperer_external/ - External audio transcription
-# • avatar/ - Voice cloning systems
-# • image-to-gpt/ - Visual analysis tools
-
+```bash
 # Test the Flask demo server:
 cd apps/flasks/flask-test
 python app.py
 # Open: http://localhost:5001
 ```
 
-**Features:**
-- **Demo Image Server** - Serves test images from `test-snapshot/` directory
-- **Clean Separation** - Test vs production environments
-- **Temporary Files Management** - `temp/` ignored globally via `.gitignore`
-- **Structured Testing** - Organized test assets in `test-snapshot/`
+---
 
 ## 🏗️ Technical Architecture
 
 ### **Modular Application Design**
 
-```python
-# apps/flasks/ - Example Flask application structure
-flasks/
-├── flask-exercise/     # Flask learning exercises
-├── flask-test/         # Flask testing and demo applications
-├── solver/             # ✅ OCR Dashboard application
-├── whisperer_internal/ # ✅ Fixed internal audio processing (LLVM 20)
-├── whisperer_external/ # External audio processing
-├── avatar/             # Voice cloning and avatar systems
-└── image-to-gpt/       # Visual analysis tools
+```
+apps/
+├── flasks/
+│   ├── flask-exercise/     # Flask learning exercises
+│   ├── flask-test/         # Flask testing and demo applications
+│   ├── solver/             # ✅ OCR Dashboard application
+│   ├── whisperer_internal/ # ✅ Fixed internal audio processing (LLVM 20)
+│   ├── whisperer_external/ # External audio processing
+│   ├── avatar/             # Voice cloning and avatar systems
+│   └── image-to-gpt/       # Visual analysis tools
+├── keylogger/              # Keyboard activity analysis
+├── overlay/                # Browser overlay tools
+└── assesments/             # Assessment and testing tools
 ```
 
 ### **File Management Strategy**
 
-```bash
+```
 # Temporary files (.gitignore):
 temp/              # Ignored globally - for runtime temporary files
 *.tmp              # Temporary file patterns
@@ -306,6 +365,8 @@ if ! python -c "import llvmlite"; then
 fi
 ```
 
+---
+
 ## 🚀 Getting Started
 
 ### **Quick Setup**
@@ -333,7 +394,7 @@ cd apps/keylogger && python web_dashboard.py
 ### **System Requirements**
 
 - **Python 3.8+** with virtual environment support
-- **macOS** (optimized, but cross-platform compatible)
+- **macOS** (optimised, but cross-platform compatible)
 - **Audio devices** for transcription applications
 - **LLVM 20** (for whisper transcription - automatically managed)
 - **Homebrew** (for package management on macOS)
@@ -362,6 +423,8 @@ cd whisperer_internal
 # 5. Install whisper and dependencies
 # 6. Launch Flask application on port 5000
 ```
+
+---
 
 ## 🔧 Development Patterns
 
@@ -411,23 +474,27 @@ def deduplicate_files(directory):
 # Statistical analysis examples
 ```
 
+---
+
 ## 📊 Application Portfolio
 
 ### **Web Applications**
 - **OCR Dashboard** - Screen capture with OCR and GPT analysis
 - **Audio Transcription** - Live speech-to-text with dual inputs
-- **Keylogger Analysis** - Typing pattern visualization
-- **Flask Dashboards** - Real-time monitoring and visualization
+- **Keylogger Analysis** - Typing pattern visualisation
+- **Flask Dashboards** - Real-time monitoring and visualisation
 
 ### **Desktop Applications**
 - **Browser Overlay** - Transparent, always-on-top browsers
 - **Audio Tools** - System-level audio processing
-- **File Management** - Intelligent synchronization and organization
+- **File Management** - Intelligent synchronisation and organisation
 
 ### **Development Tools**
-- **Sync Toolkit** - Rule-based file synchronization
+- **Sync Toolkit** - Rule-based file synchronisation
 - **Environment Setup** - Automated development environment configuration
 - **Testing Utilities** - Interview preparation and coding challenges
+
+---
 
 ## 🧪 Testing & Quality
 
@@ -455,6 +522,8 @@ cd whisperer_internal
 # • LLVM version compatibility checks
 ```
 
+---
+
 ## 📈 Performance Characteristics
 
 | Application | Resource Usage | Real-time Capable | Production Ready | LLVM Compatibility |
@@ -466,6 +535,8 @@ cd whisperer_internal
 | Keylogger Tools | Low CPU/RAM | ✅ Real-time | ✅ Yes | ❌ Not required |
 | Sync Tools | Low CPU, Variable I/O | ❌ Batch | ✅ Yes | ❌ Not required |
 
+---
+
 ## 🎓 Learning Resources
 
 This repository also serves as a learning portfolio:
@@ -475,6 +546,8 @@ This repository also serves as a learning portfolio:
 - **Project Documentation** - Real-world application examples
 - **Development Workflows** - Professional practices demonstrated
 - **LLVM Compatibility** - System library version management
+
+---
 
 ## 🔄 Recent Updates
 
@@ -499,6 +572,8 @@ This repository also serves as a learning portfolio:
 - **Solution**: Script automatically installs LLVM 20 and sets environment
 - **Fallback**: Uses `faster-whisper` if llvmlite installation fails
 - **Prevention**: Checks for LLVM 21 and removes it before installation
+
+---
 
 ## 📋 Quick Start Guide
 
@@ -536,16 +611,16 @@ python sync_by_rules.py --source /path/to/source --dest /path/to/dest
 ./sim_sync.sh    # Simulation mode
 ```
 
-## 🤝 Contributing
+### **For Killing Everything:**
+```bash
+./kill-all-flasks.sh  # 🔥 Interactive menu with ASCII art!
+```
 
-This repository demonstrates real-world problem-solving:
-- **System Compatibility** - Handling LLVM version conflicts
-- **Production Deployment** - Robust installation scripts
-- **Error Recovery** - Graceful degradation patterns
-- **Documentation** - Clear troubleshooting guides
+---
 
-For issues or improvements, please reference the specific application directory and include:
-1. System information (macOS version, Python version)
-2. LLVM version (`llvm-config --version`)
-3. Error messages from logs
-4. Steps to reproduce
+```
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║   🚀  Built by Artem Ponomarev  –  Production‑Ready Python     ║
+  ║   Systems, automation, and AI integration at scale.            ║
+  ╚══════════════════════════════════════════════════════════════════╝
+```

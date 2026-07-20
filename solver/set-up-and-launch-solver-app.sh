@@ -1,14 +1,39 @@
 #!/usr/bin/env bash
 #
-# Launch the screen-OCR Flask dashboard on port 5000
-# ALWAYS runs in GPT mode with the most powerful model
-# RUNS IN BACKGROUND AUTOMATICALLY - you can close terminal!
-# ------------------------------------------------------------------------------
-
+# +----------------------------------------------------------+
+# |                                                          |
+# |     SOLVER – Screen OCR + GPT Dashboard                  |
+# |                                                          |
+# |  • Captures your screen and extracts text with OCR      |
+# |  • Sends the extracted text to the most powerful GPT    |
+#  • Shows results on a live web dashboard               |
+# |  • Runs in background – close the terminal safely      |
+# |                                                          |
+# |  Usage:                                                  |
+# |    ./set-up-and-launch-solver-app.sh                    |
+# |                                                          |
+# |  Then open http://localhost:5000 in your browser.       |
+# +----------------------------------------------------------+
 
 set -Eeuo pipefail
 
+# === ASCII HEADER ===
+echo -e "\033[1;36m"
+cat << "EOF"
+  ███████╗ ██████╗ ██╗     ██╗   ██╗███████╗██████╗ 
+  ██╔════╝██╔═══██╗██║     ██║   ██║██╔════╝██╔══██╗
+  ███████╗██║   ██║██║     ██║   ██║█████╗  ██████╔╝
+  ╚════██║██║   ██║██║     ╚██╗ ██╔╝██╔══╝  ██╔══██╗
+  ███████║╚██████╔╝███████╗ ╚████╔╝ ███████╗██║  ██║
+  ╚══════╝ ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
+EOF
+echo -e "\033[0m"
+echo -e "\033[1;34m  Screen OCR + GPT Dashboard – Launcher\033[0m"
+echo ""
+
+# ---------------------------------------------------------------------------
 # Configuration
+# ---------------------------------------------------------------------------
 BASE_DIR="${BASE_DIR:-$HOME/interviews-coding-tests-codepad-codeshare-python/solver}"
 FLASK_DIR="$BASE_DIR"
 LOG_DIR="$FLASK_DIR/log"
@@ -16,30 +41,31 @@ TEMP_DIR="$FLASK_DIR/temp"
 VENVDIR="$BASE_DIR/venv"
 REQUIREMENTS="$FLASK_DIR/requirements.txt"
 
+# Stop any previous overlay (if present)
 "$BASE_DIR/../overlay/stop-overlay.sh" 2>/dev/null || true
 
-# ALWAYS use gpt-4-turbo (most powerful accessible model)
+# ALWAYS use the most powerful accessible model
 MODEL="gpt-4-turbo"
 MODE="gpt"
-
 export OPENAI_MODEL="$MODEL"
 
-# Initialize directories
 mkdir -p "$LOG_DIR" "$TEMP_DIR"
 touch "$LOG_DIR/flask.log"
 
-# Cleanup previous instances
-echo -e "\n\033[1;34m🛑 Killing any previous instance...\033[0m"
+# ---------------------------------------------------------------------------
+# 1. Cleanup previous instances
+# ---------------------------------------------------------------------------
+echo -e "\033[1;33m🧹 Cleaning up previous instances...\033[0m"
 pkill -f "python.*snapshot\.py" 2>/dev/null || true
 sleep 1
 lsof -ti :5000 | xargs -r kill -9 2>/dev/null || true
 sleep 1
 
 # ---------------------------------------------------------------------------
-# macOS Screen Recording Permission Check
+# 2. macOS Screen Recording Permission Check
 # ---------------------------------------------------------------------------
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  echo -e "\n\033[1;34m🔍 Checking screen-capture permission...\033[0m"
+  echo -e "\033[1;34m🔍 Checking screen-capture permission...\033[0m"
   TEST_PNG="$TEMP_DIR/screencap_$$.png"
   
   if ! timeout 5 screencapture -x "$TEST_PNG" 2>/dev/null; then
@@ -53,19 +79,13 @@ FIX macOS PERMISSIONS:
   4. Click the "+" button and add your terminal app back
   5. Quit terminal completely and reopen
 
-TERMINAL APPS TO CHECK:
-  - Terminal.app
-  - iTerm2
-  - Warp
-  - Any other terminal you're using
-
 After adding permission, restart terminal and run this script again.
 EOF
     exit 1
   fi
   
   if [[ ! -s "$TEST_PNG" ]]; then
-    echo -e "\033[1;31m❌ Screenshot created but empty. Permission issue?\033[0m"
+    echo -e "\033[1;31m❌ Screenshot empty – permission issue?\033[0m"
     rm -f "$TEST_PNG"
     exit 1
   fi
@@ -75,7 +95,7 @@ EOF
 fi
 
 # ---------------------------------------------------------------------------
-# Python Environment Setup
+# 3. Python Environment Setup
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🐍 Preparing Python environment...\033[0m"
 
@@ -86,25 +106,23 @@ fi
 
 if [[ ! -d "$VENVDIR" ]]; then
   echo "Creating virtual environment..."
-  python3 -m venv "$VENVDIR"
-  if [[ $? -ne 0 ]]; then
+  python3 -m venv "$VENVDIR" || {
     echo -e "\033[1;31m❌ Failed to create virtual environment\033[0m"
     exit 1
-  fi
+  }
 fi
 
 VENV_PYTHON="$VENVDIR/bin/python3"
 VENV_PIP="$VENVDIR/bin/pip"
 
 if [[ ! -f "$VENV_PYTHON" ]]; then
-    echo -e "\033[1;31m❌ Virtual environment Python not found at: $VENV_PYTHON\033[0m"
+    echo -e "\033[1;31m❌ Virtual environment Python not found: $VENV_PYTHON\033[0m"
     exit 1
 fi
-
 echo "✅ Using virtual environment Python: $VENV_PYTHON"
 
 if [[ ! -f "$REQUIREMENTS" ]]; then
-    echo -e "\033[1;31m❌ requirements.txt not found at: $REQUIREMENTS\033[0m"
+    echo -e "\033[1;31m❌ requirements.txt not found: $REQUIREMENTS\033[0m"
     exit 1
 fi
 
@@ -118,71 +136,39 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# ENV FILE HANDLING - Connect to root .env
+# 4. ENV FILE HANDLING – Use ~/.env directly
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🔑 Checking OpenAI API key...\033[0m"
-ROOT_ENV="$HOME/interviews-coding-tests-codepad-codeshare-python/.env"
-TARGET_ENV="$FLASK_DIR/.env"
+HOME_ENV="$HOME/.env"
 
-if [[ -f "$ROOT_ENV" ]]; then
-    echo "✅ Found root .env at: $ROOT_ENV"
-    
-    if [[ ! -L "$TARGET_ENV" ]] || [[ ! -f "$TARGET_ENV" ]]; then
-        echo "   🔗 Creating symlink: $TARGET_ENV -> $ROOT_ENV"
-        ln -sf "$ROOT_ENV" "$TARGET_ENV"
-    else
-        echo "   🔗 Symlink already exists: $TARGET_ENV"
-    fi
-    
-    if [[ ! -f "$TARGET_ENV" ]]; then
-        echo -e "\033[1;31m❌ Symlink failed - $TARGET_ENV not accessible\033[0m"
-        exit 1
-    fi
-    
-    echo "   ✅ Connected to root .env"
-else
-    echo -e "\033[1;33m⚠️  Root .env not found at: $ROOT_ENV\033[0m"
-    echo "Creating .env template..."
-    cat > "$TARGET_ENV" << 'EOF'
-# OpenAI API Key
-# Get yours from: https://platform.openai.com/api-keys
-OPENAI_API_KEY="your-api-key-here"
-EOF
-    echo -e "\033[1;31m❌ Please add a valid OpenAI API key to:\033[0m"
-    echo -e "   $ROOT_ENV"
-    echo -e "\033[1;36m💡 Get API key: https://platform.openai.com/api-keys\033[0m"
+if [[ ! -f "$HOME_ENV" ]]; then
+    echo -e "\033[1;31m❌ ~/.env not found.\033[0m"
+    echo "Please create ~/.env with your OPENAI_API_KEY."
+    echo "Format: OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     exit 1
 fi
 
-if [[ -f "$TARGET_ENV" ]]; then
-    echo "Checking API key in $TARGET_ENV..."
-    API_KEY=$(grep 'OPENAI_API_KEY=' "$TARGET_ENV" | cut -d'=' -f2- | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-    
-    if [[ -n "$API_KEY" ]]; then
-        echo "✅ API key found: ${API_KEY:0:20}..."
-        echo "   Key length: ${#API_KEY} characters"
-        
-        if [[ "$API_KEY" == "your-api-key-here" ]] || [[ ${#API_KEY} -lt 20 ]]; then
-            echo -e "\033[1;31m❌ Invalid API key in $TARGET_ENV\033[0m"
-            echo -e "\033[1;33m💡 Please add your actual OpenAI API key to:\033[0m"
-            echo "   $ROOT_ENV"
-            echo -e "\033[1;36m   Format: OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\033[0m"
-            exit 1
-        fi
-        echo -e "\033[1;32m✅ API key validated successfully!\033[0m"
-    else
-        echo -e "\033[1;31m❌ No API key found in $TARGET_ENV\033[0m"
-        echo -e "\033[1;33m💡 Add this line to $ROOT_ENV:\033[0m"
-        echo "   OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        exit 1
-    fi
-else
-    echo -e "\033[1;31m❌ .env file not found at $TARGET_ENV\033[0m"
+# Load the API key from ~/.env
+API_KEY=$(grep '^OPENAI_API_KEY=' "$HOME_ENV" | head -1 | cut -d'=' -f2- | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+
+if [[ -z "$API_KEY" ]]; then
+    echo -e "\033[1;31m❌ OPENAI_API_KEY not found in ~/.env\033[0m"
     exit 1
 fi
+
+if [[ "$API_KEY" == "your-api-key-here" ]] || [[ ${#API_KEY} -lt 20 ]]; then
+    echo -e "\033[1;31m❌ Invalid API key in ~/.env\033[0m"
+    echo "Please replace with your actual key."
+    exit 1
+fi
+
+echo -e "\033[1;32m✅ API key loaded from ~/.env (${API_KEY:0:20}...)\033[0m"
+
+# ----- FIX: Export the key for snapshot.py -----
+export OPENAI_API_KEY="$API_KEY"
 
 # ---------------------------------------------------------------------------
-# Test Python environment
+# 5. Test Python environment
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🧪 Testing Python environment...\033[0m"
 
@@ -234,7 +220,7 @@ if not imports_ok:
 "
 
 # ---------------------------------------------------------------------------
-# Start Flask Application IN BACKGROUND
+# 6. Start Flask Application IN BACKGROUND
 # ---------------------------------------------------------------------------
 cd "$FLASK_DIR"
 
@@ -246,7 +232,6 @@ echo -e "\n\033[1;34m🌐 Dashboard will be on: http://$IP:5000\033[0m"
 echo -e "\n\033[1;34m🚀 Starting Flask application in $MODE mode (background)...\033[0m"
 export GPT_MODE="$MODE"
 
-echo "Starting Flask server in background..."
 "$VENV_PYTHON" -u snapshot.py >"$LOG_DIR/flask.log" 2>&1 &
 FLASK_PID=$!
 sleep 3
@@ -270,7 +255,6 @@ ATTEMPTS=$((TIMEOUT/INTERVAL))
 echo -e "\n\033[1;36m⏳ Waiting for Flask to start (max ${TIMEOUT}s)...\033[0m"
 for ((i=1; i<=ATTEMPTS; i++)); do
   if curl -fs "http://localhost:5000" >/dev/null 2>&1; then
-    # Get Python version
     PY_VER=$("$VENV_PYTHON" --version 2>/dev/null | cut -d' ' -f2 | cut -d'.' -f1-2)
     
     echo -e "\n\033[1;32m"
@@ -291,7 +275,7 @@ for ((i=1; i<=ATTEMPTS; i++)); do
     echo -e "\033[0m"
     echo ""
 
-    # --- Auto‑close terminal (macOS only) ---
+    # Auto‑close terminal (macOS only) – only on success
     if [[ "$OSTYPE" == "darwin"* ]]; then
         osascript -e 'tell application "Terminal" to close (first window whose frontmost is true)' &
     fi

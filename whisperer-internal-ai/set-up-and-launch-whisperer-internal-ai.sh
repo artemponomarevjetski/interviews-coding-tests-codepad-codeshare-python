@@ -11,8 +11,8 @@
 # |  • Runs in background, survives terminal closure         |
 # |  • Includes a troubleshooter script for audio diagnostics|
 # |  • Bundles transcribed text and sends to OpenAI async    |
-#  • Continues transcription while waiting for OpenAI     |
-# |  • Injects API responses into the webpage on the fly    |
+# |  • Continues transcription while waiting for OpenAI      |
+# |  • Injects API responses into the webpage on the fly     |
 # +----------------------------------------------------------+
 
 set -Eeuo pipefail
@@ -129,8 +129,8 @@ echo "|  • Kills all previous instances before starting          |"
 echo "|  • Runs in background, survives terminal closure         |"
 echo "|  • Includes a troubleshooter script for audio diagnostics|"
 echo "|  • Bundles transcribed text and sends to OpenAI async    |"
-echo "|  • Continues transcription while waiting for OpenAI     |"
-echo "|  • Injects API responses into the webpage on the fly    |"
+echo "|  • Continues transcription while waiting for OpenAI      |"
+echo "|  • Injects API responses into the webpage on the fly     |"
 echo "+----------------------------------------------------------+"
 echo -e "${NC}"
 log "Starting Whisperer‑INTERNAL Launcher"
@@ -216,6 +216,12 @@ if ps -p "$APP_PID" >/dev/null 2>&1; then
     echo -e "   📝 Logs: tail -f $FLASK_LOG"
     echo -e "   🛑 Stop: pkill -f $APP_PY"
     echo -e "   🔧 Troubleshoot: python troubleshooter.py"
+
+    # ----- Auto-close terminal (macOS only) after successful launch -----
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        osascript -e 'tell application "Terminal" to close (first window whose frontmost is true)' &
+    fi
+    exit 0
 else
     log "${RED}❌ Whisperer failed to start. Check $FLASK_LOG${NC}"
     exit 1
