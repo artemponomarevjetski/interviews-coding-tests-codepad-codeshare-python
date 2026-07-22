@@ -47,7 +47,6 @@ Required prompt:
 > No approved customized resume exists for **[Company] — [Role] ([Requisition ID or URL])**. I will not send or upload a generic resume. Shall I create a targeted two-page resume now from the controlled source resume and this job description?
 
 If the complete job description is unavailable:
-#@@@@@@@@@@@@
 
 > I need the complete job description or official role URL before I can create the required customized resume. I will hold the email or portal submission until the tailored PDF is ready.
 
@@ -106,6 +105,7 @@ For each role that passes the application threshold:
 - Treat profile views, online status, reactions, and content impressions as weak prioritization signals—not automatic reasons to message someone.
 - Preserve privacy: do not export, publish, or share the connection list or personalized LinkedIn URLs outside the campaign record.
 
+#@@@@@@@@@@@@
 ### Content and visibility loop
 
 Use LinkedIn content to reinforce one target role family at a time and make warm outreach more credible:

@@ -8,6 +8,8 @@
 ║  • Bundles transcribed text and sends to OpenAI asynchronously      ║
 ║  • Continues transcription while waiting for OpenAI                 ║
 ║  • Injects API responses into the webpage on the fly                ║
+║  • Attaches context.md instructions to every user prompt            ║
+║  • Dynamically switches between code‑only and conversational mode   ║
 ║                                                                      ║
 ║  Usage:                                                              ║
 ║    python whisperer-internal-ai.py                                  ║
@@ -73,6 +75,36 @@ COMPUTE_TYPE = "int8"
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
 
 # ----------------------------------------------------------------------
+#  Load instructions from context.md (attached to every user prompt)
+# ----------------------------------------------------------------------
+INSTRUCTIONS_PATH = os.path.join(os.path.dirname(__file__), "context.md")
+INSTRUCTIONS_CACHE = None
+
+def get_instructions():
+    global INSTRUCTIONS_CACHE
+    if INSTRUCTIONS_CACHE is not None:
+        return INSTRUCTIONS_CACHE
+
+    if os.path.exists(INSTRUCTIONS_PATH):
+        with open(INSTRUCTIONS_PATH, 'r', encoding='utf-8') as f:
+            INSTRUCTIONS_CACHE = f.read().strip()
+        logging.info(f"✅ Loaded instructions from {INSTRUCTIONS_PATH}")
+    else:
+        # Create a default file with basic rules
+        default = (
+            "# Assistant Instructions\n\n"
+            "You are a helpful assistant. Answer clearly and concisely.\n"
+            "For coding questions, provide raw code (no markdown). "
+            "For general chat, speak naturally."
+        )
+        with open(INSTRUCTIONS_PATH, 'w', encoding='utf-8') as f:
+            f.write(default)
+        INSTRUCTIONS_CACHE = default
+        logging.info(f"📄 Created default instructions at {INSTRUCTIONS_PATH}")
+
+    return INSTRUCTIONS_CACHE
+
+# ----------------------------------------------------------------------
 #  Flask app setup
 # ----------------------------------------------------------------------
 app = Flask(__name__)
@@ -112,29 +144,57 @@ def get_microphone():
     return None
 
 # ----------------------------------------------------------------------
-#  Async OpenAI caller – with Markdown stripping and full context
+#  Async OpenAI caller – with dynamic mode and context.md attachment
 # ----------------------------------------------------------------------
 def get_ai_reply(history_snapshot, entry):
     try:
-        messages = [
-            {"role": "system", "content": (
+        # 1) Load the persistent instructions
+        instructions = get_instructions()
+
+        # 2) Modify the last user message by appending instructions
+        modified_history = list(history_snapshot)
+        if modified_history and modified_history[-1]["role"] == "user":
+            original = modified_history[-1]["content"]
+            modified_history[-1] = {
+                "role": "user",
+                "content": f"{original}\n\n---\n\n{instructions}"   # attached at the bottom
+            }
+
+        # 3) Detect if it's a coding query (for dynamic system prompt)
+        user_query = modified_history[-1]["content"] if modified_history else ""
+        is_coding_query = any(kw in user_query.lower() for kw in
+                              ["code", "python", "function", "class", "algorithm",
+                               "write", "implement", "solve", "bug", "error"])
+
+        if is_coding_query:
+            system_prompt = (
                 "You are a senior engineer. Provide only the raw code solution. "
                 "Do not use Markdown, no backticks, no code fences, no explanations, no comments. "
                 "Output just the plain code – nothing else."
-            )}
-        ] + history_snapshot
+            )
+        else:
+            system_prompt = (
+                "You are a helpful, friendly assistant. Answer conversationally, "
+                "with clear explanations, and use Markdown formatting for readability "
+                "when appropriate (but not for code unless specifically asked)."
+            )
+
+        messages = [
+            {"role": "system", "content": system_prompt}
+        ] + modified_history   # ← the user prompt now includes the .md rules
 
         response = client.chat.completions.create(
-            model="gpt-4o",           # the strongest general‑purpose model
+            model="gpt-4o",
             messages=messages,
-            max_tokens=1200,          # full solutions, no truncation
+            max_tokens=1200,
             temperature=0.2,
         )
         reply = response.choices[0].message.content.strip()
 
-        # ----- STRIP ANY MARKDOWN FENCES (fallback) -----
-        reply = re.sub(r'^```\w*\n?', '', reply)
-        reply = re.sub(r'\n?```$', '', reply)
+        # If coding query, strip markdown fences just in case
+        if is_coding_query:
+            reply = re.sub(r'^```\w*\n?', '', reply)
+            reply = re.sub(r'\n?```$', '', reply)
 
     except Exception as e:
         logging.error(f"OpenAI error: {e}")
