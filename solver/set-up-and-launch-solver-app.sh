@@ -12,7 +12,7 @@
 # |  Usage:                                                  |
 # |    ./set-up-and-launch-solver-app.sh                    |
 # |                                                          |
-# |  Then open http://localhost:5000 in your browser.       |
+# |  Then open http://localhost:5001 in your browser.       |
 # +----------------------------------------------------------+
 
 set -Eeuo pipefail
@@ -40,6 +40,7 @@ LOG_DIR="$FLASK_DIR/log"
 TEMP_DIR="$FLASK_DIR/temp"
 VENVDIR="$BASE_DIR/venv"
 REQUIREMENTS="$FLASK_DIR/requirements.txt"
+PORT=5001
 
 # Stop any previous overlay (if present)
 "$BASE_DIR/../overlay/stop-overlay.sh" 2>/dev/null || true
@@ -53,16 +54,56 @@ mkdir -p "$LOG_DIR" "$TEMP_DIR"
 touch "$LOG_DIR/flask.log"
 
 # ---------------------------------------------------------------------------
-# 1. Cleanup previous instances
+# 1. Cleanup previous instances – WITH USER CONFIRMATION
 # ---------------------------------------------------------------------------
-echo -e "\033[1;33m🧹 Cleaning up previous instances...\033[0m"
-pkill -f "python.*snapshot\.py" 2>/dev/null || true
-sleep 1
-lsof -ti :5000 | xargs -r kill -9 2>/dev/null || true
-sleep 1
+# Global flag: 1 if we killed, 0 if we skipped or no instance found
+KILLED=0
+
+echo -e "\033[1;33m🧹 Checking for previous Solver instances...\033[0m"
+
+OLD_PID=$(pgrep -f "python.*snapshot\.py" 2>/dev/null || true)
+OLD_PORT_PID=$(lsof -ti :$PORT 2>/dev/null || true)
+
+if [[ -n "$OLD_PID" || -n "$OLD_PORT_PID" ]]; then
+    echo -e "\033[1;33m⚠️  Found a running Solver app:\033[0m"
+    if [[ -n "$OLD_PID" ]]; then
+        echo "   Process(es): $OLD_PID"
+        ps -p $OLD_PID -o pid,cmd 2>/dev/null | tail -n +2
+    fi
+    if [[ -n "$OLD_PORT_PID" ]]; then
+        echo "   Port $PORT is in use by PID: $OLD_PORT_PID"
+    fi
+    
+    read -p "Do you want to kill the previous Solver app and restart? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "\033[1;33m🔄 Killing previous instances...\033[0m"
+        pkill -f "python.*snapshot\.py" 2>/dev/null || true
+        lsof -ti :$PORT | xargs -r kill -9 2>/dev/null || true
+        sleep 1
+        echo -e "\033[1;32m✅ Cleanup complete.\033[0m"
+        KILLED=1
+    else
+        echo -e "\033[1;33m⏭️  Skipping kill. Will check if port $PORT is free.\033[0m"
+        KILLED=0
+    fi
+else
+    echo -e "\033[1;32m✅ No previous Solver instance found.\033[0m"
+    KILLED=0
+fi
 
 # ---------------------------------------------------------------------------
-# 2. macOS Screen Recording Permission Check
+# 2. Check port availability if we didn't kill
+# ---------------------------------------------------------------------------
+if [[ $KILLED -eq 0 ]] && lsof -ti :"$PORT" >/dev/null 2>&1; then
+    echo -e "\033[1;31m❌ Port $PORT is still in use by another process.\033[0m"
+    echo -e "\033[1;31m   You chose not to kill the previous instance, but the port is occupied.\033[0m"
+    echo -e "\033[1;31m   Please stop the other process manually, or kill it and restart.\033[0m"
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# 3. macOS Screen Recording Permission Check
 # ---------------------------------------------------------------------------
 if [[ "$OSTYPE" == "darwin"* ]]; then
   echo -e "\033[1;34m🔍 Checking screen-capture permission...\033[0m"
@@ -95,7 +136,7 @@ EOF
 fi
 
 # ---------------------------------------------------------------------------
-# 3. Python Environment Setup
+# 4. Python Environment Setup
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🐍 Preparing Python environment...\033[0m"
 
@@ -136,7 +177,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 4. ENV FILE HANDLING – Use ~/.env directly
+# 5. ENV FILE HANDLING – Use ~/.env directly
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🔑 Checking OpenAI API key...\033[0m"
 HOME_ENV="$HOME/.env"
@@ -164,11 +205,17 @@ fi
 
 echo -e "\033[1;32m✅ API key loaded from ~/.env (${API_KEY:0:20}...)\033[0m"
 
-# ----- FIX: Export the key for snapshot.py -----
+# Export the key for snapshot.py
 export OPENAI_API_KEY="$API_KEY"
 
+# Also create a local .env file for snapshot.py if it doesn't exist
+if [[ ! -f "$FLASK_DIR/.env" ]]; then
+    echo "OPENAI_API_KEY=$API_KEY" > "$FLASK_DIR/.env"
+    echo -e "\033[1;32m✅ Created local .env file for snapshot.py\033[0m"
+fi
+
 # ---------------------------------------------------------------------------
-# 5. Test Python environment
+# 6. Test Python environment
 # ---------------------------------------------------------------------------
 echo -e "\n\033[1;34m🧪 Testing Python environment...\033[0m"
 
@@ -220,12 +267,12 @@ if not imports_ok:
 "
 
 # ---------------------------------------------------------------------------
-# 6. Start Flask Application IN BACKGROUND
+# 7. Start Flask Application IN BACKGROUND
 # ---------------------------------------------------------------------------
 cd "$FLASK_DIR"
 
 IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "127.0.0.1")
-echo -e "\n\033[1;34m🌐 Dashboard will be on: http://$IP:5000\033[0m"
+echo -e "\n\033[1;34m🌐 Dashboard will be on: http://$IP:$PORT\033[0m"
 
 > "$LOG_DIR/flask.log"
 
@@ -254,14 +301,14 @@ ATTEMPTS=$((TIMEOUT/INTERVAL))
 
 echo -e "\n\033[1;36m⏳ Waiting for Flask to start (max ${TIMEOUT}s)...\033[0m"
 for ((i=1; i<=ATTEMPTS; i++)); do
-  if curl -fs "http://localhost:5000" >/dev/null 2>&1; then
+  if curl -fs "http://localhost:$PORT" >/dev/null 2>&1; then
     PY_VER=$("$VENV_PYTHON" --version 2>/dev/null | cut -d' ' -f2 | cut -d'.' -f1-2)
     
     echo -e "\n\033[1;32m"
     echo "┌────────────────────────────────────────────────────────────────────────────┐"
     echo "│ ✅ SYSTEM IS OPERATIONAL!                                                  │"
     echo "├────────────────────────────────────────────────────────────────────────────┤"
-    printf "│ 🖥️  http://$IP:5000%*s │\n" $((60 - ${#IP} - 11)) ""
+    printf "│ 🖥️  http://$IP:$PORT%*s │\n" $((60 - ${#IP} - ${#PORT} - 1)) ""
     printf "│ 🤖  %-*s │\n" 58 "$MODEL"
     printf "│ 📝  %-*s │\n" 58 "$MODE"
     printf "│ 🐍  Python %-*s │\n" 52 "$PY_VER"

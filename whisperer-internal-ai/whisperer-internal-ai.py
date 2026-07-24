@@ -10,11 +10,7 @@
 ║  • Injects API responses into the webpage on the fly                ║
 ║  • Attaches context.md instructions to every user prompt            ║
 ║  • Dynamically switches between code‑only and conversational mode   ║
-║                                                                      ║
-║  Usage:                                                              ║
-║    python whisperer-internal-ai.py                                  ║
-║                                                                      ║
-║  Then open http://localhost:5000 in your browser.                    ║
+║  • Saves clean plain‑text transcriptions to logs/                  ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """
 
@@ -131,6 +127,36 @@ conversations_lock = threading.Lock()
 MAX_CONVERSATIONS = 20
 
 # ----------------------------------------------------------------------
+#  Plain‑text transcription logging – thread‑safe
+# ----------------------------------------------------------------------
+full_log_lock = threading.Lock()
+recent_log_lock = threading.Lock()
+
+def write_full_log(role: str, text: str):
+    """Append a line to transcriptions.log (full history)."""
+    label = "User" if role == "user" else "Assistant"
+    with full_log_lock:
+        with open("logs/transcriptions.log", "a", encoding="utf-8") as f:
+            f.write(f"{label}: {text}\n")
+            f.flush()
+
+def update_recent_log():
+    """Overwrite recent_transcriptions.log with the last MAX_CONVERSATIONS exchanges."""
+    with conversations_lock:
+        # Build a list of lines: each exchange as "User: ...\nAssistant: ...\n---"
+        lines = []
+        for entry in conversations:
+            if entry.get('user'):
+                lines.append(f"User: {entry['user']}")
+            if entry.get('reply') and entry['reply'] != "Thinking...":
+                lines.append(f"Assistant: {entry['reply']}")
+            lines.append("---")
+    with recent_log_lock:
+        with open("logs/recent_transcriptions.log", "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+            f.flush()
+
+# ----------------------------------------------------------------------
 #  Microphone selection
 # ----------------------------------------------------------------------
 def get_microphone():
@@ -209,6 +235,12 @@ def get_ai_reply(history_snapshot, entry):
         entry['reply'] = reply
         entry['time'] = datetime.now()
 
+    # Write to plain‑text full log
+    write_full_log("assistant", reply)
+
+    # Update the recent log (overwrites)
+    update_recent_log()
+
     logging.info(f"AI reply: {reply}")
     print(f"\n>> AI: {reply}")
 
@@ -280,6 +312,12 @@ def transcribe_audio():
                                     conversations.append(entry)
                                     if len(conversations) > MAX_CONVERSATIONS:
                                         conversations.pop(0)
+
+                                # Write to plain‑text full log
+                                write_full_log("user", user_text)
+
+                                # Update the recent log (overwrites)
+                                update_recent_log()
 
                                 print(f"\n>> USER: {user_text}")
                                 logging.info(f"USER: {user_text}")

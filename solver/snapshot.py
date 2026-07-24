@@ -84,7 +84,7 @@ CONFIG = {
     "gpt_analysis": "gpt_analysis.txt",
     
     # Timing intervals (seconds)
-    "port": 5000,
+    "port": 5001,
     "interval": 10,
     "gpt_interval": 20,
     "balance_interval": 600,

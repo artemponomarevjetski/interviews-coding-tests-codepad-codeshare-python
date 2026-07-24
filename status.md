@@ -1,88 +1,151 @@
 # Strategic Applications Status
 
-**Last updated:** Wednesday, July 22, 2026, 9:55 AM PDT  
-**Purpose:** Current priorities, interview state, submission ownership, manual actions, holds, and follow-up triggers.  
-**Supersedes:** July 21, 2026, 6:00 AM snapshot.  
+**Last updated:** Thursday, July 23, 2026, 4:35 AM PDT  
+**Purpose:** Current priorities, appointments, interview state, submission ownership, holds, manual actions, and follow-up controls.  
+**Supersedes:** Wednesday, July 22, 2026, 9:55 AM PDT snapshot.  
 **Durable policy:** `strategic_applications_manager.md`
 
-> **Sources actually reviewed for this update:** Gmail1 Inbox and Sent activity through approximately 9:54 AM PDT; the user-provided Google Calendar evidence; the prior uploaded campaign status; and the current conversation record.  
-> **Not directly verified in this update:** Gmail2, Yahoo, live LinkedIn actions/messages, external ATS portals, Guidepoint screening pages, and direct Google Calendar editing.
+> **Sources actually reviewed for this update:** Gmail1 Inbox, Sent, parent `Jobs` label, current `Jobs/...` sublabels, and relevant threads through approximately 4:35 AM PDT; the TCS Job 419333 attachment; the user-provided Gmail2 evidence showing the final Berkeley resume email sent at 5:38 PM on July 22; Lisa Stotlar’s confirmation; the user-provided calendar evidence; the prior uploaded status; and the current conversation record.  
+> **Not directly verified:** live Gmail2 after the user’s 5:38 PM Berkeley email, Yahoo, live LinkedIn messages/actions, external ATS portals, direct Google Calendar editing, Guidepoint screening pages, and current AWS posting availability.  
+> **Tool limitation:** Gmail access in this update was read-only. No labels, messages, drafts, or archives were changed.
 
 ---
 
-# Mission Priority Lock
+# Executive State
 
-0. **UC Berkeley Space Sciences Laboratory / Protingent — Ground Software & Systems Manager, Job 83546**  
-   Immediate interview priority today.
-1. **LinkedIn — Staff Software Engineer, Systems & Infrastructure**  
-   Active interview process; technical-screen scheduling still pending.
-2. **Delta Dental — Machine Learning / AI Engineer Lead**  
-   Submitted through John at VBize; follow-up becomes valid July 23 if still silent.
-3. **AWS warm path — Dmitri Tchikatilov**  
-   Send exact roles manually after today’s Berkeley call; no direct application before Dmitri responds.
-4. **D. E. Shaw — Applied AI Engineer**  
-   Direct application acknowledged and under review.
-
-Lower-priority outreach must not interfere with the 11:00 AM call or immediate post-interview follow-up.
+- **UC Berkeley SSL / Jeff Morgante:** recruiter call completed. Art personally sent the final revised C++/space resume with bullet points from Gmail2 at **5:38 PM on July 22**. **Wait for Jeff. Do not send any additional email, resume, attachment, call, or LinkedIn message.**
+- **Lisa Stotlar:** one-on-one career-coaching session is **today at 11:30 AM PDT on Zoom**. This is not a job interview.
+- **TCS / Meytier, Job 419333:** Rupesh confirmed the Woodland Hills role is onsite and asked for salary expectations. Art must decide whether relocation/onsite work is acceptable before any tailored resume is created or sent.
+- **LinkedIn Staff Software Engineer:** active interview process; technical-screen scheduling remains pending.
+- **Delta Dental:** role remains active; client is coordinating technical-panel availability.
+- **Wells Fargo and Enterprise Holdings:** both remain in client-feedback / next-stage waiting status.
+- **Black Diamond Networks:** Art sent a resume on July 22 at 6:28 PM PDT; no reply has arrived. No references were sent.
+- **Gmail1 job mail:** zero unread messages under `Jobs`; the two Inbox unread messages are non-job updates.
 
 ---
 
 # Next Three Actions
 
-1. **Prepare for and complete the 11:00 AM Berkeley/Protingent call.** Stop other campaign work by 10:00 AM, rehearse the concise recruiter-screen opening, and be waiting by 10:55 AM.
-2. **Within one hour after the call, send a personalized thank-you and update this status** with: next stage, hiring-manager identity, whether Protingent or UC Berkeley owns submission, whether a direct UC application is required, expected onsite/on-call requirements, and any requested documents.
-3. **After the Berkeley follow-up, complete the highest-value manual action:** send Dmitri the two exact AWS role links first; then complete one portal action, preferably Twin Health or the existing DatologyAI/Paraform Confirm Interest record.
+1. **Attend Lisa’s 11:30 AM coaching session.** Bring the 45-second positioning statement, three-word brand, five accomplishment bullets, three STAR stories, and approximate weekly job-search metrics.
+2. **Make the TCS location decision.** If five-day onsite work in Woodland Hills is not workable, decline briefly. If it is workable, reply with a market-supported salary target and ask whether onsite means five days per week before authorizing a TCS-specific resume.
+3. **Maintain the high-value waits.** Monitor Jeff, LinkedIn, Delta Dental, Wells Fargo, and Enterprise. Do not contact Jeff again unless he replies or Art explicitly authorizes a later follow-up.
 
 ---
 
 # Today’s Confirmed Appointment
 
-| Date and time | Contact / channel | Opportunity | Format | Current evidence |
+| Date and time | Contact | Purpose | Format | Preparation |
 |---|---|---|---|---|
-| **Wednesday, July 22, 2026, 11:00–11:30 AM PDT** | **Jeff Morgante, Sr. Technical Recruiter, Protingent** | UC Berkeley Space Sciences Laboratory — Ground Software & Systems Manager, Mission Operations, **Job 83546** | **Inbound phone call** | Jeff confirmed by email at 9:32 AM that he will call **650-863-2555** at 11:00 AM. |
+| **Thursday, July 23, 2026, 11:30 AM PDT** | **Lisa Stotlar, CareerGenerations** | One-on-one career strategy and interview preparation | **Zoom** | Positioning/search/exit statement; accomplishment bullets; STAR/SOAR stories; networking and survey plan; job-posting analysis |
 
-## Call Controls
+**Standing Zoom details**
 
-- Correct callback number: **650-863-2555**.
-- Incorrect number previously shown in scheduling: `650-863-2558`.
-- Jeff has been informed that an existing Protingent candidate profile may already exist under Gmail1.
-- Treat this as a **likely recruiter qualification screen**, not yet as a UC Berkeley technical or hiring-manager interview.
-- The calendar shows another event, **“Art Lisa,” at 11:30 AM**. Allow for the Berkeley call to run over or move the later event if practical.
-- Do not send another resume before the call. Ask whether Protingent will submit you or whether UC Berkeley requires a separate online application.
+- Meeting ID: **519 511 5669**
+- Passcode: **748809**
+- Join by **11:20–11:25 AM** to test audio and organize notes.
 
-## Interview Positioning
+## Desired outcomes from the session
 
-Lead with:
-
-- NASA mission-safety scientific computing and technical leadership;
-- C/C++/Python, Linux, high-availability delivery, observability, incident response, rollback, and runbooks;
-- TetraMem CPU/GPU/NPU hardware/software anomaly isolation;
-- Lucid OTA/ECU diagnostics, configuration validation, and recovery controls;
-- willingness to work onsite in Berkeley and U.S.-citizen work authorization.
-
-Use this calibration:
-
-> My NASA work was in space-radiation scientific computing and mission-safety research rather than direct spacecraft-console or ground-station operations. I bring adjacent high-reliability software, Linux systems, hardware/software debugging, verification, automation, and technical-leadership experience.
-
-## Prepared Files
-
-- `UC_Berkeley_SSL_Protingent_Recruiter_Screen_One_Page_2026-07-22.pdf`
-- `Art_Ponomarev_Resume_UC_Berkeley_SSL_Ground_Software_Systems_Manager_83546_FINAL_GMAIL1_2026-07-21.pdf`
-- `Art_Ponomarev_Cover_Letter_UC_Berkeley_SSL_Ground_Software_Systems_Manager_83546_2026-07-22.pdf`
+1. Select one primary market identity: AI Systems, MLOps / ML Infrastructure, or hands-on technical lead.
+2. Finalize a 40–50 second Positioning / Search / Exit statement.
+3. Select the strongest five accomplishment bullets for the main resume and LinkedIn.
+4. Practice at least three STAR answers: major achievement, difficult cross-functional problem, and mistake/lesson.
+5. Agree on measurable networking and application goals for the next seven days.
 
 ---
 
-# Priority 1 — LinkedIn
+# Priority 0 — UC Berkeley Space Sciences Laboratory / Protingent
+
+| Field | Current state |
+|---|---|
+| Role | Ground Software & Systems Manager — Mission Operations |
+| Requisition | **Job 83546** |
+| Recruiter / submission path | Jeff Morgante, Protingent |
+| Work arrangement | Onsite in Berkeley |
+| Recruiter screen | Completed July 22 |
+| Final resume | User-confirmed as sent manually from Gmail2 at **5:38 PM PDT, July 22**; attachment filename was not visible in the supplied evidence |
+| Current stage | **Awaiting Jeff’s review / submission decision** |
+| Next action | **Wait. No outbound communication to Jeff.** |
+| Follow-up date | Not scheduled; Berkeley outreach is user-controlled |
+
+## Verified role focus from Jeff
+
+- Hands-on **C++ development** integrating multiple mission-operations components.
+- Lead/manager scope while remaining highly hands-on with code.
+- **Minimum 10 years of C++**.
+- Space ground-software experience is a stated must-have.
+- Command and Control, telemetry, uplink/downlink, TCP/IP networking, and mission-operations experience are strong preferences.
+
+## Candidate details already provided to Jeff
+
+- Work authorization: U.S. citizen; no sponsorship required.
+- No travel scheduled for the next six months.
+- Preference for 24 hours’ notice for virtual interviews.
+- Start availability: two weeks after offer.
+- Salary target communicated: **$205,000–$215,000**.
+
+## Control
+
+- Do not apply directly to UC Berkeley until Jeff clarifies whether a separate university application is required.
+- Do not send a different resume or clarification while Jeff is reviewing the final version.
+- Preserve honest calibration: NASA mission-analysis/scientific software and ground-based tools are relevant, but do not claim direct spacecraft-console, uplink/downlink, or command-and-control ownership unless specifically supported.
+
+---
+
+# Priority 1 — TCS / Meytier
+
+| Field | Current state |
+|---|---|
+| Employer / client | Tata Consultancy Services through Meytier |
+| Role | Senior AIOps / ML Engineer |
+| Job ID | **419333** |
+| Location | Woodland Hills, California |
+| Structure | Full-time, onsite |
+| Experience band | 8–12 years |
+| Latest recruiter message | Rupesh confirmed the role is onsite and asked for salary expectations |
+| Resume state | No TCS-specific resume has been verified as sent from Gmail1 |
+| Decision gate | Whether Woodland Hills onsite work / relocation is acceptable |
+| Next action | Respond today only after the location decision; no generic resume |
+
+## Strong alignment
+
+- Microsoft Security telemetry and operational-log pipelines.
+- Python, PySpark, SQL, KQL, data quality, anomaly analysis, and root-cause diagnostics.
+- TetraMem observability, SLOs, failure clustering, incident response, and ML lifecycle controls.
+- Lucid OTA / ECU telemetry and deployment diagnostics.
+- Security analytics, AIOps, streaming-data, and operational reliability.
+
+## Material requirements to calibrate honestly
+
+- OpenTelemetry Collector pipeline ownership.
+- Kafka with exactly-once semantics.
+- dbt transformation models.
+- Delta Lake or Apache Iceberg at petabyte scale.
+- Flink / Spark Streaming low-latency inference.
+- DRAIN3 / LogBERT log intelligence.
+- Feature-store ownership and point-in-time correct joins.
+- Six domain-specific observability data marts and platform-wide schema contracts.
+
+## Control
+
+- Do not provide a salary number before deciding whether the onsite requirement is acceptable.
+- Do not create or send a tailored resume unless location and compensation can meet Art’s constraints.
+- If pursuing, ask one remaining question: **Does onsite mean five days per week?**
+
+---
+
+# Priority 2 — LinkedIn Staff Software Engineer, Systems & Infrastructure
 
 | Item | State | Next action |
 |---|---|---|
-| Direct application | Submitted; active interview process | Do not submit again. |
-| Stacy preparation call | Completed | No additional message now. |
-| Technical-screen invitation | **No formal invitation found in Gmail1 as of 9:54 AM today** | Continue preparation; monitor LinkedIn manually. |
-| Retrospective story | Locked to TetraMem training-to-serving infrastructure | Keep the Microsoft governance story only as a second example. |
-| Follow-up trigger | July 27 if no scheduling update | Send one concise check-in to Stacy only. |
+| Direct application | Submitted; active interview process | Do not submit again |
+| Recruiter / prep contacts | Stacy Kramer and Ricardo Thomas | Keep Stacy as primary contact |
+| Preparation call | Completed | No additional same-week message |
+| Design-retrospective document | Received | Use TetraMem training-to-serving infrastructure as primary story |
+| Technical-screen invitation | No formal scheduling email found in Gmail1 | Continue preparation |
+| Follow-up trigger | **July 27** if still unscheduled | One concise message to Stacy only |
 
-Core trade-offs for the TetraMem retrospective:
+Core retrospective trade-offs:
 
 1. Release velocity versus safety.
 2. Portability versus accelerator-specific performance.
@@ -90,58 +153,58 @@ Core trade-offs for the TetraMem retrospective:
 
 ---
 
-# Priority 2 — Delta Dental
+# Priority 3 — Delta Dental
 
 | Field | State |
 |---|---|
 | Role | Machine Learning / AI Engineer Lead |
 | Submission owner | John at VBize |
 | Commercial structure | $75/hour, 1099, all-inclusive |
-| Stage | Submitted; awaiting client feedback |
-| Next trigger | **Thursday, July 23**, if no update arrives |
+| Work arrangement | San Francisco Bay Area; one day per week in office was previously stated |
+| Latest update | Position remains active; client is coordinating panel availability for a technical discussion |
+| Current action | **Wait for scheduling** |
 
-Follow-up text:
-
-> Hi John,  
-> Has Delta Dental provided any feedback or indicated whether they would like to schedule an interview?  
-> Best,  
-> Art
-
-Do not contact another agency or Delta Dental directly.
+Do not contact another agency or Delta Dental directly. No additional follow-up is due now.
 
 ---
 
-# Priority 3 — AWS / Dmitri Tchikatilov
+# Priority 4 — Wells Fargo via Mindlance
 
-Dmitri’s standing instruction remains: send the role first and do not apply directly.
-
-| Priority | Role | Job ID | Current action |
-|---:|---|---:|---|
-| 1 | Sr Worldwide Specialist Solutions Architect, GenAI — Amazon Bedrock GTM | **10452264** | Send exact link manually after the Berkeley call. |
-| 2 | Delivery Consultant — AI/ML, WWPS ProServe | **10461957** | Strong backup; prior status recorded a July 25 deadline. |
-
-No resume should be attached until Dmitri selects a requisition and asks for a role-specific version.
+| Field | State |
+|---|---|
+| Role / requisition | Python / AI, **224376-1** |
+| Stage | Mindlance manager discussion completed; thank-you sent |
+| Latest update | Krishna said he will keep Art posted |
+| Potential next stage | In-person interview with Wells Fargo hiring manager Deepak in Concord |
+| Next trigger | Client or recruiter update; ordinary follow-up around **July 28** if silent |
 
 ---
 
-# Priority 4 — D. E. Shaw
+# Priority 5 — Enterprise Holdings via PTR Global
 
-- Applied AI Engineer direct application was acknowledged.
-- The D. E. Shaw-specific resume was previously sent to Graham Gates and Ray Lyles with the direct-application conflict disclosed.
-- Current state: **under review; representation reconciliation unresolved**.
-- No further direct message is due now.
+| Field | State |
+|---|---|
+| Role | Data Scientist |
+| Requisition | **2026-555925** |
+| Structure | Direct-hire permanent, 100% remote |
+| Published recruiter range | $140,000–$150,000 maximum base |
+| Stage | Submission completed |
+| Recruiter expectation | Approximately 5–7 days or longer for client feedback |
+| Next trigger | Client feedback or interview; follow up around **July 28–29** if silent |
 
 ---
 
 # Active / Waiting Opportunities
 
-| Employer / channel | Role | Current state | Next trigger |
+| Employer / channel | Opportunity | Current state | Next trigger |
 |---|---|---|---|
-| Wells Fargo via Mindlance / Krishna | Python / AI, **224376-1** | Mindlance manager discussion completed; thank-you sent; Krishna said he will keep Art posted | Possible in-person interview with Deepak in Concord |
-| Enterprise Holdings via PTR Global / Valerie | Data Scientist, **2026-555925** | Submission completed; Valerie estimated approximately 5–7 days or longer for feedback | Client feedback or interview request |
-| Dice recruiter | Forward Deployment Engineer, W-2 contract | Qualification reply successfully sent at 9:15 AM today | End client/requisition, duration, W-2 rate, nationwide-remote confirmation, and React/TypeScript gate |
-| Black Diamond Networks / Adam Zecher | Future AI/ML or systems opportunity | Legitimate relationship, but no exact role yet | Specific client, role, compensation, and work arrangement |
-| Peskind Executive Search / Taylor Miele | Candidate data sheet | On hold pending a specific active opportunity | Employer, full JD, location/work arrangement, compensation |
+| Market Street Talent / Kelsey Nicklas | Two remote AI/ML roles: Azure/cloud-native AI software and edge MLOps | Gmail1 follow-up sent July 22; no reply | Wait until approximately **July 29** |
+| Cynet Systems / Kanchan Soni | Senior GenAI Lead, San Jose | Qualification message sent; citizenship/structure, compensation, client, duration, and onsite details requested | Recruiter response; follow up around **July 29** |
+| Black Diamond Networks / Adam Zecher | Future AI/ML, MLOps, data-platform, cloud, or AI-systems roles | Resume sent July 22 at 6:28 PM PDT; no exact role and no reply | Wait; one Gmail-thread follow-up around **July 29** if still silent; no LinkedIn duplicate |
+| Dice recruiter | Forward Deployment Engineer, W-2 contract | Qualification reply sent | End client/requisition, duration, W-2 rate, nationwide-remote status, and React/TypeScript gate; follow up around **July 29** |
+| Avance Consulting / Shivani Pasula | Thermal SQA Engineer, Cupertino | Qualification questions sent; mixed fit | Client/requisition, pay, onsite schedule, and whether thermocouple/rework/machine-shop skills are strict; follow up around **July 29** |
+| Peskind Executive Search / Taylor Miele | Candidate profile / data sheet | On hold | Exact employer, role, complete JD, location, and compensation |
+| D. E. Shaw | Applied AI Engineer | Direct application acknowledged; under review | Employer response; no current message due |
 | Arch Systems | Principal AI/ML Lead | Screening answers sent | Recruiter response or scheduling |
 | Brightspeed | Senior Data Scientist | Submitted / waiting | Employer response |
 | Block | Senior ML Engineer, Applied AI Quality | Submitted / waiting | Employer response |
@@ -150,95 +213,74 @@ No resume should be attached until Dmitri selects a requisition and asks for a r
 
 ---
 
-# New Lead — Qualify First
+# Closed / Deprioritized
 
-## Avance Consulting — Thermal SQA Engineer, Cupertino
+| Opportunity | State | Reason / evidence |
+|---|---|---|
+| TIFIN | Closed | They prioritized candidates willing to relocate to Boulder and did not continue; recruiter also said the experience was not a direct match, although DevOps/AIOps was interesting |
+| Scout AI through Alldus | Closed | Client decided against interviewing |
+| Faros AI | Rejected / archive | Recruiter confirmed rejection |
+| Andrenam | Rejected / archive | Targeting candidates with 3–6 years of experience |
+| Tier4 — Senior Data Scientist | Closed for current search | Hiring manager requires telecommunications experience |
+| TCS — Azure AI Engineer, Bellevue | Closed | Fully onsite Bellevue; relocation not workable |
+| ClifyX — Databricks DevOps, Dallas | Deprioritized | Location mismatch |
+| Intone — Data Science, Dallas/Louisville onsite | Deprioritized | Location mismatch |
+| Q1 — Python/Linux Developer, Charlotte/Plano | Deprioritized | Location and role-level mismatch |
+| Guidepoint #1784569 — U.S. Data Center Air Filtration Ecosystem | Deprioritized | Lacks direct facility air-filtration expertise |
 
-**Received:** 9:31 AM today  
-**Type:** Permanent  
-**Preliminary fit:** Mixed / secondary to the AI-systems campaign.
-
-Relevant overlap:
-
-- hardware/software troubleshooting;
-- Unix command line and basic Python/shell scripting;
-- test execution, data summaries, prototype hardware, and cross-functional debugging;
-- applied-physics and reliability background.
-
-Material gaps or questions:
-
-- direct thermocouple placement and rework;
-- automated thermal data-acquisition practice;
-- machine-shop and hands-on fixture fabrication;
-- LabVIEW depth;
-- employer/end client, requisition, salary, onsite schedule, and whether those lab skills are strict gates.
-
-**Control:** Do not send a resume before the Berkeley interview. Qualify compensation, client/requisition, and the strictness of the hands-on thermal-lab requirements first.
+**Control:** Do not send more follow-ups to TIFIN, Scout AI, or Joe McDermott. Joe stated he was leaving Alldus.
 
 ---
 
 # Portal / Manual Actions
 
-| Priority | Opportunity | Manual action | Control |
-|---:|---|---|---|
-| 1 | AWS / Dmitri | Send the two exact role links through LinkedIn | No direct application or resume yet |
-| 2 | Twin Health — Senior AI Engineer, **5655780004** | Complete portal application with the prepared role-specific PDF | Answer LLM-as-a-judge experience conservatively; save confirmation |
-| 3 | DatologyAI / Paraform | Confirm interest once in the existing recruiter record | Do not create a direct duplicate |
-| 4 | Walmart — Principal Data Scientist, **R-2488500** | Apply once with the prepared requisition-specific PDF and save confirmation | Do not also apply to the overlapping Distinguished role |
-| 5 | Waymo — Staff ML Engineer, VLM/LLM Evaluation, **4577** | Submit through the existing account | Do not create a second account |
-| 6 | Guidepoint — Project **1785642** | Review personally and answer from firsthand, nonconfidential experience | Do not use AI to complete the screening |
-| 7 | Codility | Send duplicate-account deletion request from `artem_ponomarev@yahoo.com` | Preserve the working Gmail1 account and its history |
-
----
-
-# Closed / Deprioritized Since the Prior Snapshot
-
-| Opportunity | State | Reason |
-|---|---|---|
-| TCS — Azure AI Engineer, Bellevue | Closed | Fully onsite Bellevue; relocation not workable |
-| Tier4 — Senior Data Scientist, Advanced Analytics | Closed for current search | Hiring manager currently requires telecommunications experience |
-| Faros AI | Rejected / archive | Recruiter confirmed rejection |
-| Andrenam | Rejected / archive | Targeting candidates with 3–6 years of experience |
-| ClifyX — Databricks DevOps, Dallas | Archive | Location and compensation mismatch |
-| Intone — Data Science, Dallas/Louisville onsite | Archive | Onsite location mismatch |
-| Q1 — Python/Linux Developer, Charlotte/Plano | Archive | Location and role-level mismatch |
-
-Anna Malayan confirmed that she used the resume with the explicit “20+ years” framing removed. Her feedback was to shorten the resume and make the most relevant material appear first.
+| Priority | Item | Current control |
+|---:|---|---|
+| 1 | AWS warm path through Dmitri Tchikatilov | Manual LinkedIn status not verified. Do not apply directly or attach a resume until Dmitri selects a live requisition and confirms referral support. Recheck live role availability first. |
+| 2 | Meridial Expert Network | Optional project network, not a priority employer process. **Hold identity/address verification** until privacy terms, project economics, and expected project quality are reviewed. |
+| 3 | Guidepoint #1785642 — AI Investment Cycle Experts | Review and answer personally using firsthand, nonconfidential experience. Do not use AI to complete client screening. |
+| 4 | Twin Health / DatologyAI / Walmart / Waymo | Prior portal actions remain unverified. Recheck that each posting is still live before investing time or uploading a resume. |
+| 5 | Codility duplicate-account cleanup | Preserve the working Gmail1 account and its test history; complete deletion request from the duplicate Yahoo account only. |
 
 ---
 
 # Resume and Identity Controls
 
-- Use **`artemponomarevjetski@gmail.com`** for new applications, recruiter replies, and scheduling.
-- Never send a generic resume; use a company-, role-, requisition-, and JD-specific PDF.
-- For hands-on AI roles, keep the recent-experience-first frame and omit explicit “20+ years” language.
-- Remove the sentence: **“Full 20+ year chronological work history is reflected on LinkedIn and can be provided as a longer CV if required.”**
-- Do not release the master reference list or individual reference contact information without opportunity-specific approval.
-- Do not disclose graduation years in ordinary recruiting materials.
+- Use **`artemponomarevjetski@gmail.com`** for new applications, recruiter correspondence, and scheduling.
+- Gmail2 remains an intake / controlled-resume channel unless an existing conversation is already bound to it.
+- **Berkeley exception:** Art controls the thread and has already sent the final resume. No assistant-originated follow-up is authorized.
+- Never send a generic resume to a defined role; use an employer-, role-, requisition-, and complete-JD-specific PDF.
+- Keep the two Microsoft contracts separate. The most recent contract focused substantially on Microsoft Security telemetry, operational logs, Python/PySpark/SQL/KQL pipelines, data quality, anomaly analysis, and production diagnostics.
+- Replace “Present” with the actual end month for the completed second Microsoft contract before the next outward resume.
+- For hands-on AI roles, foreground recent production evidence and avoid unsupported “20+ years” claims in the header.
+- For senior C++ / space roles, broader career depth may be used when directly relevant and defensible.
+- Do not release references without opportunity-specific approval. Never send the master reference document.
+- Do not send passport, tax, background-check, diploma, or onboarding documents during ordinary recruiting.
+- Do not disclose education dates in ordinary recruiting materials unless a verified background-check or onboarding system requires them.
 - Preserve one submission owner per requisition.
 
 ---
 
 # Gmail1 Snapshot
 
-- **Inbox unread messages:** 0 at approximately 9:54 AM PDT.
-- Jeff’s call confirmation was received and read.
-- The Forward Deployment Engineer qualification reply appears in Sent.
-- No new LinkedIn technical-screen invitation was found in Gmail1.
-- No new Wells Fargo, Delta Dental, D. E. Shaw, Enterprise, Black Diamond, or Peskind advancement message was found after the latest recorded state.
+- **Jobs unread:** 0.
+- **Inbox unread:** 2, both non-job update messages.
+- **Jobs/Follow-up Queue:** 0 messages.
+- **Jobs/Needs Attachment:** 0 messages.
+- Latest decision-relevant incoming job message: Rupesh / Meytier confirming the TCS role is onsite and asking for salary expectations.
+- No newer Gmail1 advancement message was found from Jeff, Black Diamond, LinkedIn, Delta Dental, Wells Fargo, Enterprise, Kelsey, Cynet, Peskind, or D. E. Shaw.
+- The final Berkeley resume email was sent from Gmail2 and is therefore recorded from the user-provided evidence rather than live mailbox verification.
 
 ---
 
-# Today’s Execution Timeline
+# Today’s Execution Plan
 
-- **10:00 AM:** Stop inbox work; open the recruiter-screen card and tailored Berkeley resume.
-- **10:05 AM:** Rehearse the 45-second opening three times.
-- **10:20 AM:** Rehearse one genuine Lucid or TetraMem hardware/software anomaly story.
-- **10:35 AM:** Review onsite, compensation, availability, work authorization, and direct-ground-operations calibration.
-- **10:45 AM:** Test phone, charger, voicemail, headset, and quiet location.
-- **10:55 AM:** Stop preparation and wait for Jeff’s call.
-- **By 12:30 PM:** Send thank-you and record the exact next stage.
-- **Afternoon:** Complete AWS warm-path outreach, then one high-value portal action.
+- **Morning:** refine the Lisa-session materials; do not start new low-priority applications.
+- **11:20 AM:** join Lisa’s Zoom and test audio.
+- **11:30 AM:** one-on-one coaching session.
+- **After Lisa:** decide whether TCS Woodland Hills onsite work is acceptable.
+- **Afternoon:** respond to TCS only if pursuing; otherwise close it politely. Continue LinkedIn and Delta Dental preparation.
+- **All day:** monitor Jeff’s response without sending anything to him.
 
 ---
 

@@ -7,7 +7,8 @@
 # |  • Uses faster-whisper – no llvmlite/numba headaches     |
 # |  • Listens to your built-in microphone                   |
 # |  • Shows real-time transcriptions on the web interface   |
-# |  • Kills all previous instances before starting          |
+# |  • Kills previous instances only if you say Yes          |
+# |  • If you say No, it checks port availability           |
 # |  • Runs in background, survives terminal closure         |
 # |  • Includes a troubleshooter script for audio diagnostics|
 # |  • Bundles transcribed text and sends to OpenAI async    |
@@ -16,6 +17,21 @@
 # +----------------------------------------------------------+
 
 set -Eeuo pipefail
+
+# --- ASCII HEADER (WHISPERER) ------------------------------------------------
+echo -e "\033[1;36m"
+cat << "EOF"
+ ██╗    ██╗██╗  ██╗██╗███████╗██████╗ ███████╗██████╗ 
+ ██║    ██║██║  ██║██║██╔════╝██╔══██╗██╔════╝██╔══██╗
+ ██║ █╗ ██║███████║██║███████╗██████╔╝█████╗  ██████╔╝
+ ██║███╗██║██╔══██║██║╚════██║██╔══██╗██╔══╝  ██╔══██╗
+ ╚███╔███╔╝██║  ██║██║███████║██║  ██║███████╗██║  ██║
+  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+EOF
+echo -e "\033[0m"
+echo -e "\033[1;34m  🎤  Whisperer‑Internal  –  Microphone Transcription  🎤\033[0m"
+echo -e "\033[1;36m        Real‑time speech‑to‑text + Async OpenAI AI\033[0m"
+echo ""
 
 # --- Configuration ------------------------------------------------------------
 PORT=5000
@@ -44,51 +60,88 @@ BOLD='\033[1m'
 NC='\033[0m' # No Colour
 
 # --- Functions ----------------------------------------------------------------
-
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SERVICE_LOG"
 }
 
-cleanup_previous_instances() {
-    log "${YELLOW}🧹 Cleaning up previous instances...${NC}"
+# ---------------------------------------------------------------------------
+# 1. Cleanup previous instances – WITH USER CONFIRMATION
+# ---------------------------------------------------------------------------
+# Global flag: 1 if we killed, 0 if we skipped or no instance found
+KILLED=0
 
-    # Kill by PID file
+cleanup_previous_instances() {
+    log "${YELLOW}🧹 Checking for previous Whisperer instances...${NC}"
+
+    # Check for PID file
+    local old_pid=""
     if [[ -f "$PID_FILE" ]]; then
-        OLD_PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
-        if [[ -n "$OLD_PID" ]] && ps -p "$OLD_PID" >/dev/null 2>&1; then
-            log "   Killing previous whisperer (PID $OLD_PID)"
-            kill -9 "$OLD_PID" 2>/dev/null || true
-        fi
-        rm -f "$PID_FILE"
+        old_pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
     fi
 
-    # Kill any process using the port
-    log "   Checking port $PORT..."
-    PIDS=$(lsof -ti :"$PORT" 2>/dev/null || true)
-    if [[ -n "$PIDS" ]]; then
-        log "   Found processes on port $PORT: $PIDS"
-        for PID in $PIDS; do
-            if kill -0 "$PID" 2>/dev/null; then
-                kill -9 "$PID" 2>/dev/null || true
+    # Check for processes using the port
+    local port_pids=$(lsof -ti :"$PORT" 2>/dev/null || true)
+
+    # Check for any running whisperer python processes
+    local whisperer_pids=$(pgrep -f "python.*whisperer" 2>/dev/null || true)
+    local app_pids=$(pgrep -f "python.*$APP_PY" 2>/dev/null || true)
+
+    # Combine all found processes
+    local all_pids="$old_pid $port_pids $whisperer_pids $app_pids"
+    # Remove duplicates and empty
+    all_pids=$(echo "$all_pids" | tr ' ' '\n' | sort -u | grep -v '^$' | tr '\n' ' ')
+
+    if [[ -n "$all_pids" ]]; then
+        echo -e "${YELLOW}⚠️  Found a running Whisperer app:${NC}"
+        if [[ -n "$old_pid" ]]; then
+            echo "   PID file: $PID_FILE -> PID $old_pid"
+        fi
+        if [[ -n "$port_pids" ]]; then
+            echo "   Port $PORT in use by PIDs: $port_pids"
+        fi
+        if [[ -n "$whisperer_pids" ]]; then
+            echo "   Whisperer processes: $whisperer_pids"
+        fi
+        if [[ -n "$app_pids" ]]; then
+            echo "   $APP_PY processes: $app_pids"
+        fi
+
+        read -p "Do you want to kill the previous Whisperer app and restart? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "${YELLOW}🔄 Killing previous instances...${NC}"
+            # Kill by PID file
+            if [[ -f "$PID_FILE" ]]; then
+                OLD_PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
+                if [[ -n "$OLD_PID" ]] && ps -p "$OLD_PID" >/dev/null 2>&1; then
+                    log "   Killing previous whisperer (PID $OLD_PID)"
+                    kill -9 "$OLD_PID" 2>/dev/null || true
+                fi
+                rm -f "$PID_FILE"
             fi
-        done
-        sleep 1
-        # Verify port is free
-        if lsof -ti :"$PORT" >/dev/null 2>&1; then
-            log "${YELLOW}⚠️  Could not free port $PORT. Please kill manually.${NC}"
-            return 1
+
+            # Kill any process using the port
+            if [[ -n "$port_pids" ]]; then
+                log "   Killing processes on port $PORT: $port_pids"
+                kill -9 $port_pids 2>/dev/null || true
+            fi
+
+            # Kill any Python processes matching "whisperer"
+            pkill -f "python.*whisperer" 2>/dev/null || true
+            pkill -f "python.*$APP_PY" 2>/dev/null || true
+
+            sleep 1
+            log "${GREEN}✅ Cleanup complete.${NC}"
+            KILLED=1
         else
-            log "${GREEN}✅ Port $PORT is free.${NC}"
+            echo -e "${YELLOW}⏭️  Skipping kill. Will check if port $PORT is free.${NC}"
+            KILLED=0
         fi
     else
-        log "${GREEN}✅ Port $PORT is already free.${NC}"
+        echo -e "${GREEN}✅ No previous Whisperer instance found.${NC}"
+        KILLED=0
     fi
-
-    # Kill any Python processes matching "whisperer" (previous instances)
-    pkill -f "python.*whisperer" 2>/dev/null || true
-    pkill -f "python.*$APP_PY" 2>/dev/null || true
-
-    log "${GREEN}✅ Cleanup complete.${NC}"
+    return 0
 }
 
 purge_old_transcripts() {
@@ -117,34 +170,30 @@ purge_old_transcripts() {
 #  MAIN
 # =============================================================================
 
-echo -e "${CYAN}"
-echo "+----------------------------------------------------------+"
-echo "|                                                          |"
-echo "|     WHISPERER-INTERNAL  –  MICROPHONE TRANSCRIPTION      |"
-echo "|                                                          |"
-echo "|  • Uses faster-whisper – no llvmlite/numba headaches     |"
-echo "|  • Listens to your built-in microphone                   |"
-echo "|  • Shows real-time transcriptions on the web interface   |"
-echo "|  • Kills all previous instances before starting          |"
-echo "|  • Runs in background, survives terminal closure         |"
-echo "|  • Includes a troubleshooter script for audio diagnostics|"
-echo "|  • Bundles transcribed text and sends to OpenAI async    |"
-echo "|  • Continues transcription while waiting for OpenAI      |"
-echo "|  • Injects API responses into the webpage on the fly     |"
-echo "+----------------------------------------------------------+"
-echo -e "${NC}"
 log "Starting Whisperer‑INTERNAL Launcher"
 
 # -----------------------------------------------------------------------------
-# 1. Cleanup previous instances
+# 1. Cleanup previous instances (with confirmation – may skip)
 # -----------------------------------------------------------------------------
 cleanup_previous_instances || {
-    log "${RED}❌ Cleanup failed. Exiting.${NC}"
+    # This should never happen because we always return 0, but keep for safety
+    log "${RED}❌ Cleanup encountered an unexpected error. Exiting.${NC}"
     exit 1
 }
 
 # -----------------------------------------------------------------------------
-# 2. Ensure Homebrew and required system packages
+# 2. Check port availability if we didn't kill
+# -----------------------------------------------------------------------------
+if [[ $KILLED -eq 0 ]] && lsof -ti :"$PORT" >/dev/null 2>&1; then
+    echo -e "${RED}❌ Port $PORT is still in use by another process.${NC}"
+    echo -e "${RED}   You chose not to kill the previous instance, but the port is occupied.${NC}"
+    echo -e "${RED}   Please stop the other process manually, or kill it and restart.${NC}"
+    log "${RED}❌ Port $PORT busy – aborting start.${NC}"
+    exit 1
+fi
+
+# -----------------------------------------------------------------------------
+# 3. Ensure Homebrew and required system packages
 # -----------------------------------------------------------------------------
 if ! command -v brew &> /dev/null; then
     log "${RED}❌ Homebrew not found. Install from https://brew.sh and rerun.${NC}"
@@ -161,7 +210,7 @@ if [[ ! -x "$PY311" ]]; then
 fi
 
 # -----------------------------------------------------------------------------
-# 3. Virtual environment setup
+# 4. Virtual environment setup
 # -----------------------------------------------------------------------------
 log "Creating virtual environment…"
 rm -rf "$VENV_DIR"
@@ -172,13 +221,13 @@ log "Upgrading pip and setuptools…"
 python -m pip install --upgrade pip setuptools wheel
 
 # -----------------------------------------------------------------------------
-# 4. Install dependencies from requirements.txt (includes openai & dotenv)
+# 5. Install dependencies from requirements.txt (includes openai & dotenv)
 # -----------------------------------------------------------------------------
 log "Installing dependencies from requirements.txt…"
 pip install -r requirements.txt
 
 # -----------------------------------------------------------------------------
-# 5. Smoke test – verify imports (including openai and dotenv)
+# 6. Smoke test – verify imports (including openai and dotenv)
 # -----------------------------------------------------------------------------
 log "Running smoke test…"
 if python -c "import flask, numpy, sounddevice, dotenv, openai; print('✅ Core + OpenAI imports OK')"; then
@@ -194,12 +243,12 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 6. Purge old transcripts (log rotation)
+# 7. Purge old transcripts (log rotation)
 # -----------------------------------------------------------------------------
 purge_old_transcripts
 
 # -----------------------------------------------------------------------------
-# 7. Launch the app in the background
+# 8. Launch the app in the background
 # -----------------------------------------------------------------------------
 log "Starting Whisperer service on http://localhost:${PORT} …"
 nohup bash -lc "source venv/bin/activate && python -u $APP_PY" \
@@ -217,7 +266,7 @@ if ps -p "$APP_PID" >/dev/null 2>&1; then
     echo -e "   🛑 Stop: pkill -f $APP_PY"
     echo -e "   🔧 Troubleshoot: python troubleshooter.py"
 
-    # ----- Auto-close terminal (macOS only) after successful launch -----
+    # Auto-close terminal (macOS only) after successful launch
     if [[ "$OSTYPE" == "darwin"* ]]; then
         osascript -e 'tell application "Terminal" to close (first window whose frontmost is true)' &
     fi
